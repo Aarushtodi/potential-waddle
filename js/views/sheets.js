@@ -10,6 +10,8 @@ import {
 } from '../state.js';
 import { actionAttrs, segmented, toggle } from './components.js';
 import { whatIfSheetBody, WHAT_IF_TOOLS } from './what-if.js';
+// VARIANT HOOK: the GPA looks' What do I need sheet (?gpa=1|2|3), see js/views/gpa-looks.js
+import { GPA_SHEETS } from './gpa-looks.js';
 
 const doneButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Done</button>`;
 const cancelButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Cancel</button>`;
@@ -177,6 +179,8 @@ const SHEETS = {
 };
 
 /** The open sheet with its backdrop, or '' when none is open. */
+Object.assign(SHEETS, GPA_SHEETS); // VARIANT HOOK
+
 export function sheetView() {
   const sheet = state.sheet;
   if (!sheet) return '';

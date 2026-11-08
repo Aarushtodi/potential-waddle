@@ -16,6 +16,9 @@ import { paceView } from './pace.js';
 import { calendarView } from './calendar.js';
 import { bellView } from './bell.js';
 import { sheetView } from './sheets.js';
+// VARIANT HOOK: GPA looks for the council (?gpa=1|2|3), see js/variants.js and js/views/gpa-looks.js
+import { GPA_LOOK } from '../variants.js';
+import { gpaLookView, gpaGoalLookView } from './gpa-looks.js';
 
 const TABS = ['home', 'grades', 'calendar', 'bell'];
 const TAB_LABELS = { home: 'Home', grades: 'Grades', calendar: 'Calendar', bell: 'Bell' };
@@ -42,8 +45,10 @@ const PAGES = {
     return { title: course.name, body: classView(course) };
   },
   assignment: id => ({ title: findRow(id).row.title, body: assignmentView(id) }),
-  gpaGoal: () => ({ title: 'GPA goal', body: gpaGoalView() }),
-  gpa: () => ({ title: 'GPA', body: gpaView() }),
+  // VARIANT HOOK (?gpa=1|2|3): the goal page is one line plus a scrubber, titled like the row that opens it.
+  gpaGoal: () => (GPA_LOOK ? { title: 'By graduation', body: gpaGoalLookView() } : { title: 'GPA goal', body: gpaGoalView() }),
+  // VARIANT HOOK (?gpa=1|2|3): Edge, Verdict or Swipe instead of today's GPA page.
+  gpa: () => ({ title: 'GPA', body: GPA_LOOK ? gpaLookView() : gpaView() }),
   need: () => ({ title: 'What do I need', body: needView() }),
   gpaWhatIf: () => ({ title: 'GPA what if', body: gpaWhatIfView() }),
   missingEffect: () => ({ title: 'Missing work', body: missingPageView() }),

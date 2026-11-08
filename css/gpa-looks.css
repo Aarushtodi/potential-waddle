@@ -1,0 +1,658 @@
+/*
+ * DESIGN VARIANTS (looks-gpa branch only): the GPA looks, ?gpa=1|2|3. See js/views/gpa-looks.js.
+ * Gray (--sec) and ink only: no red anywhere on these screens.
+ * --gl-slow (set by JS from ?slow=N, shots only) stretches every timing below.
+ */
+
+/* ---- Shared ---- */
+
+.gl-hero {
+  margin: 2px 0 0;
+  will-change: transform;
+}
+
+/* Big number on top, "this semester" under it (look 2's small number keeps them on one line). */
+.gl-hero .gl-num {
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 4px;
+}
+
+.gl-num {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 10px;
+  font-weight: 800;
+  font-size: 76px;
+  line-height: 1;
+  letter-spacing: -1.5px;
+}
+
+.gl-n {
+  font-variant-numeric: tabular-nums;
+}
+
+.gl-num i {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+
+/* "+0.14 what if  Reset". Holds its height when empty, so the list never jumps. */
+.gl-wi {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 600 15px var(--sans);
+  color: var(--sec);
+  font-variant-numeric: tabular-nums;
+}
+
+.gl-wi.on {
+  animation: glFade calc(260ms * var(--gl-slow, 1)) ease-out both;
+}
+
+.gl-reset {
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 700 15px var(--sans);
+  padding: 4px 2px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  cursor: pointer;
+}
+
+.gl-edge {
+  font: 600 15px/1.3 var(--sans);
+  color: var(--sec);
+  margin: 0 0 14px;
+}
+
+.gl-h {
+  display: inline-block;
+  font: 800 10.5px/1 var(--sans);
+  letter-spacing: .3px;
+  padding: 2px 4px 1.5px;
+  border-radius: 5px;
+  border: 1.25px solid currentColor;
+  color: var(--sec);
+  vertical-align: 2px;
+  margin-left: 3px;
+}
+
+.gl-now {
+  font-weight: 600;
+  color: var(--sec);
+}
+
+.gl-list .row {
+  min-height: 62px;
+}
+
+/* Tap the letter for a what if. A changed letter is shown inverted. */
+.gl-let {
+  flex: none;
+  overflow: hidden;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 800 23px var(--sans);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.gl-let.wi {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.gl-let.open {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.gl-let.wi.open {
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--ink);
+}
+
+/* The letter's crossfade box: the old letter (ghost) sits right on top of the new one. */
+.gl-fb {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden; /* the letters flip inside their own line, never over a label */
+  padding: 0 .08em;
+}
+
+.gl-fb > span {
+  display: inline-block;
+}
+
+.gl-ghost {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.gl-pick {
+  padding: 0 16px 13px;
+  animation: glDrop calc(240ms * var(--gl-slow, 1)) cubic-bezier(.2,.8,.2,1) both;
+}
+
+.gl-pick .seg button,
+.sheet .seg button {
+  font-size: 15px;
+  padding: 9px 4px;
+}
+
+.gl-gradcard {
+  margin-top: 14px;
+}
+
+.gl-quiet .t {
+  color: var(--sec);
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.gl-quiet {
+  min-height: 52px;
+}
+
+.gl-unw {
+  padding-top: 2px;
+}
+
+/* Rows drop in 40 ms apart (added once, when the page opens). */
+.gl-drop .gl-r {
+  animation: glDrop calc(420ms * var(--gl-slow, 1)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc((80ms + var(--i) * 40ms) * var(--gl-slow, 1));
+}
+
+@keyframes glDrop {
+  from {
+    opacity: 0;
+    transform: translate3d(0,-10px,0);
+  }
+}
+
+@keyframes glFade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes glUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0,10px,0);
+  }
+}
+
+/* What do I need sheet */
+.gl-sheetlab {
+  margin: 0 0 8px;
+}
+
+.gl-needlead .big-res {
+  font-size: 34px;
+}
+
+.gl-sheetgpa {
+  margin-top: 14px;
+  font-weight: 800;
+  font-size: 26px;
+}
+
+.gl-sheetgpa i {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 19px;
+}
+
+.gl-sheetgpa .gl-wi {
+  min-height: 26px;
+}
+
+/* ---- Look 2: Verdict ---- */
+
+.gl-verdict {
+  min-height: 268px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 0 10px;
+}
+
+.gl-sent {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1.06;
+  letter-spacing: -.3px;
+}
+
+.gl-w {
+  display: inline-block;
+}
+
+.gl-sent-sub {
+  font: 600 18px/1.38 var(--sans);
+  color: var(--sec);
+  margin-top: 16px;
+}
+
+.gl-small .gl-num {
+  font-size: 30px;
+  letter-spacing: -.3px;
+  column-gap: 7px;
+}
+
+.gl-small .gl-num i {
+  font-size: 20px;
+}
+
+.gl-small .gl-wi {
+  min-height: 26px;
+}
+
+.gl-nearlab {
+  margin: 4px 0 7px;
+}
+
+.gl-chips2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.gl-bigchip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--card);
+  border: 0;
+  border-radius: 22px;
+  padding: 14px 14px 14px 16px;
+  text-align: left;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.gl-bc-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.gl-bc-top .t {
+  padding-top: 3px;
+}
+
+.gl-bc-let {
+  font: 800 38px/1 var(--sans);
+}
+
+.gl-bigchip.wi .gl-bc-let {
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.gl-chev {
+  display: inline-block;
+  transition: transform calc(220ms * var(--gl-slow, 1)) ease;
+}
+
+.gl-chev.down {
+  transform: rotate(90deg);
+}
+
+.gl-restlist .row {
+  border-top: 1px solid var(--rule);
+}
+
+.gl-restlist .gl-r {
+  animation: glDrop calc(360ms * var(--gl-slow, 1)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--i) * 40ms * var(--gl-slow, 1));
+}
+
+.gl-unw-in {
+  font: 600 13.5px var(--sans);
+  color: var(--sec);
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.gl-avg {
+  font-size: 20px;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* Opening: the sentence word by word, then the number counts up, then the chips rise. */
+.gl-play .gl-w {
+  animation: glUp calc(440ms * var(--gl-slow, 1)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--w) * 70ms * var(--gl-slow, 1));
+}
+
+.gl-play .gl-sent-sub {
+  animation: glUp calc(440ms * var(--gl-slow, 1)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc((var(--words) * 70ms + 80ms) * var(--gl-slow, 1));
+}
+
+.gl-play .gl-small {
+  animation: glFade calc(300ms * var(--gl-slow, 1)) ease-out both;
+  animation-delay: calc((var(--words) * 70ms + 200ms) * var(--gl-slow, 1));
+}
+
+.gl-play .gl-bigchip {
+  animation: glUp calc(460ms * var(--gl-slow, 1)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc((var(--words) * 70ms + 560ms + var(--i) * 70ms) * var(--gl-slow, 1));
+}
+
+.gl-play .gl-nearlab,
+.gl-play .gl-gradcard,
+.gl-play > .foot {
+  animation: glFade calc(400ms * var(--gl-slow, 1)) ease-out both;
+  animation-delay: calc((var(--words) * 70ms + 560ms) * var(--gl-slow, 1));
+}
+
+/* ---- Look 3: Swipe ---- */
+
+.gl-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: -2px 0 10px;
+}
+
+.gl-dots button {
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 700 14px var(--sans);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+  opacity: .5;
+}
+
+.gl-dots button.on {
+  opacity: 1;
+}
+
+.gl-dots .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.gl-pager {
+  margin: 0 -16px;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.gl-track {
+  display: flex;
+  align-items: flex-start;
+  will-change: transform;
+}
+
+.gl-page {
+  flex: 0 0 100%;
+  min-width: 0;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.gl-crow {
+  min-height: 46px !important;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.gl-crow .t {
+  font-size: 15.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gl-crow .s {
+  white-space: nowrap;
+}
+
+.gl-lchips {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.gl-lchip {
+  border: 0;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 11px 0 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  min-width: 0;
+}
+
+.gl-lchip b {
+  font: 800 23px/1 var(--sans);
+}
+
+.gl-lchip > span {
+  font: 600 11.5px var(--sans);
+  color: var(--sec);
+}
+
+.gl-lchip.on {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.gl-lchip.wi {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.gl-lchip.wi > span {
+  color: var(--card);
+  opacity: .78;
+}
+
+.gl-lchip.wi.on {
+  box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink);
+}
+
+.gl-pickcard {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 13px 0 1px;
+  animation: glDrop calc(240ms * var(--gl-slow, 1)) cubic-bezier(.2,.8,.2,1) both;
+}
+
+.gl-pickcard .lab {
+  padding: 0 16px 9px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ---- Goal (all looks) ---- */
+
+.gl-past {
+  margin: 4px 0 18px;
+  font-size: 15px;
+}
+
+.gl-goal-lead {
+  font-weight: 800;
+  font-size: 37px;
+  white-space: nowrap;
+  line-height: 1.06;
+  letter-spacing: -.5px;
+}
+
+.gl-goal-lead i {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.gl-goal-lead.out {
+  color: var(--sec);
+}
+
+.gl-goal-sub {
+  font: 600 17px/1.35 var(--sans);
+  color: var(--sec);
+  margin-top: 10px;
+  min-height: 46px;
+}
+
+.gl-scrub {
+  position: relative;
+  margin: 34px 0 4px;
+}
+
+.gl-goal .foot {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.gl-range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.gl-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 99px;
+  background: linear-gradient(to right, var(--ink) var(--p), var(--empty) var(--p));
+}
+
+.gl-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -11px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.28), 0 0 0 .5px rgba(0,0,0,.08);
+}
+
+.gl-range::-moz-range-track {
+  height: 8px;
+  border-radius: 99px;
+  background: linear-gradient(to right, var(--ink) var(--p), var(--empty) var(--p));
+}
+
+.gl-range::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.28);
+}
+
+/* A small tick where the highest reachable GPA sits (thumb is 30px wide). */
+.gl-tick {
+  position: absolute;
+  top: 10px;
+  height: 24px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--sec);
+  opacity: .7;
+  left: calc(15px + var(--at) * (100% - 30px));
+  pointer-events: none;
+}
+
+.gl-scale {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font: 600 12.5px var(--sans);
+  color: var(--sec);
+  font-variant-numeric: tabular-nums;
+  height: 18px;
+}
+
+.gl-maxlab {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 40px;
+  left: calc(15px + var(--at) * (100% - 30px));
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+@media(prefers-color-scheme:dark) {
+  .gl-range::-webkit-slider-thumb {
+    background: var(--ink);
+  }
+
+  .gl-range::-moz-range-thumb {
+    background: var(--ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-drop .gl-r,
+  .gl-restlist .gl-r,
+  .gl-pick,
+  .gl-pickcard,
+  .gl-wi.on,
+  .gl-play .gl-w,
+  .gl-play .gl-sent-sub,
+  .gl-play .gl-small,
+  .gl-play .gl-bigchip,
+  .gl-play .gl-nearlab,
+  .gl-play .gl-gradcard,
+  .gl-play > .foot {
+    animation: none;
+  }
+
+  .gl-chev {
+    transition: none;
+  }
+}

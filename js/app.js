@@ -12,6 +12,11 @@ import { CLASSES } from './sample-data.js';
 import { render, refreshLive, collapseHeader } from './render.js';
 import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
+// VARIANT HOOK: GPA looks for the council (?gpa=1|2|3), see js/variants.js and js/views/gpa-looks.js
+import { gpaActions, gpaInputHandlers } from './views/gpa-looks.js';
+
+Object.assign(actions, gpaActions);
+Object.assign(inputHandlers, gpaInputHandlers);
 
 const LONG_PRESS_MS = 520;
 const PULL_TO_REFRESH_PX = 80;

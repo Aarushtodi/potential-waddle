@@ -59,7 +59,8 @@ export function needView() {
     + `<div class="pad" style="border-top:1px solid var(--rule)" data-live>${needResult(course)}</div></div></div>`;
 }
 
-function needResult(course) {
+/** Exported for the GPA looks' What do I need sheet (js/views/gpa-looks.js). */
+export function needResult(course) {
   const calc = state.needCalc;
   const target = +calc.target;
   const average = classAverage(course.rows);

@@ -6,6 +6,8 @@
 import { qs, qsa } from './format.js';
 import { state, ui, sheetScrollKey, sheetAnimKey, routeKey } from './state.js';
 import { view } from './views/shell.js';
+// VARIANT HOOK: GPA look motion (?gpa=1|2|3), see js/views/gpa-looks.js
+import { afterGpaRender } from './views/gpa-looks.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -26,6 +28,7 @@ export function render() {
   if (newMain) newMain.scrollTop = state.scrollPositions[ui.lastRouteKey] || 0;
   slideIntroTrack();
   collapseHeader();
+  afterGpaRender(); // VARIANT HOOK
   // Bell tape: keep where the student scrolled, otherwise start at the current period.
   const tape = qs('#tape');
   if (tape) {

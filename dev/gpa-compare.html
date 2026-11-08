@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>GPA looks: current, 1, 2, 3</title>
+<!--
+  Compare page for the GPA council looks (looks-gpa branch, dev only, never deployed).
+  Open this file straight from Finder (file://). Shots come from ../../grade-app-shots/looks/gpa,
+  made by: node dev/gpa-shots.js http://localhost:8795 ~/code/grade-app-shots/looks/gpa
+  Live looks: python3 -m http.server 8795 in ~/code/grade-app-gpa, then the links in the header.
+-->
+<style>
+  :root { --bg: #EDE9E1; --ink: #181812; --sec: #5A574F; --rule: #CFC8B9; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 500 14px "Avenir Next", Avenir, system-ui, sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 12px 20px 10px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--sec); font-size: 13px; }
+  .bar { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .bar button { font: 700 13px inherit; font-family: inherit; border: 1px solid var(--rule); background: #fff8; border-radius: 99px; padding: 6px 13px; cursor: pointer; }
+  .bar button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .bar a { color: var(--ink); font-weight: 700; margin-left: 6px; }
+  table { border-collapse: separate; border-spacing: 14px 0; margin: 0 6px; }
+  th { background: var(--bg); text-align: left; font-size: 15px; padding: 10px 0 8px; }
+  th small { display: block; color: var(--sec); font-weight: 600; font-size: 12px; }
+  th.pick { color: #1D5A2E; }
+  td { vertical-align: top; padding: 0 0 18px; }
+  td.state { width: 150px; font-weight: 700; padding-top: 8px; }
+  td.state small { display: block; color: var(--sec); font-weight: 500; margin-top: 4px; line-height: 1.35; }
+  .pair { display: flex; gap: 6px; }
+  img { width: 260px; border-radius: 22px; display: block; box-shadow: 0 1px 4px #0002; background: #ccc; }
+  .both img { width: 200px; }
+  .none { width: 260px; height: 120px; border: 1.5px dashed var(--rule); border-radius: 22px; display: grid; place-items: center; color: var(--sec); font-size: 12.5px; text-align: center; padding: 10px; }
+  .both .none { width: 406px; }
+  tr.group td { padding: 18px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: var(--sec); border-top: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+<header>
+  <h1>GPA looks: current | 1 Edge (council pick) | 2 Verdict | 3 Swipe</h1>
+  <div class="sub">Sample data. WebKit, 390 x 844, iPhone width. Checks: 3.57 this semester, 4.10 past 3 semesters, 4.39 max, AP World 80.8 closest, distance order AP World 0.8, Spanish II 1.6, English 3.0, Algebra II 3.1, Chemistry 4.5, Computer Science 5.9, Health and PE 10.0.</div>
+  <div class="bar">
+    <button data-mode="L" class="on">Light</button><button data-mode="D">Dark</button><button data-mode="both">Light + dark</button>
+    <span class="sub" style="margin-left:10px">Live (server on 8795):</span>
+    <a href="http://localhost:8795/">current</a><a href="http://localhost:8795/?gpa=1">?gpa=1</a><a href="http://localhost:8795/?gpa=2">?gpa=2</a><a href="http://localhost:8795/?gpa=3">?gpa=3</a>
+    <span class="sub">(sign in, Grades, GPA)</span>
+  </div>
+</header>
+<table id="grid"></table>
+<script>
+const ROOT = '../../grade-app-shots/looks/gpa/';
+const COLS = [
+  ['current', 'Current', 'live today'],
+  ['look1', '1 Edge', 'council pick', 'pick'],
+  ['look2', '2 Verdict', 'minority report'],
+  ['look3', '3 Swipe', 'motion first'],
+];
+// [label, note, {col: file or null}] ; a string row starts a group.
+const ROWS = [
+  'Screens',
+  ['Main page', 'First view after it settles', { current: '1-main', look1: '1-main', look2: '1-main', look3: '1-main' }],
+  ['Main, scrolled', 'Bottom of the page (look 2: with 5 more open)', { current: '1-main-scrolled', look1: '1-main-scrolled', look2: '6-more-scrolled', look3: null }],
+  ['What if open', 'Spanish II set to an A: +0.14', { current: '2-whatif', look1: '2-whatif', look2: '2-whatif-sheet', look3: '2-whatif' }],
+  ['After the what if', 'Look 2: sheet closed. Look 3: What if page before a tap', { current: null, look1: null, look2: '2-whatif', look3: '2-whatif-page' }],
+  ['What do I need', 'Tap a row (look 2: a chip). AP World, look 2 Spanish II', { current: '3-need', look1: '3-need', look2: '3-need', look3: '3-need' }],
+  ['What do I need, Algebra II', 'Its B line is out of reach on Unit 4 Test', { current: null, look1: '3-need-alg', look2: null, look3: '3-need-alg' }],
+  ['5 more classes', 'Look 2 expands in place', { current: null, look1: null, look2: '6-more', look3: null }],
+  ['Goal, reachable', '4.3', { current: '4-goal', look1: '4-goal', look2: '4-goal', look3: '4-goal' }],
+  ['Goal, out of reach', '4.5', { current: '5-goal-out', look1: '5-goal-out', look2: '5-goal-out', look3: '5-goal-out' }],
+  'Mid motion stills (run 6x slow)',
+  ['Count up', 'Look 1 and 3: rows dropping in. Look 2: the sentence word by word', { current: null, look1: '7-mid-countup', look2: '7-mid-countup', look3: '7-mid-countup' }],
+  ['Letter flip', 'B crossfades to A while the number tweens', { current: null, look1: '8-mid-flip', look2: '8-mid-flip', look3: '8-mid-flip' }],
+  ['Half swipe', 'What if dragged halfway back to Now, held', { current: null, look1: null, look2: null, look3: '9-mid-swipe' }],
+];
+const grid = document.getElementById('grid');
+function cell(col, file, mode) {
+  if (!file) return `<div class="none">${col === 'current' ? 'Not in today\'s page' : 'Not in this look'}</div>`;
+  const img = tag => `<img loading="lazy" src="${ROOT}${col}/${file}-${tag}.png" alt="${col} ${file} ${tag}">`;
+  return mode === 'both' ? `<div class="pair">${img('L')}${img('D')}</div>` : img(mode);
+}
+function draw(mode) {
+  document.body.classList.toggle('both', mode === 'both');
+  let html = `<tr><th></th>${COLS.map(([, name, note, pick]) => `<th class="${pick || ''}">${name}<small>${note}</small></th>`).join('')}</tr>`;
+  for (const row of ROWS) {
+    if (typeof row === 'string') { html += `<tr class="group"><td colspan="5">${row}</td></tr>`; continue; }
+    const [label, note, files] = row;
+    html += `<tr><td class="state">${label}<small>${note}</small></td>`
+      + COLS.map(([col]) => `<td>${cell(col, files[col], mode)}</td>`).join('') + `</tr>`;
+  }
+  grid.innerHTML = html;
+  document.querySelectorAll('.bar button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+}
+document.querySelector('.bar').addEventListener('click', e => { if (e.target.dataset.mode) draw(e.target.dataset.mode); });
+draw('L');
+</script>
+</body>
+</html>
