@@ -21,8 +21,10 @@ export const TYPED_CLASS_LIMIT = 8;
 export const SEMESTER_SPLIT = solveSemesterSplit(PAST_REPORT_CARD);
 
 export const state = {
-  // Sign in
-  screen: 'signin', // 'signin' | 'app'
+  // Intro slides, then sign in
+  screen: 'intro', // 'intro' | 'signin' | 'app'
+  introSlide: 0,
+  introReturnTo: 'signin', // where Skip and Get started go: 'signin' on first open, 'app' from Settings
   district: null,
   districtNotListed: false,
 
@@ -92,7 +94,7 @@ export const state = {
 };
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */
-export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '' };
+export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null };
 
 // ---- Classes ------------------------------------------------------------------------------
 

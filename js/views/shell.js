@@ -5,6 +5,7 @@
 import { escapeHtml } from '../format.js';
 import { state, findClass, findRow } from '../state.js';
 import { actionAttrs } from './components.js';
+import { introView } from './intro.js';
 import { signInView } from './signin.js';
 import { homeView } from './home.js';
 import { gradesView, classView, assignmentView } from './grades.js';
@@ -75,6 +76,7 @@ function tabRoot(tab) {
 }
 
 export function view() {
+  if (state.screen === 'intro') return introView();
   if (state.screen === 'signin') return signInView();
 
   const stack = state.pageStacks[state.tab];

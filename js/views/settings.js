@@ -40,6 +40,7 @@ export function settingsView() {
     + navRow('Widgets', 'Next due, test countdown, last grade change', 'openPage', 'widgets')
     + retestLine + faceId
     + `</div></div>`
+    + `<div class="sec"><div class="card">${navRow('Show intro again', '', 'showIntro')}</div></div>`
     + `<div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('signOut')}>`
     + `<div class="t">Sign out</div></div></div></div>`
     + `<div class="foot" style="padding-top:0">Preview. Some features aren't built yet.<br>`

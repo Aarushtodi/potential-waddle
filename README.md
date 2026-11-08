@@ -46,6 +46,7 @@ js/views/settings.js    Settings and the Widgets preview
 js/views/sheets.js      Other bottom sheets: district, add to-do, test dates, task, period, email, add class
 js/views/changes.js     What changed and Alerts pages
 js/views/pace.js        Pacing page for the long project
+js/views/intro.js       Intro slides before the district pick (and from Settings > Show intro again)
 js/views/signin.js      Sign in
 dev/                    Handoff notes and a Playwright check script. Not deployed (.vercelignore)
 ```

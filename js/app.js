@@ -11,6 +11,7 @@ import { state, whatIfFor, whatIfAverage } from './state.js';
 import { CLASSES } from './sample-data.js';
 import { render, refreshLive } from './render.js';
 import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
+import { INTRO_SLIDE_COUNT } from './views/intro.js';
 
 const LONG_PRESS_MS = 520;
 const PULL_TO_REFRESH_PX = 80;
@@ -79,6 +80,27 @@ for (const type of ['pointerup', 'pointercancel', 'pointermove']) {
 }
 document.addEventListener('contextmenu', event => {
   if (event.target.closest('[data-long-press]')) event.preventDefault();
+});
+
+// ---- Swipe between intro slides (touch or mouse drag) -----------------------------------------
+
+const SWIPE_PX = 40;
+let swipeStartX = null;
+document.addEventListener('pointerdown', event => {
+  swipeStartX = event.target.closest('[data-swipe]') ? event.clientX : null;
+});
+document.addEventListener('pointerup', event => {
+  if (swipeStartX == null) return;
+  const distance = event.clientX - swipeStartX;
+  swipeStartX = null;
+  if (Math.abs(distance) < SWIPE_PX) return;
+  if (distance < 0) {
+    // Swiping left past the last slide does nothing; only Get started leaves.
+    if (state.introSlide < INTRO_SLIDE_COUNT - 1) actions.nextIntroSlide();
+  } else {
+    actions.previousIntroSlide();
+  }
+  render();
 });
 
 // ---- Pull to refresh on a tab's root page --------------------------------------------------

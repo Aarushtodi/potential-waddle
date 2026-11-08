@@ -24,12 +24,30 @@ export function render() {
   ui.lastRouteKey = routeKey();
   const newMain = qs('#main');
   if (newMain) newMain.scrollTop = state.scrollPositions[ui.lastRouteKey] || 0;
+  slideIntroTrack();
   // Bell tape: keep where the student scrolled, otherwise start at the current period.
   const tape = qs('#tape');
   if (tape) {
     const current = tape.querySelector('.cur');
     tape.scrollTop = state.tapeScrollTop ?? (current ? current.offsetTop - 8 : 0);
   }
+}
+
+/**
+ * The intro track is redrawn at the new slide, so start it at the old one and let the CSS
+ * transition slide it over. Coming in fresh (first open, or from Settings) it just appears.
+ */
+function slideIntroTrack() {
+  const track = qs('.intro-track');
+  const from = ui.lastIntroSlide;
+  ui.lastIntroSlide = track ? state.introSlide : null;
+  if (!track || from == null || from === state.introSlide) return;
+  const target = track.style.transform;
+  track.style.transition = 'none';
+  track.style.transform = `translateX(${-from * 100}%)`;
+  void track.offsetWidth; // apply the start position before the transition
+  track.style.transition = '';
+  track.style.transform = target;
 }
 
 /**

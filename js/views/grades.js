@@ -42,7 +42,7 @@ export function gradesView() {
   return html;
 }
 
-function classRow(course) {
+export function classRow(course) {
   const average = periodAverage(course);
   const attendance = [
     course.absences ? course.absences + ' abs' : '',
