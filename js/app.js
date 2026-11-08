@@ -12,6 +12,18 @@ import { CLASSES } from './sample-data.js';
 import { render, refreshLive } from './render.js';
 import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
+// VARIANT HOOK: design looks for the council, see js/variants.js
+import { variantActions } from './variants.js';
+import { applyDemoState } from './views/home-looks.js';
+
+Object.assign(actions, variantActions, {
+  /** Tap on "Updated N min ago" in the Home looks: same as pull to refresh (for a mouse). */
+  pullRefresh() {
+    if (Date.now() >= state.nextUpdateAllowedAt) startRefresh(true);
+    return false;
+  },
+});
+applyDemoState();
 
 const LONG_PRESS_MS = 520;
 const PULL_TO_REFRESH_PX = 80;

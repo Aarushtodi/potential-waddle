@@ -6,6 +6,8 @@
 import { qs, qsa } from './format.js';
 import { state, ui, sheetScrollKey, sheetAnimKey, routeKey } from './state.js';
 import { view } from './views/shell.js';
+// VARIANT HOOK: slide motion (?slides=8) and the Home tour (?tour=1), see js/views/motion.js
+import { afterRender } from './views/motion.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -25,6 +27,7 @@ export function render() {
   const newMain = qs('#main');
   if (newMain) newMain.scrollTop = state.scrollPositions[ui.lastRouteKey] || 0;
   slideIntroTrack();
+  afterRender(); // VARIANT HOOK
   // Bell tape: keep where the student scrolled, otherwise start at the current period.
   const tape = qs('#tape');
   if (tape) {

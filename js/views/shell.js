@@ -16,6 +16,9 @@ import { paceView } from './pace.js';
 import { calendarView } from './calendar.js';
 import { bellView } from './bell.js';
 import { sheetView } from './sheets.js';
+// VARIANT HOOK: design looks for the council (?home=a|b|c), see js/variants.js
+import { HOME_LOOK } from '../variants.js';
+import { homeLookView, homeLookNav, missingPageView } from './home-looks.js';
 
 const TABS = ['home', 'grades', 'calendar', 'bell'];
 const TAB_LABELS = { home: 'Home', grades: 'Grades', calendar: 'Calendar', bell: 'Bell' };
@@ -46,7 +49,8 @@ const PAGES = {
   gpa: () => ({ title: 'GPA', body: gpaView() }),
   need: () => ({ title: 'What do I need', body: needView() }),
   gpaWhatIf: () => ({ title: 'GPA what if', body: gpaWhatIfView() }),
-  missingEffect: () => ({ title: 'Missing work', body: missingEffectView() }),
+  // VARIANT HOOK (h4): the Missing page lists absent work too and drops the "costs you" numbers.
+  missingEffect: () => ({ title: 'Missing work', body: HOME_LOOK === 'h4' ? missingPageView() : missingEffectView() }),
   changes: () => ({ title: 'What changed', body: changesView() }),
   alerts: () => ({ title: 'Alerts', body: alertsView() }),
   settings: () => ({ title: 'Settings', body: settingsView() }),
@@ -56,6 +60,7 @@ const PAGES = {
 
 /** Top bar and body for a tab's root page. */
 function tabRoot(tab) {
+  if (tab === 'home' && HOME_LOOK) return { nav: homeLookNav(), body: homeLookView() };
   if (tab === 'home') {
     return {
       nav: `<div class="nav"><div class="ttl">Home</div>`
@@ -71,7 +76,11 @@ function tabRoot(tab) {
         + `<button class="pill round" aria-label="Settings" ${actionAttrs('openPage', 'settings')}>${SETTINGS_ICON}</button>`;
     return { nav: `<div class="nav"><div class="ttl">Grades</div>${buttons}</div>`, body: gradesView() };
   }
-  if (tab === 'calendar') return { nav: `<div class="nav"><div class="ttl">Calendar</div></div>`, body: calendarView() };
+  if (tab === 'calendar') {
+    // VARIANT HOOK (2s2): with a Home look on, the Test dates button lives on the Calendar top bar.
+    const testDates = HOME_LOOK ? `<button class="pill" ${actionAttrs('openSheet', 'testDates')}>Test dates</button>` : '';
+    return { nav: `<div class="nav"><div class="ttl">Calendar</div>${testDates}</div>`, body: calendarView() };
+  }
   return { nav: `<div class="nav"><div class="ttl">Bell</div></div>`, body: bellView() };
 }
 

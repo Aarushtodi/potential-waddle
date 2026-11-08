@@ -12,13 +12,16 @@ import { state, findClass } from '../state.js';
 import { actionAttrs } from './components.js';
 import { classRow } from './grades.js';
 import { alertText } from './changes.js';
+// VARIANT HOOK: intro text sets for the council (?slides=0..3), see js/variants.js
+import { SLIDE_SET } from '../variants.js';
+import { SLIDE_SETS } from './intro-sets.js';
 
 /** The class every slide's art uses, so the three pictures tell one story. */
 const SAMPLE_CLASS_ID = 'alg';
 /** The score typed into the predictor on slide 2. */
 const SAMPLE_EXPECTED_SCORE = 95;
 
-const SLIDES = [
+const CURRENT_SLIDES = [
   {
     lead: 'Your grades, ',
     accent: 'straight from HAC.',
@@ -39,22 +42,27 @@ const SLIDES = [
   },
 ];
 
-export const INTRO_SLIDE_COUNT = SLIDES.length;
+/** Slide set 1.0 (today's) unless ?slides= picks another. Read when the intro draws. */
+const slideSet = () => (SLIDE_SET != null && SLIDE_SETS[SLIDE_SET]) || CURRENT_SLIDES;
+
+export const INTRO_SLIDE_COUNT = CURRENT_SLIDES.length;
 
 export function introView() {
+  const SLIDES = slideSet();
   const current = state.introSlide;
   const isLast = current === SLIDES.length - 1;
 
   const slides = SLIDES.map((slide, i) =>
     `<section class="intro-slide" aria-hidden="${i !== current}">`
-    + `<div class="intro-art" inert><div class="intro-art-inner">${slide.art()}</div></div>`
+    + `<div class="intro-art" inert><div class="intro-art-inner${slide.small ? ' small' : ''}">${slide.art()}</div></div>`
     + `<div class="intro-text"><div class="hd big">${slide.lead}<i>${slide.accent}</i></div>`
     + `<div class="intro-sub">${slide.sub}</div></div>`
     + `</section>`).join('');
 
   const dots = SLIDES.map((_, i) => `<span class="${i === current ? 'on' : ''}"></span>`).join('');
 
-  return `<div class="scr intro">`
+  // VARIANT HOOK (?slides=8): m8 turns on the slide motion in looks.css and js/views/motion.js.
+  return `<div class="scr intro${SLIDE_SET === 8 ? ' m8' : ''}">`
     + `<div class="intro-top"><button class="pill" ${actionAttrs('skipIntro')}>Skip</button></div>`
     + `<div class="intro-view" data-swipe="intro">`
     + `<div class="intro-track" style="transform:translateX(${-current * 100}%)">${slides}</div></div>`
@@ -66,12 +74,12 @@ export function introView() {
 // ---- Slide art: the real pieces, rendered from sample data -------------------------------
 
 /** Slide 1: the class row from the Grades tab, with its average. */
-function classCardArt() {
+export function classCardArt() {
   return `<div class="card">${classRow(findClass(SAMPLE_CLASS_ID))}</div>`;
 }
 
 /** Slide 2: the What if estimate with one expected score typed into the next test. */
-function predictorArt() {
+export function predictorArt() {
   const course = findClass(SAMPLE_CLASS_ID);
   const nextTest = course.rows.find(row => row.category === 'Test' && row.score == null && row.due >= 0);
   const scenario = { scores: { [nextTest.id]: SAMPLE_EXPECTED_SCORE }, corrections: {}, fakeAssignments: [] };
@@ -87,7 +95,7 @@ function predictorArt() {
 }
 
 /** Slide 3: one row from the Alerts page, a test under the retest line. */
-function alertArt() {
+export function alertArt() {
   const change = state.gradeChanges.find(entry => entry.underRetestLine) || state.gradeChanges[0];
   const course = findClass(change.classId) || CLASSES[0];
   return `<div class="card"><div class="row"><div class="grow">`

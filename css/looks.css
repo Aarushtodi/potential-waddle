@@ -1,0 +1,378 @@
+/* DESIGN VARIANTS (council preview): styles for js/views/home-looks.js and js/views/intro-sets.js.
+   Same tokens, fonts and shapes as app.css. Only used when ?home= or ?slides= is set. */
+
+.ttlw {
+  flex: 1;
+  min-width: 0;
+}
+
+.ttlw .ttl {
+  line-height: 1.1;
+}
+
+.upd {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--sec);
+  margin-top: 2px;
+}
+
+.chip.cls {
+  font-weight: 600;
+}
+
+.chip.cls b {
+  font-weight: 800;
+  margin-left: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip-cls {
+  margin: 0 -16px 2px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.nowg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--sec);
+  padding: 4px 2px 0;
+}
+
+.card.quiet .t {
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.row.more {
+  min-height: 42px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.row.more .s {
+  font-weight: 600;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--urgent);
+  border: 1.5px solid var(--urgent);
+  border-radius: 99px;
+  padding: 0 7px;
+  margin-left: 6px;
+  vertical-align: 2px;
+  white-space: nowrap;
+  line-height: 17px;
+}
+
+.row.cls1 {
+  min-height: 46px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.row.now1 {
+  box-shadow: inset 4px 0 0 var(--ink);
+}
+
+.nowtag {
+  font-size: 12.5px;
+}
+
+/* Intro art pieces */
+.lockline {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  color: var(--sec);
+  margin-top: 10px;
+}
+
+.lock .note {
+  background: rgba(240,240,228,.14);
+  border-radius: 16px;
+  padding: 9px 11px;
+  text-align: left;
+  margin-top: 14px;
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+.lock .note .app {
+  display: flex;
+  font-size: 11px;
+  opacity: .72;
+  margin-bottom: 2px;
+}
+
+.lock .note b {
+  display: block;
+  font-size: 13px;
+}
+
+.intro-art-inner.small {
+  zoom: 1;
+}
+
+/* Wide art (the 2A chip strip) must not stretch the slide past the screen. */
+.intro-slide {
+  min-width: 0;
+}
+
+.intro-art-inner.small {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Round 2 */
+.card.hide .mark b.u {
+  border-color: var(--ring);
+}
+
+.trend {
+  font-size: 10px;
+  color: var(--sec);
+  margin-right: -4px;
+}
+
+.row.zero .t {
+  color: var(--urgent);
+  font-size: 17px;
+}
+
+.card.hide .row.zero .t {
+  color: var(--ink);
+}
+
+/* Final round (h4) */
+.row.zero4 .t {
+  font-size: 16.5px;
+}
+
+.row.zero4 .u {
+  color: var(--urgent);
+}
+
+.row.zero4 .g,
+.upd .chev {
+  color: var(--sec);
+}
+
+.upd .chev {
+  font-size: 13px;
+  margin-left: 4px;
+}
+
+.row.abs .mark b {
+  border-color: var(--sec);
+  opacity: .7;
+}
+
+/* ---- Motion round: ?slides=8 (S3 as pages you can half swipe) and ?tour=1, see js/views/motion.js ---- */
+
+/* motion.js moves the track, the parallax and every entrance itself (inline transform, opacity
+   and the ring's stroke, once per frame), so there are no CSS transitions or keyframes here.
+   Without motion.js running (reduced motion) everything shows its end state. */
+.m8 .intro-track {
+  transition: none;
+  will-change: transform;
+  gap: 24px; /* GUTTER in motion.js */
+}
+
+/* Safety clip on the page box. The parallax stays inside the page's padding, so it never cuts a card. */
+.m8 .intro-slide {
+  overflow: hidden;
+}
+
+.m8 .intro-art,
+.m8 .intro-art .card,
+.m8 .intro-art .row,
+.m8 .lockline,
+.m8 .intro-art-inner {
+  will-change: transform, opacity;
+}
+
+/* Slide 2: the box lights up like a focused field while 95 is typed. */
+.m8 input.f {
+  transition: box-shadow .3s ease-out;
+}
+
+.m8 input.f.typing {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* Slide 3: the red ring as an SVG circle so it can draw itself. */
+.mark b.draw {
+  border-color: transparent;
+  position: relative;
+}
+
+.mark b.draw .ring {
+  position: absolute;
+  inset: -2.2px;
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+}
+
+.mark b.draw circle {
+  fill: none;
+  stroke: var(--urgent);
+  stroke-width: 2.2;
+  stroke-dasharray: 68.49;
+  stroke-dashoffset: 0;
+}
+
+/* First Home tour: dim everything, cut a spotlight around the element, card pops in beside it.
+   The card keeps the app's light look (cream card, dark text) in both themes. */
+.tour {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity .3s ease-out;
+}
+
+.tour.in {
+  opacity: 1;
+}
+
+.tour-hole {
+  position: absolute;
+  box-shadow: 0 0 0 200vmax rgba(18,18,12,.6);
+  transition: left .45s cubic-bezier(.22,.8,.24,1), top .45s cubic-bezier(.22,.8,.24,1),
+    width .45s cubic-bezier(.22,.8,.24,1), height .45s cubic-bezier(.22,.8,.24,1), border-radius .45s;
+  pointer-events: none;
+}
+
+.tour-hole.still {
+  transition: none;
+}
+
+@media(prefers-color-scheme:dark) {
+  .tour-hole {
+    box-shadow: 0 0 0 200vmax rgba(0,0,0,.66);
+  }
+}
+
+.tour-card {
+  --ink: #181812;
+  --sec: #4A473F;
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  background: #EAE4D8;
+  color: var(--ink);
+  border-radius: 22px;
+  padding: 16px 16px 12px 18px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.28);
+  opacity: 0;
+  transform: translateY(-8px) scale(.94);
+  transform-origin: 30% 0;
+  transition: opacity .15s ease-in, transform .15s ease-in;
+}
+
+.tour-card.above {
+  transform: translateY(8px) scale(.94);
+  transform-origin: 30% 100%;
+}
+
+.tour-card.in {
+  opacity: 1;
+  transform: none;
+  transition: opacity .22s ease-out, transform .42s cubic-bezier(.3,1.35,.5,1);
+}
+
+.tour-arrow {
+  position: absolute;
+  top: -6px;
+  width: 14px;
+  height: 14px;
+  background: #EAE4D8;
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+
+.tour-card.above .tour-arrow {
+  top: auto;
+  bottom: -6px;
+}
+
+.tour-card .hd {
+  font-size: 21px;
+  margin: 0 0 4px;
+}
+
+.tour-line {
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--sec);
+}
+
+.tour-foot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.tour-n {
+  flex: 1;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--sec);
+  font-variant-numeric: tabular-nums;
+}
+
+.tour-foot button {
+  border: 0;
+  font: 700 15px var(--sans);
+  border-radius: 99px;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
+.tour-quiet {
+  background: none;
+  color: var(--sec);
+}
+
+.tour-go {
+  background: #181812;
+  color: #EAE4D8;
+  min-width: 76px;
+}
+
+.tour-foot button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.tour.rm,
+.tour.rm * {
+  transition: none !important;
+}
+
+/* A number that counts or types, held at its final width (see predictorMotionArt). */
+.hold {
+  display: inline-grid;
+}
+
+.hold > * {
+  grid-area: 1 / 1;
+}
+
+.hold.end > * {
+  justify-self: end;
+}
+
+.hold .ghost {
+  visibility: hidden;
+}
