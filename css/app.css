@@ -1382,3 +1382,33 @@ input[type=date].f {
     transition: opacity .2s, transform .2s;
   }
 }
+
+/* Class page: Graph, What if, Email teacher as three equal pills. */
+.toolrow.three {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.toolrow.three .pill {
+  font-size: 14px;
+  padding: 11px 4px;
+}
+
+/* Graph sheet: the line draws itself in once, when the sheet opens. */
+.sheet.anim .graph-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: graph-draw .8s cubic-bezier(.3,.7,.3,1) .15s forwards;
+}
+
+@keyframes graph-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet.anim .graph-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

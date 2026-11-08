@@ -265,6 +265,9 @@ export const actions = {
   openEmailDraft(classId, rowId) {
     state.sheet = { kind: 'email', classId, rowId };
   },
+  openGraph(classId) {
+    state.sheet = { kind: 'graph', id: classId };
+  },
   selectGraphPoint(classId, index) {
     state.graphSelection[classId] = +index;
   },

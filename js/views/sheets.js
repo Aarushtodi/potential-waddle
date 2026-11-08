@@ -10,12 +10,17 @@ import {
 } from '../state.js';
 import { actionAttrs, segmented, toggle } from './components.js';
 import { whatIfSheetBody, WHAT_IF_TOOLS } from './what-if.js';
+import { graphSheetBody } from './grades.js';
 
 const doneButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Done</button>`;
 const cancelButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Cancel</button>`;
 const BIG_TITLE = 'style="font-size:15px"';
 
 const SHEETS = {
+  graph(sheet) {
+    const course = findClass(sheet.id);
+    return { title: course.name, right: doneButton(), body: graphSheetBody(course) };
+  },
   whatIf(sheet) {
     const course = findClass(sheet.classId);
     return {

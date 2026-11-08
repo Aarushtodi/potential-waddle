@@ -92,9 +92,12 @@ export function classView(course) {
       : heading(label, 'No ', 'grade yet', { big: 1 }));
   // Tools only make sense for the current quarter, where the rows can still change.
   if (state.period === 'Q2' && average != null) {
-    html += `<div class="toolrow"><button class="pill" ${actionAttrs('openWhatIf', course.id)}>What if</button>`
+    // Graph only when there are 2+ graded points to draw; it opens in a sheet (graphSheetBody).
+    const graph = graphSeries(course).length >= 2;
+    html += `<div class="toolrow${graph ? ' three' : ''}">`
+      + (graph ? `<button class="pill" ${actionAttrs('openGraph', course.id)}>Graph</button>` : '')
+      + `<button class="pill" ${actionAttrs('openWhatIf', course.id)}>What if</button>`
       + `<button class="pill" ${actionAttrs('openEmailDraft', course.id)}>Email teacher</button></div>`;
-    html += gradeGraph(course);
   }
   html += `</div>`;
   if (!rows.length) {
@@ -114,21 +117,26 @@ export function classView(course) {
   return html;
 }
 
-/**
- * Running average after each graded row, as a line. The point that moved the average most is
- * ringed and selected first, because that is usually the question ("what dropped me?").
- */
-function gradeGraph(course) {
+/** Running average after each graded row (0s included), oldest first: [{ row, average }]. */
+function graphSeries(course) {
   const points = course.rows
     .filter(row => (isScored(row) || countsAsZero(row)) && row.due != null)
     .sort((a, b) => a.due - b.due);
-  if (points.length < 2) return '';
-  const series = [];
   const soFar = [];
-  points.forEach(row => {
+  return points.map(row => {
     soFar.push(row);
-    series.push({ row, average: classAverage(soFar) });
+    return { row, average: classAverage(soFar) };
   });
+}
+
+/**
+ * The Graph sheet: the average on top, then the running average as a line. The point that moved
+ * the average most is ringed and selected first, because that is usually the question ("what
+ * dropped me?"). Tapping a point selects it. The line draws itself in when the sheet opens (CSS).
+ */
+export function graphSheetBody(course) {
+  const series = graphSeries(course);
+  if (series.length < 2) return '';
 
   const averages = series.map(point => point.average);
   const min = Math.min(...averages) - 1;
@@ -163,11 +171,14 @@ function gradeGraph(course) {
       + `</g>`;
   }).join('');
 
-  return `<div class="card"><div class="pad"><div class="lab">Grade over time</div>`
+  return `<div class="sec" style="margin-bottom:14px">`
+    + heading(assignmentCount(course.rows.length), oneDecimal(classAverage(course.rows)) + ' ', 'average', { big: 1 })
+    + `</div>`
+    + `<div class="card"><div class="pad"><div class="lab">Grade over time</div>`
     + `<svg viewBox="0 0 ${WIDTH} ${HEIGHT}" width="100%" role="img" aria-label="Average over time">`
     + `<text x="0" y="16" font-size="10" fill="currentColor" opacity=".6">${max.toFixed(0)}</text>`
     + `<text x="0" y="${HEIGHT - 8}" font-size="10" fill="currentColor" opacity=".6">${min.toFixed(0)}</text>`
-    + `<polyline fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" points="${line}"/>`
+    + `<polyline class="graph-line" pathLength="1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" points="${line}"/>`
     + `${dots}</svg>`
     + `<div class="t" style="font-size:14.5px">${escapeHtml(shown.row.title)}, ${scoreText(shown.row)}</div>`
     + `<div class="s">${shortDate(shown.row.due)}, average ${oneDecimal(shown.average)}`
