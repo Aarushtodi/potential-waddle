@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="color-scheme" content="light dark">
+<title>Grades</title>
+<style>
+:root{--paper:#D8D2C6;--bar:#D8D2C6;--card:#EAE4D8;--ink:#181812;--sec:#4A473F;--urgent:#A83030;--rule:#CBC4B5;--ring:#181812;--done:#181812;--graded:#2A5C8F;--notgraded:#875A12;--empty:#CDC6B7;--outer:#BDB6A8;
+--sans:"Avenir Next","Avenir","Nunito Sans","Segoe UI",system-ui,sans-serif;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
+@media(prefers-color-scheme:dark){:root{--paper:#12120C;--bar:#000;--card:#1E1E17;--ink:#F0F0E4;--sec:#A9A99A;--urgent:#D87058;--rule:#33332A;--ring:#6E6E60;--done:#48B868;--graded:#86B4E3;--notgraded:#D9A95B;--empty:#3A3A2E;--outer:#000}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--outer);font-family:var(--sans);color:var(--ink);display:flex;justify-content:center;align-items:center;overscroll-behavior:none}
+#app{container-type:size;position:relative;width:100%;height:100dvh;background:var(--paper);overflow:hidden;font-weight:500}
+@media(min-width:500px){#app{width:390px;height:min(844px,calc(100dvh - 32px));border-radius:44px;box-shadow:0 18px 60px rgba(0,0,0,.28)}}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column}
+.nav{background:var(--bar);padding:calc(env(safe-area-inset-top) + 12px) 16px 8px;display:flex;align-items:center;gap:8px;min-height:58px;flex:none}
+.nav .ttl{font-weight:800;font-size:30px;flex:1;min-width:0}
+.nav.sub .ttl{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{border:0;background:var(--card);color:var(--ink);font:600 14.5px var(--sans);padding:8px 13px;border-radius:99px;cursor:pointer;white-space:nowrap}
+.pill.round{width:36px;height:36px;padding:0;display:grid;place-items:center;font-size:21px;line-height:1}
+.pill svg{display:block}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 16px calc(env(safe-area-inset-bottom) + 128px);-webkit-overflow-scrolling:touch;position:relative}
+.scroll.nt{padding-bottom:calc(env(safe-area-inset-bottom) + 36px)}
+.sec{margin:0 0 24px}
+.lab{font:600 13.5px var(--sans);color:var(--sec)}
+.hd{font-weight:800;font-size:24px;line-height:1.14;margin:1px 0 6px}
+.hd.big{font-size:34px}
+.hd i{font-family:var(--serif);font-weight:700;font-style:italic}
+.hd i.u{color:var(--urgent)}
+.card{background:var(--card);border-radius:22px;overflow:hidden}
+.card+.card{margin-top:10px}
+.row{display:flex;align-items:center;gap:12px;padding:11px 16px;min-height:50px;border-top:1px solid var(--rule);width:100%;text-align:left;color:inherit;font:inherit;background:none;border-left:0;border-right:0;border-bottom:0}
+.row:first-child{border-top:0}
+[data-a]{cursor:pointer}
+.grow{flex:1;min-width:0}
+.t{font-weight:700;font-size:16.5px;line-height:1.22}
+.s{font-weight:500;font-size:13.5px;color:var(--sec);line-height:1.3}
+.done .t{text-decoration:line-through;color:var(--sec)}
+.chev{color:var(--sec);opacity:.6;font-size:18px;font-weight:600}
+.avg{font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.nog{font-size:13.5px;color:var(--sec)}
+.tiny{font-size:11px;color:var(--sec);font-weight:500;text-align:right;white-space:nowrap}
+.score{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.score.g{color:var(--graded)}.score.n{color:var(--notgraded)}
+.mark{width:32px;height:40px;display:grid;place-items:center;flex:none;margin:-4px 0 -4px -4px}
+.mark b{width:24px;height:24px;border-radius:50%;border:2.2px solid var(--ring);display:block}
+.mark b.u{border-color:var(--urgent)}
+.mark b.on{background:var(--done);border-color:var(--done);position:relative}
+.mark b.on:after{content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;border:solid var(--paper);border-width:0 2.6px 2.6px 0;transform:rotate(42deg)}
+.prog{display:flex;align-items:center;gap:10px;padding:13px 16px}
+.bars{flex:1;display:flex;gap:5px;height:12px}
+.bars span{flex:1;border-radius:3px;background:var(--empty)}
+.bars span.f{background:var(--ink)}
+.prog em{font:700 14px var(--sans);white-space:nowrap}
+.foot{font-size:12.5px;color:var(--sec);line-height:1.35;padding:7px 16px 0}
+.strip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--sec);margin:0 0 14px;min-height:30px}
+.strip .pill{font-size:12.5px;padding:5px 11px}
+.strip .pill[disabled]{color:var(--sec);cursor:default}
+.spin{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--empty);border-top-color:var(--ink);animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.clab{display:flex;gap:8px;font:600 13px var(--sans);color:var(--sec);padding:12px 16px 4px;border-top:1px solid var(--rule)}.clab:first-child{border-top:0}
+.now+.prog{border-top:1px solid var(--rule)}
+.now{display:flex;gap:10px;align-items:center;padding:12px 16px}
+.tabs{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 14px);background:var(--card);border:1px solid var(--rule);border-radius:30px;display:flex;padding:5px;z-index:5;box-shadow:0 6px 22px rgba(0,0,0,.16)}
+.tab{flex:1;border:0;background:none;color:var(--sec);font:600 10.5px var(--sans);padding:6px 0 5px;border-radius:24px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.tab.on{color:var(--ink);background:var(--paper)}
+.seg{display:flex;background:var(--empty);border-radius:12px;padding:2px;gap:2px}
+.seg button{flex:1;border:0;background:none;color:var(--ink);font:600 13px var(--sans);padding:7px 4px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.14);font-weight:700}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--rule);background:none;color:var(--ink);font:600 13px var(--sans);padding:6px 11px;border-radius:99px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+input.f{font:700 16px var(--sans);color:var(--ink);background:var(--paper);border:0;border-radius:10px;padding:8px 10px;width:76px;text-align:right;font-variant-numeric:tabular-nums;outline:0}
+input.f:focus{box-shadow:0 0 0 2px var(--ink)}
+input.w{width:100%;text-align:left}
+input.plain{background:none;padding:0;border-radius:0;text-align:left;width:100%;font:700 16.5px var(--sans)}
+input.plain:focus{box-shadow:none;border-bottom:1px solid var(--ink)}
+input[type=date].f{width:auto;text-align:left;font-size:15px}
+.tog{width:50px;height:30px;border-radius:99px;background:var(--empty);position:relative;flex:none;border:0;cursor:pointer}
+.tog:after{content:"";position:absolute;left:2px;top:2px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
+.tog.on{background:var(--ink)}.tog.on:after{left:22px}
+@media(prefers-color-scheme:dark){.tog.on:after{background:#12120C}}
+.big-res{font-weight:800;font-size:34px;line-height:1.1}
+.big-res i{font-family:var(--serif);font-weight:700;font-style:italic}
+.pad{padding:13px 16px}
+.dual{display:flex;gap:10px}.dual>div{flex:1}
+.btn{display:block;width:100%;border:0;font:700 17px var(--sans);padding:14px;border-radius:22px;background:var(--ink);color:var(--paper);cursor:pointer;text-align:center}
+.btn.ghost{background:var(--card);color:var(--ink);font-size:15.5px}
+.toolrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.toolrow .pill{border-radius:16px;padding:11px 8px;text-align:center;white-space:normal}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:10;display:flex;align-items:flex-end}
+.sheet{background:var(--paper);width:100%;max-height:92%;border-radius:26px 26px 0 0;display:flex;flex-direction:column}.sheet.anim{animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px)}}
+.sheet .bar{display:flex;align-items:center;padding:13px 14px;gap:8px}
+.sheet .bar .ttl{flex:1;text-align:center;font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet .body{overflow-y:auto;padding:0 16px calc(env(safe-area-inset-bottom) + 28px)}
+.banner{position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 8px);background:var(--ink);color:var(--paper);border-radius:22px;padding:12px 15px;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.35);cursor:pointer}.banner.anim{animation:dn .3s ease-out}
+@keyframes dn{from{transform:translateY(-110%)}}
+.banner .t{font-size:14.5px}.banner .s{color:inherit;opacity:.82}
+.cal{padding:12px 8px 10px}
+.calh{display:flex;align-items:center;padding:0 8px 8px;font-weight:700;font-size:16.5px}
+.calh button{border:0;background:none;color:var(--ink);font-size:21px;padding:2px 10px;cursor:pointer}
+.calg{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.calg .w{font-size:11.5px;font-weight:600;color:var(--sec);padding-bottom:6px}
+.dy{height:45px;border:0;background:none;color:var(--ink);font:500 17px var(--sans);display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:3px 0 0;position:relative}
+.dy span{width:32px;height:32px;line-height:32px;border-radius:50%}
+.dy.tod span{font-weight:800}
+.dy.sel span{background:var(--ink);color:var(--paper);font-weight:700}
+.dy u{width:5px;height:5px;border-radius:50%;background:var(--sec);margin-top:1px;display:block}
+.dy u.u{background:var(--urgent)}
+.wgrid{display:flex;gap:12px;justify-content:center;padding:6px 0 12px}
+.wg{background:var(--paper);border-radius:22px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.wg.small{width:148px;height:148px}.wg.medium{width:100%;height:148px}
+.wg .k{font-size:11px;font-weight:600;color:var(--sec)}
+.wg .v{font-weight:800;font-size:21px;line-height:1.12}.wg .v i{font-family:var(--serif);font-style:italic;font-weight:700}
+.wg .h{font-weight:800;font-size:40px;line-height:1}
+.lock{background:#10100b;color:#f0f0e4;border-radius:22px;padding:16px 14px 18px;text-align:center}
+.lock .clock{font-weight:700;font-size:52px;line-height:1}
+.lock .d{font-size:13.5px;opacity:.8;margin-bottom:6px}
+.lw{display:flex;gap:7px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.lw>div{background:rgba(240,240,228,.14);border-radius:14px;padding:7px 10px;font-size:12px;text-align:left;line-height:1.2}
+.lw .c{width:58px;height:58px;border-radius:50%;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.lw .c b{font-size:20px;line-height:1}.lw .c small{font-size:9.5px}
+.lw .r{flex:1 1 100%;font-weight:600}.lw .r small{display:block;opacity:.72;font-weight:500}
+.lk{position:absolute;inset:0;z-index:30;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer}
+.lk svg{animation:pu 1s ease-in-out infinite alternate}
+@keyframes pu{to{transform:scale(1.07)}}
+/* bell */
+.dial{display:block;margin:0 auto;width:100%;max-width:330px;height:auto}
+.dial text{font-family:var(--sans);fill:var(--ink)}
+.tapew{position:relative;background:var(--card);border-radius:22px;overflow:hidden;height:max(240px,calc(100cqh - 280px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))}
+#tape{position:relative;height:100%;overflow-y:auto;scrollbar-width:none;padding:8px 14px 12px 56px}
+#tape::-webkit-scrollbar{display:none}
+.nowl{position:absolute;left:-50px;right:-8px;height:0;border-top:2px solid var(--ink);z-index:2;pointer-events:none}
+.nowl span{position:absolute;left:0;top:-11px;background:var(--ink);color:var(--paper);font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px}
+.tb{position:relative;margin:0 -4px;border-radius:14px;overflow:hidden;background:var(--paper);padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-start;cursor:pointer}
+.tb .fill{position:absolute;left:0;right:0;top:0;background:var(--ink);opacity:.12}
+.tb .t,.tb .s{position:relative}
+.tg{display:flex;align-items:center;justify-content:flex-start;font-size:10.5px;color:var(--sec)}
+.tick{position:absolute;left:-46px;font-size:10.5px;color:var(--sec);font-variant-numeric:tabular-nums}
+.tw{position:relative}
+.bign{font-weight:800;font-size:128px;line-height:.92;letter-spacing:-5px;font-variant-numeric:tabular-nums}
+.bigm{font-family:var(--serif);font-style:italic;font-weight:700;font-size:28px}
+.dayb{display:flex;gap:3px;height:42px;margin:14px 0 4px}
+.dayb button{border:0;padding:0;border-radius:7px;background:var(--empty);position:relative;overflow:hidden;cursor:pointer}
+.dayb button i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.dayb button.sel{outline:2px solid var(--ink);outline-offset:1px}
+.letter{position:absolute;right:16px;top:12px;width:42px;height:42px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:800;font-size:20px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NB='';
+const T0=new Date();T0.setHours(0,0,0,0);T0.setDate(T0.getDate()+((2-T0.getDay()+7)%7));// sample school day is always a Tuesday
+const D=n=>{const d=new Date(T0);d.setDate(d.getDate()+n);return d};
+const off=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-T0)/864e5);
+const WK=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MOL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const short=n=>{const d=D(n);return WK[d.getDay()].slice(0,3)+' '+MO[d.getMonth()]+' '+d.getDate()};
+const long=n=>{const d=D(n);return WK[d.getDay()]+', '+MO[d.getMonth()]+' '+d.getDate()};
+const iso=n=>{const d=D(n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fromIso=s=>{const[a,b,c]=s.split('-').map(Number);return off(new Date(a,b-1,c))};
+const count=n=>(n>=1&&n<=12)?['One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve'][n-1]:String(n);
+const f1=n=>n.toFixed(1);
+const sgn=n=>(n>=0?'+':'−')+Math.abs(n).toFixed(1);
+const inDays=n=>n===0?'today':n===1?'in 1 day':'in '+n+' days';
+const W={Test:.6,Lab:.25,HW:.15};
+const zero=r=>typeof r.score!=='number'&&(r.missing||r.mark==='ABS'||r.mark==='INC');
+function avgOf(rows,extra){rows=rows.map(r=>zero(r)?Object.assign({},r,{score:0}):r);let s=0,w=0;for(const k in W){const rs=rows.filter(r=>r.cat===k&&typeof r.score==='number');if(!rs.length)continue;let e=rs.reduce((a,r)=>a+r.score,0),t=rs.reduce((a,r)=>a+r.total,0);if(k==='Test'&&extra)e+=extra;s+=W[k]*(e/t*100);w+=W[k]}return w?s/w:null}
+function R(title,cat,d,score,total,o){return Object.assign({title,cat,d,score,total},o||{})}
+const CLASSES=[
+{id:'alg',name:'Algebra II Honors',teacher:'Mr. Sample',room:'Room 214',level:'H',abs:1,tardy:0,q1:93,rows:[R('Unit 1 Test','Test',-50,88,100),R('Graphing Lab','Lab',-20,18,20),R('Unit 2 Test','Test',-30,92,100),R('Unit 3 Test','Test',-12,72,100),R('Problem Set 6','HW',-9,8,10),R('Problem Set 7','HW',-2,null,20,{missing:1}),R('Problem Set 8','HW',1,null,10),R('Unit 4 Test','Test',5,null,100)]},
+{id:'chem',name:'Chemistry Honors',teacher:'Dr. Placeholder',room:'Room 118',level:'H',abs:0,tardy:1,q1:89,rows:[R('Atoms Test','Test',-40,91,100),R('Flame Lab','Lab',-25,46,50),R('Bonding Test','Test',-18,84,100),R('Worksheet 9','HW',-6,null,10,{mark:'ABS'}),R('Reactions Test','Test',-1,null,100,{pending:1}),R('Titration Lab','Lab',0,null,50)]},
+{id:'eng',name:'English 10 Honors',teacher:'Ms. Example',room:'Room 305',level:'H',abs:0,tardy:0,q1:95,rows:[R('Essay 1','Test',-35,89,100),R('Essay 2','Test',-14,94,100),R('Reading Notes','HW',-5,17,20),R('Vocabulary Packet','HW',-3,null,14,{missing:1}),R('Chapter 6 Reading','HW',1,null,10)]},
+{id:'span',name:'Spanish II',teacher:'Sra. Muestra',room:'Room 122',level:'R',abs:2,tardy:0,q1:88,rows:[R('Unidad 3 Test','Test',-22,86,100),R('Speaking Check','Test',-8,90,100),R('Workbook 4','HW',-4,18,20),R('Workbook 5','HW',-1,null,20,{pending:1}),R('Vocabulario 7','HW',0,null,10)]},
+{id:'hist',name:'AP World History',teacher:'Coach Demo',room:'Room 210',level:'H',abs:0,tardy:2,q1:84,rows:[R('Period 1 Test','Test',-28,81,100),R('Period 2 Test','Test',-10,76,100),R('Reading Quiz','HW',-4,9,10),R('History Project','Test',10,null,100,{big:1})]},
+{id:'cs',name:'Computer Science',teacher:'Mx. Madeup',room:'Lab 3',level:'R',abs:0,tardy:0,q1:97,rows:[R('Loops Project','Lab',-16,98,100),R('Arrays Test','Test',-7,95,100)]},
+{id:'pe',name:'Health and PE',teacher:'Coach Testcase',room:'Gym',level:'R',abs:1,tardy:0,q1:100,rows:[R('Fitness Check','HW',-11,50,50),R('Locker Form','HW',null,null,5)]},
+{id:'adv',name:'Advisory',teacher:'Ms. Example',room:'Room 305',level:'A',abs:0,tardy:0,q1:null,rows:[]}];
+for(const c of CLASSES){c.rows.forEach((r,i)=>r.id=c.id+i);c.q1rows=c.q1==null?[]:[R('Quarter 1 Test','Test',-70,c.q1,100,{id:c.id+'q0',old:1}),R('Quarter 1 Homework','HW',-75,c.q1,100,{id:c.id+'q1',old:1})]}
+const S={scr:'in',dist:null,notList:false,tab:'home',stacks:{home:[],grades:[],calendar:[],bell:[]},sheet:null,scroll:{},period:'Q2',edit:false,
+ loading:false,updated:null,wait:0,done:{},over:{},todos:[{id:'t1',title:'Get form signed',off:0},{id:'t2',title:'Return library book',off:-1},{id:'t3',title:'Look at study guide',off:null}],nextT:4,
+ picks:{chemt:'A'},sel:0,calM:null,log:[],qi:0,banner:null,under:85,mute:{},line:80,faceid:true,lock:false,goals:{alg:90,hist:85},wi:{},gsel:{},order:CLASSES.map(c=>c.id),hide:{},typed:[],need:{cid:'alg',target:90,kind:'test'},gw:{},fin:{target:90},
+ pace:[{title:'Pick topic',off:2},{title:'Research',off:5},{title:'First draft',off:8},{title:'Final',off:10}],
+ look:'big',bellDay:'A',bellSel:null,tapeTop:null,wg:{due:{size:'small',cid:'all'},test:{size:'small',cid:'all'},change:{size:'medium',cid:'all'}},t0:Date.now(),mail:null,form:{},sem:{},scen:{},ggoal:'4.3'};
+const CATALOG=[{key:'chemt',name:'Chemistry',teacher:'Dr. Placeholder',title:'Chemistry Test',A:7,B:8},{key:'histt',name:'AP World',teacher:'Coach Demo',title:'AP World Test',A:13,B:14},{key:'algt',name:'Algebra II',teacher:'Mr. Sample',title:'Algebra II Quiz',A:3,B:4}];
+const TYPED_CAP=8;
+const cls=id=>CLASSES.find(c=>c.id===id)||S.typed.find(c=>c.id===id);
+const allCls=()=>S.order.map(cls).filter(Boolean);
+const shown=()=>allCls().filter(c=>!S.hide[c.id]);
+const rowsOf=c=>S.period==='Q2'?(c.rows||[]):S.period==='Q1'?(c.q1rows||[]):[];
+const cavg=c=>c.typed?(S.period==='Q2'?c.grade:null):avgOf(rowsOf(c));
+const rowBy=id=>{for(const c of CLASSES)for(const r of c.rows.concat(c.q1rows))if(r.id===id)return{c,r};return null};
+const scored=r=>typeof r.score==='number';
+const scoreLine=r=>scored(r)?r.score+' / '+r.total:r.mark?r.mark+', 0':r.missing?'Missing, 0':'No score';
+const dueOf=r=>r.id in S.over?S.over[r.id]:r.d;
+const isMissing=r=>r.missing&&!scored(r);
+const under=r=>r.cat==='Test'&&scored(r)&&r.score/r.total*100<S.line;
+const effect=(c,r)=>{const a=avgOf(c.rows),b=avgOf(c.rows.filter(x=>x!==r));return a==null||b==null?null:a-b};
+const seedLog=()=>{for(const[cid,i,ago]of[['cs',1,'Yesterday'],['span',1,'Yesterday'],['eng',2,'2 days ago'],['alg',3,'Last week']]){const c=cls(cid),r=c.rows[i],e=effect(c,r);S.log.push({cid,title:r.title,cat:r.cat,line:scoreLine(r),low:under(r),before:avgOf(c.rows)-e,after:avgOf(c.rows),ago})}};seedLog();
+// to-dos
+function items(){const out=[];
+ for(const c of CLASSES)for(const r of c.rows)if(!scored(r)&&!r.mark&&!r.missing&&!r.pending&&r.d!=null&&r.d>=0)out.push({id:r.id,title:r.title,detail:c.name,off:dueOf(r),src:'grade',rid:r.id,cat:r.cat,big:r.big});
+ for(const t of S.todos)out.push({id:t.id,title:t.title,detail:'',off:t.off,src:'typed'});
+ for(const k of CATALOG){const p=S.picks[k.key];if(p)out.push({id:k.key,title:k.title,detail:'Test date, '+p+' day',off:k[p],src:'radar',cat:'Test'})}
+ S.pace.forEach((p,i)=>out.push({id:'cp'+i,title:p.title,detail:'History Project checkpoint',off:p.off,src:'cp'}));
+ return out}
+const sortI=a=>a.sort((x,y)=>(x.off??9e9)-(y.off??9e9)||x.title.localeCompare(y.title));
+const missing=()=>{const o=[];for(const c of CLASSES)for(const r of c.rows)if(isMissing(r))o.push({c,r});return o};
+// semester split, solved from the past report card (sample). Quarters weigh the same, exam is the rest.
+const PAST=[['Algebra I',94,86,62,86],['Biology',88,92,80,89],['English 9',91,95,98,94],['World Geography',85,79,99,85]];
+const solveSplit=rows=>{const f=[];for(let q=0;q<=50;q+=.5){const e=100-2*q;if(rows.length&&rows.every(p=>Math.round((q*(p[1]+p[2])+e*p[3])/100)===p[4]))f.push(q)}return f.length===1?{q:f[0],e:100-2*f[0]}:null};
+const SPLIT=solveSplit(PAST);
+const splitLine=()=>`Each quarter ${SPLIT.q} percent, exam ${SPLIT.e} percent. Worked out from your past report card (sample: ${PAST.length} classes from last year, Q1, Q2, exam and semester grade).`;
+const semNeed=(q1,q2,t)=>(t-SPLIT.q/100*(q1+q2))/(SPLIT.e/100);
+// html helpers
+const hd=(label,lead,accent,o={})=>`<div class="lab">${label}</div><div class="hd${o.big?' big':''}">${lead}<i class="${o.urgent?'u':''}">${accent}</i></div>`;
+const act=(a,x,y)=>`data-a="${a}"${x!=null?` data-x="${esc(x)}"`:''}${y!=null?` data-y="${esc(y)}"`:''}`;
+const chev='<span class="chev">›</span>';
+const navRow=(title,sub,a,x,right='')=>`<div class="row" role="button" tabindex="0" ${act(a,x)}><div class="grow"><div class="t">${title}</div>${sub?`<div class="s">${sub}</div>`:''}</div>${right}${chev}</div>`;
+const seg=(act_,val,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button ${act(act_,v)} class="${v===val?'on':''}">${l}</button>`).join('')}</div>`;
+const tog=(on,a,x)=>`<button class="tog${on?' on':''}" ${act(a,x)} aria-pressed="${!!on}"></button>`;
+function strip(){let l;if(S.loading)l=`<span class="spin"></span>${S.updated?'Loading':'Last grades, loading'}`;else{const m=S.updated==null?0:Math.floor((Date.now()-S.updated)/6e4);l=m<1?'Updated just now':m===1?'Updated 1 min ago':'Updated '+m+' min ago'}
+ const left=Math.ceil((S.wait-Date.now())/1e3);
+ const b=S.loading?'':left>0?`<button class="pill" disabled>Wait ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</button>`:`<button class="pill" ${act('reload')}>Update</button>`;
+ return `<div class="strip" data-live><span class="grow">${l}${NB}</span>${b}</div>`}
+// sample school day
+const AB={A:[['alg',510,600],['chem',606,696],['lunch',696,726],['eng',732,822],['span',828,920]],B:[['hist',510,600],['cs',606,696],['lunch',696,726],['pe',732,822],['adv',828,920]]};
+const periods=d=>AB[d].map(([id,s,e])=>{const c=cls(id);return{id,name:c?c.name:'Lunch',room:c?c.room:'Cafeteria',s,e}});
+const hm=m=>{const h=Math.floor(m/60),n=m%60;return (h>12?h-12:h)+':'+String(n).padStart(2,'0')};
+const nowMin=()=>577+(Date.now()-S.t0)/6e4;
+function nowInfo(){const ps=periods('A'),m=nowMin();const i=ps.findIndex(p=>m<p.e);if(i<0)return null;const p=ps[i];return{p,i,left:Math.max(1,Math.ceil(p.e-m)),next:ps[i+1],m,passing:m<p.s}}
+function nowLine(){const n=nowInfo();if(!n)return `<div class="now"><div class="grow"><div class="t">School is out</div><div class="s">Sample school day, A day</div></div></div>`;
+ return `<div class="now" role="button" tabindex="0" ${act('goBell')}><div class="grow" data-live><div class="t">${esc(n.p.name)}, ${n.left} min left</div><div class="s">${n.next?'Next: '+esc(n.next.room):'Last class'}. Sample school day, A day${NB}</div></div>${chev}</div>`}
+// HOME
+function todoRow(it,showDate=true){const dn=!!S.done[it.id],urgent=it.off!=null&&it.off<=0&&!dn;const sub=[it.detail,showDate&&it.off!=null?short(it.off):null,it.cat?null:null].filter(Boolean).join(', ');
+ return `<div class="row${dn?' done':''}"><div class="mark" role="button" tabindex="0" aria-label="${dn?'Mark not done':'Mark done'}: ${esc(it.title)}" ${act('tick',it.id)}><b class="${dn?'on':urgent?'u':''}"></b></div><div class="grow" role="button" tabindex="0" ${it.src==='asg'?act('push','asg',it.id):act(it.src==='cp'?'push':'task',it.src==='cp'?'pace':it.id)}><div class="t">${esc(it.title)}</div>${sub?`<div class="s">${esc(sub)}</div>`:''}</div>${it.right?`<div class="s" style="font-weight:700;color:var(--ink);white-space:nowrap">${it.right}</div>`:''}</div>`}
+function prog(its){const d=its.filter(i=>S.done[i.id]).length,t=its.length;return `<div class="prog"><div class="bars">${t<=10?its.map((_,i)=>`<span class="${i<d?'f':''}"></span>`).join(''):`<span style="position:relative"><span class="f" style="position:absolute;left:0;top:0;bottom:0;border-radius:3px;display:block;width:${d/t*100}%"></span></span>`}</div><em>${d} of ${t} done</em></div>`}
+function home(){const all=items().filter(i=>i.src!=='cp');const next=S.pace.map((p,i)=>({p,i})).find(x=>!S.done['cp'+x.i]);all.filter(i=>i.big).forEach(i=>{if(next)i.detail+=`, next ${next.p.title} ${short(next.p.off)}`});
+ const must=missing().map(({c,r})=>({id:r.id,title:r.title,detail:c.name+', missing, was due '+short(r.d),off:r.d,src:'asg',right:r.total+' pts',pts:r.total}));
+ const old=sortI(all.filter(i=>i.off!=null&&i.off<0&&!S.done[i.id])),doneOld=all.filter(i=>i.off!=null&&i.off<0&&S.done[i.id]);
+ const tod=sortI(all.filter(i=>i.off===0)),tom=sortI(all.filter(i=>i.off===1)),lat=sortI(all.filter(i=>i.off!=null&&i.off>1)),non=all.filter(i=>i.off==null);
+ const first=must.concat(old,tod),open=first.filter(i=>!S.done[i.id]).length,pts=must.filter(i=>!S.done[i.id]).reduce((a,i)=>a+i.pts,0);
+ const openL=tom.concat(lat).filter(i=>!S.done[i.id]),tst=openL.find(i=>i.cat==='Test'),cd=tst?`${esc(tst.title)} ${inDays(tst.off)}`:openL.length?`${esc(openL[0].title)} ${inDays(openL[0].off)}`:'All done';
+ const clab=(l,r='')=>`<div class="clab"><span class="grow">${l}</span><span>${r}</span></div>`;
+ let h=strip();
+ h+=`<div class="sec">${hd(long(0)+(pts?`, ${pts} points at stake`:''),open?count(open)+' left ':'All done ','today',{urgent:open>0,big:1})}<div class="card">${nowLine()}${first.length?prog(first):''}${first.map(i=>todoRow(i,i.src!=='asg'&&i.off<0)).join('')}</div></div>`;
+ h+=`<div class="sec">${hd(cd,'Coming ','up')}<div class="card">${tom.length?clab(long(1).replace(',','')+', tomorrow',`${tom.filter(i=>S.done[i.id]).length} of ${tom.length} done`)+tom.map(i=>todoRow(i,false)).join(''):''}${lat.length?clab('Later')+lat.map(i=>todoRow(i)).join(''):''}</div></div>`;
+ if(non.length||doneOld.length)h+=`<div class="sec">${hd('No due date, and finished','Any ','time')}<div class="card">${non.concat(doneOld).map(i=>todoRow(i)).join('')}</div></div>`;
+ if(Object.values(S.picks).some(Boolean))h+=`<div class="foot" style="padding:0 16px 10px">Test dates are unofficial, confirm with your teacher.</div>`;
+ return h}
+// GRADES
+function grades(){const list=S.edit?allCls():shown();let h=strip();
+ h+=`<div class="sec"><div style="display:flex;align-items:flex-end;gap:8px"><div class="grow">${hd('From your gradebook',count(shown().length)+' ',shown().length===1?'class':'classes',{big:1})}</div><button class="pill" style="margin-bottom:8px" ${act('period')}>${S.period} <span style="opacity:.6">▾</span></button></div>`;
+ if(S.edit){h+=`<div class="card">${list.map((c,i)=>`<div class="row" style="${S.hide[c.id]?'opacity:.5':''}"><div class="grow"><input class="f plain" aria-label="Class name" value="${esc(c.name)}" data-i="rename" data-x="${c.id}">${S.hide[c.id]?'<div class="s">Hidden</div>':''}</div><button class="pill round" aria-label="Move up" ${act('mv',c.id,-1)}>↑</button><button class="pill round" aria-label="Move down" ${act('mv',c.id,1)}>↓</button>${c.typed?`<button class="pill" ${act('delClass',c.id)}>Remove</button>`:`<button class="pill" ${act('hide',c.id)}>${S.hide[c.id]?'Show':'Hide'}</button>`}</div>`).join('')}</div></div>`}
+ else{h+=`<div class="card">${list.map(c=>{const a=cavg(c),n=rowsOf(c).length,att=[c.abs?c.abs+' abs':'',c.tardy?c.tardy+' tardy':''].filter(Boolean).join(', ');
+  return `<div class="row" role="button" tabindex="0" data-lp="1" ${act('push','class',c.id)}><div class="grow"><div class="t">${esc(c.name)}</div><div class="s">${c.typed?'Added by you, '+esc(c.levelName):n===0?'No assignments yet':n===1?'1 assignment':n+' assignments'}</div></div><div>${a!=null?`<div class="avg" style="text-align:right">${f1(a)}</div>`:'<div class="nog">No grade</div>'}${att?`<div class="tiny">${att}</div>`:''}</div>${chev}</div>`}).join('')}</div>`;
+  h+=`<div class="foot">Long press a class to rename, reorder or hide.${NB}</div></div>`}
+ if(!S.edit){h+=`<div class="sec"><div class="card">${navRow('GPA'+NB,'Calculator and what ifs, an estimate','push','gpa')}${navRow('What changed'+NB,'Since you last looked, with points effect','push','changes')}${navRow('Alerts'+NB,S.log.length+' recent','push','alerts')}${navRow('Add a class'+NB,`Dual credit, self study AP. ${S.typed.length} of ${TYPED_CAP} used`,'sheet','addclass')}</div></div>`;
+  h+=`<div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${act('signout')}><div class="t">Sign out</div></div></div></div>`}
+ return h}
+function nextNeed(c,target,total=100,cat='Test'){const rows=c.rows;const av=s=>avgOf(rows.concat([{cat,score:s,total}]));if(av(total)<target)return{reach:false,best:av(total)};let lo=0,hi=total;if(av(0)>=target)return{reach:true,need:0};for(let i=0;i<30;i++){const m=(lo+hi)/2;if(av(m)>=target)hi=m;else lo=m}return{reach:true,need:Math.ceil(hi)}}
+function graph(c){const pts=c.rows.filter(r=>(scored(r)||zero(r))&&r.d!=null).sort((a,b)=>a.d-b.d);if(pts.length<2)return '';const acc=[],run=[];pts.forEach(r=>{run.push(r);acc.push({r,v:avgOf(run)})});
+ const vs=acc.map(a=>a.v),mn=Math.min(...vs)-1,mx=Math.max(...vs)+1,W_=338,H_=118,x=i=>22+i*(W_-40)/(acc.length-1),y=v=>10+(mx-v)/(mx-mn)*(H_-22);
+ let big=1,bd=0;acc.forEach((a,i)=>{if(i){const d=Math.abs(a.v-acc[i-1].v);if(d>bd){bd=d;big=i}}});const sel=S.gsel[c.id]??big;const sp=acc[sel],mv=sel?sp.v-acc[sel-1].v:null;
+ return `<div class="card"><div class="pad"><div class="lab">Grade over time${NB}</div>
+ <svg viewBox="0 0 ${W_} ${H_}" width="100%" role="img" aria-label="Average over time"><text x="0" y="16" font-size="10" fill="currentColor" opacity=".6">${mx.toFixed(0)}</text><text x="0" y="${H_-8}" font-size="10" fill="currentColor" opacity=".6">${mn.toFixed(0)}</text><polyline fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" points="${acc.map((a,i)=>x(i)+','+y(a.v)).join(' ')}"/>${acc.map((a,i)=>`<g ${act('gpt',c.id,i)}><circle cx="${x(i)}" cy="${y(a.v)}" r="16" fill="transparent"/><circle cx="${x(i)}" cy="${y(a.v)}" r="${i===sel?6:3.2}" fill="currentColor"/>${i===big?`<circle cx="${x(i)}" cy="${y(a.v)}" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>`:''}</g>`).join('')}</svg>
+ <div class="t" style="font-size:14.5px">${esc(sp.r.title)}, ${scoreLine(sp.r)}</div><div class="s">${short(sp.r.d)}, average ${f1(sp.v)}${mv!=null?`, moved it ${sgn(mv)}`:''}${sel===big?'. Ringed: the one that moved it most.':''}</div></div></div>`}
+function classPage(c){const a=cavg(c),rows=rowsOf(c),n=rows.length;const label=n===0?'No assignments yet':n===1?'1 assignment':n+' assignments';let h='';
+ const heading=a!=null?hd(label,f1(a)+' ','average',{big:1}):hd(label,'No ','grade yet',{big:1});
+ if(c.typed){return `<div class="sec">${hd('Added by you, '+esc(c.levelName),f1(c.grade)+' ','average',{big:1})}<div class="card"><div class="row"><div class="s">You typed this class in, so there is no gradebook behind it.</div></div></div></div>`}
+ h+=`<div class="sec">${heading}`;
+ const q2=S.period==='Q2';
+ if(q2&&a!=null){const g=S.goals[c.id];h+=`<div class="toolrow"><button class="pill" ${act('wiOpen',c.id)}>What if${NB}</button><button class="pill" ${act('mail',c.id)}>Email teacher${NB}</button></div>`;
+  h+=graph(c)}
+ h+=`</div>`;
+ if(!n)return h+`<div class="sec"><div class="card"><div class="row"><div class="s" style="font-size:15px">Nothing in the gradebook for this class yet.</div></div></div></div>`;
+ const up=rows.filter(r=>r.d!=null&&dueOf(r)>=0).sort((p,q)=>dueOf(p)-dueOf(q)),past=rows.filter(r=>r.d!=null&&dueOf(r)<0).sort((p,q)=>dueOf(q)-dueOf(p)),und=rows.filter(r=>r.d==null);
+ for(const[t,g]of[['Coming up',up],['Already due',past],['No due date',und]])if(g.length)h+=`<div class="sec"><div class="lab" style="margin-bottom:6px">${t}</div><div class="card">${g.map(r=>asgRow(c,r)).join('')}</div></div>`;
+ return h}
+function asgRow(c,r){const ret=!r.old&&under(r);const due=r.d==null?'No date':'Due '+short(dueOf(r));return `<div class="row" role="button" tabindex="0" ${r.old?'':act('push','asg',r.id)}><div class="grow"><div class="t">${esc(r.title)}</div><div class="s">${due}, ${r.cat}${ret?', under your '+S.line:''}${isMissing(r)?', missing':''}</div></div><div class="score ${scored(r)?'g':'n'}">${scoreLine(r)}</div></div>`}
+function asgPage(id){const{c,r}=rowBy(id);const e=scored(r)?effect(c,r):null,ret=under(r);let h=`<div class="sec">${hd(esc(c.name),esc(r.title)+' ','',{})}<div class="card">
+ <div class="row"><div class="grow s">Score</div><div class="score ${scored(r)?'g':'n'}">${scoreLine(r)}</div></div>
+ <div class="row"><div class="grow s">Type</div><div class="s" style="font-weight:700;color:var(--ink)">${r.cat}</div></div>
+ <div class="row"><div class="grow s">Due</div><div class="s" style="font-weight:700;color:var(--ink)">${r.d==null?'No date':short(dueOf(r))}</div></div>
+ <div class="row"><div class="grow s">Points effect</div><div class="s" style="font-weight:700;color:var(--ink);text-align:right">${e!=null?sgn(e)+' on your average':'None yet, no number'}</div></div>
+ ${isMissing(r)?`<div class="row"><div class="grow s">At stake</div><div class="s" style="font-weight:700;color:var(--ink)">${r.total} points, missing</div></div>`:''}
+ ${ret?`<div class="row"><div class="grow s">Under your ${S.line}</div><div class="s" style="font-weight:700;color:var(--ink)">You can retest or waterfall this.</div></div>`:''}</div></div>`;
+ h+=`<div class="toolrow"><button class="pill" ${act('wiOpen',c.id)}>What if</button><button class="pill" ${act('mail',c.id,r.id)}>Email teacher</button></div>`;
+ if(r.d!=null&&r.d>=0)h+=`<button class="btn ghost" ${act('task',r.id)}>Due date and reminders</button>`;
+ return h}
+// WHAT IF
+const wi=cid=>S.wi[cid]||(S.wi[cid]={scores:{},corr:{},extra:'',fake:[],drop:false,curve:{},fk:{name:'',cat:'Test',pts:'100',score:''}});
+function wiRows(c,w=wi(c.id)){let rows=c.rows.map(r=>{let s=r.score;const v=w.scores[r.id],co=w.corr[r.id],cu=w.curve&&w.curve[r.id];if(v!==undefined&&v!=='')s=+v;if(co!==undefined&&co!=='')s=+co;if(cu&&typeof s==='number')s=s+(+cu);return Object.assign({},r,{score:s})});
+ rows=rows.concat((w.fake||[]).map(f=>({id:f.id,title:f.name,cat:f.cat,score:+f.score,total:+f.pts})));
+ if(w.drop){const t=rows.filter(r=>r.cat==='Test'&&scored(r));if(t.length>1){const low=t.reduce((a,r)=>r.score/r.total<a.score/a.total?r:a);rows=rows.filter(r=>r!==low)}}
+ return rows}
+const wiAvg=(c,w=wi(c.id))=>avgOf(wiRows(c,w),+w.extra||0);
+function wiHead(c){const a=wiAvg(c),b=avgOf(c.rows);return `<div class="lab">Now ${f1(b)}, change ${sgn(a-b)}, estimate</div><div class="hd big">${f1(a)} <i>what if</i></div>`}
+function finText(c){const a=wiAvg(c),q1=c.q1;if(q1==null)return '<div class="s">Needs a Quarter 1 grade.</div>';const need=semNeed(q1,a,+S.fin.target);const sub=`<div class="s">Estimate, semester ${esc(S.fin.target)} from Q1 ${q1} and Q2 ${f1(a)} here. ${splitLine()}</div>`;return need<=0?`<div class="t">You hit ${esc(S.fin.target)} even with a 0 on the final</div>${sub}`:need>100?`<div class="t">You'd need ${f1(need)} on the final</div><div class="s">More than 100, so ${esc(S.fin.target)} is out of reach.</div>${sub}`:`<div class="big-res" style="font-size:26px">${Math.ceil(need)} <i>on the final</i></div>${sub}`}
+const WT=[['need','What do I need','Target grade to the score you need'],['try','Stack scores','Fake scores, corrections, a fake assignment'],['retest','Retest','Type the retest score you expect'],['cushion','Cushion','What you can get and keep your grade'],['sem','Semester','From Q1, Q2 and the final'],['drop','Drop or curve','Drop your lowest test or curve one'],['scen','Saved scenarios','Save them, see them side by side'],['last','Last quarter','Each class at this same point']];
+const labT=t=>`<div class="lab" style="margin:0 0 6px">${t}</div>`;
+const blankLeft=c=>c.rows.filter(r=>!scored(r)&&!zero(r)&&!r.pending&&r.d!=null&&r.d>=0);
+function wiTry(c){const w=wi(c.id),fin=S.fin,fk=w.fk,bl=blankLeft(c);return (bl.length?labT('Quick fill what is left')+`<div class="seg">${[['usual','Your usual'],['90','90'],['80','80'],['70','70']].map(([v,l])=>`<button ${act('wiFill',c.id,v)}>${l}</button>`).join('')}</div><div class="foot" style="padding:6px 2px 14px">Fills ${bl.map(r=>esc(r.title)).join(', ')}. Change any box below.</div>`:'')+labT('Type the grade you expect')+`<div class="card">${c.rows.map(r=>`<div class="row"><div class="grow"><div class="t" style="font-size:15px">${esc(r.title)}</div><div class="s">${r.cat}, out of ${r.total}</div></div><input class="f" type="number" inputmode="decimal" aria-label="Score for ${esc(r.title)}" placeholder="${scored(r)?r.score:zero(r)?0:'–'}" value="${w.scores[r.id]??''}" data-i="wi" data-x="${c.id}" data-y="${r.id}"></div>`).join('')}${w.fake.map(f=>`<div class="row"><div class="grow"><div class="t" style="font-size:15px">${esc(f.name)}</div><div class="s">Fake ${f.cat}, ${esc(f.score)} of ${esc(f.pts)}</div></div><button class="pill" ${act('fkDel',c.id,f.id)}>Remove</button></div>`).join('')}</div>
+ <div style="height:14px"></div>`+labT('Add a fake future assignment')+`<div class="card"><div class="pad"><input class="f w" placeholder="Name it" aria-label="Fake assignment name" value="${esc(fk.name)}" data-i="fk" data-x="${c.id}" data-y="name"></div><div class="pad" style="border-top:1px solid var(--rule)">${seg('fkC:'+c.id,fk.cat,[['Test','Test'],['Lab','Lab'],['HW','HW']])}</div><div class="row"><div class="grow t" style="font-size:15px">Points</div><input class="f" type="number" inputmode="decimal" aria-label="Points" value="${esc(fk.pts)}" data-i="fk" data-x="${c.id}" data-y="pts"></div><div class="row"><div class="grow t" style="font-size:15px">Your score</div><input class="f" type="number" inputmode="decimal" aria-label="Your score" value="${esc(fk.score)}" data-i="fk" data-x="${c.id}" data-y="score"></div><div class="pad" style="border-top:1px solid var(--rule)"><button class="btn ghost" style="background:var(--paper)" ${act('fkAdd',c.id)}>Add it</button></div></div>
+ <div style="height:14px"></div>`+labT('Corrections')+`<div class="card">${c.rows.some(r=>r.cat==='Test'&&scored(r))?'':'<div class="pad s">No graded tests to correct yet.</div>'}${c.rows.filter(r=>r.cat==='Test'&&scored(r)).map(r=>`<div class="row"><div class="grow"><div class="t" style="font-size:15px">Corrected ${esc(r.title)}</div><div class="s">Type your score after corrections, was ${r.score}</div></div><input class="f" type="number" inputmode="decimal" aria-label="Corrected score" placeholder="${r.score}" value="${w.corr[r.id]??''}" data-i="wiC" data-x="${c.id}" data-y="${r.id}"></div>`).join('')}</div>
+ <div style="height:14px"></div>`+labT('Finals calculator')+`<div class="card"><div class="row"><div class="grow t" style="font-size:15px">Semester grade you want</div><input class="f" type="number" inputmode="decimal" aria-label="Semester grade you want" value="${esc(fin.target)}" data-i="fin" data-x="target"></div><div class="pad" style="border-top:1px solid var(--rule)" data-live>${finText(c)}</div></div>
+ <div style="height:12px"></div><button class="btn" ${act('scenSave',c.id)}>Save as a scenario</button><div style="height:8px"></div><button class="btn ghost" ${act('wiReset',c.id)}>Reset</button>`}
+function wiRetest(c){const w=wi(c.id),ts=c.rows.filter(r=>r.cat==='Test'&&scored(r));if(!ts.length)return `<div class="card"><div class="pad"><div class="t">No graded tests here yet</div></div></div>`;return `<div class="sec" data-live style="margin-bottom:14px">${wiHead(c)}</div>`+labT('Type the retest score you expect')+`<div class="card">${ts.map(r=>`<div class="row"><div class="grow"><div class="t" style="font-size:15px">Retest ${esc(r.title)}</div><div class="s">Was ${r.score} of ${r.total}${under(r)?', under your '+S.line:''}</div></div><input class="f" type="number" inputmode="decimal" aria-label="Expected retest score" placeholder="${r.score}" value="${w.corr[r.id]??''}" data-i="wiC" data-x="${c.id}" data-y="${r.id}"></div>`).join('')}</div><div class="foot">Estimate. Your real grade only changes when the new score shows up in your gradebook.</div>`}
+function wiCushion(c){const a=avgOf(c.rows),L=letter(a),cut={A:90,B:80,C:70,D:60}[L];const up=c.rows.find(r=>r.cat==='Test'&&!scored(r)&&!r.pending&&r.d!=null&&r.d>=0),title=up?up.title:'a 100 point test',total=up?up.total:100;let line;if(!cut)line='Keep going, any passing score helps.';else{const n=nextNeed(c,cut,total);line=!n.reach?`A perfect score on ${esc(title)} gets you to ${f1(n.best)}, under your ${L}`:n.need===0?`Even a 0 on ${esc(title)} keeps your ${L}`:`You can get a ${n.need} on ${esc(title)} and keep your ${L}`}
+ return `<div class="card"><div class="pad"><div class="lab">Estimate, you're at ${f1(a)}</div><div class="hd" style="margin-top:3px">${line}</div></div>${[['A',90],['B',80],['C',70]].map(([l,v])=>{const n=nextNeed(c,v,total);return `<div class="row"><div class="grow t" style="font-size:15px">To hold ${/[AEFHILMNORSX]/.test(l)?'an':'a'} ${l}</div><div class="s" style="font-weight:700;color:var(--ink)">${n.reach?(n.need===0?'Any score':n.need+' of '+total):'Out of reach'}</div></div>`}).join('')}</div>`}
+const semOf=c=>S.sem[c.id]||(S.sem[c.id]={q1:c.q1??'',q2:avgOf(c.rows)!=null?+avgOf(c.rows).toFixed(1):'',final:'',target:90});
+function semText(c){const m=semOf(c),q1=+m.q1,q2=+m.q2,qw=SPLIT.q/100,ew=SPLIT.e/100;const res=m.final!==''?`<div class="lab">Semester with that final</div><div class="big-res">${f1(qw*(q1+q2)+ew*(+m.final))}</div>`:'';const need=semNeed(q1,q2,+m.target);const nd=need<=0?`Any final gets you ${esc(m.target)}`:need>100?`You'd need ${f1(need)}, more than 100`:`You need ${Math.ceil(need)} on the final for ${esc(m.target)}`;return `${res}<div class="t" style="margin-top:6px">${nd}</div><div class="s">Estimate. ${splitLine()} No past final, like a freshman? The app asks you once.</div>`}
+function wiSem(c){const m=semOf(c);return `<div class="card">${[['q1','Quarter 1'],['q2','Quarter 2'],['final','Final, if you know it'],['target','Semester grade you want']].map(([k,l])=>`<div class="row"><div class="grow t" style="font-size:15px">${l}</div><input class="f" type="number" inputmode="decimal" aria-label="${l}" value="${esc(m[k])}" data-i="sem" data-x="${c.id}" data-y="${k}"></div>`).join('')}<div class="pad" style="border-top:1px solid var(--rule)" data-live>${semText(c)}</div></div>`}
+function wiDrop(c){const w=wi(c.id);const tests=c.rows.filter(r=>r.cat==='Test'&&scored(r));return `<div class="card"><div class="row"><div class="grow"><div class="t" style="font-size:15px">Drop my lowest test</div><div class="s">If your teacher does it</div></div>${tog(w.drop,'wiDropT',c.id)}</div>${tests.map(r=>`<div class="row"><div class="grow"><div class="t" style="font-size:15px">Curve ${esc(r.title)}</div><div class="s">Points added, was ${r.score}</div></div><input class="f" type="number" inputmode="decimal" aria-label="Curve points" placeholder="0" value="${w.curve[r.id]??''}" data-i="wiCu" data-x="${c.id}" data-y="${r.id}"></div>`).join('')}</div><div class="foot">Estimate. These stack with your fake scores.</div><div style="height:12px"></div><button class="btn" ${act('scenSave',c.id)}>Save as a scenario</button>`}
+function wiScen(c){const list=S.scen[c.id]||[];if(!list.length)return `<div class="card"><div class="pad"><div class="t">Nothing saved yet</div><div class="s">Stack some scores, then save it here to compare.</div></div></div><div style="height:12px"></div><button class="btn" ${act('scenSave',c.id)}>Save what I have now</button>`;const now=avgOf(c.rows);const cols=[{name:'Now',avg:now,st:null}].concat(list);const line=(l,fn)=>`<div class="s" style="font-weight:600;padding:9px 0 3px">${l}</div><div style="display:grid;grid-template-columns:repeat(${cols.length},minmax(92px,1fr));gap:8px">${cols.map(fn).join('')}</div>`;
+ return `<div class="card"><div class="pad" style="overflow-x:auto">${line('Name',x=>`<div class="t" style="font-size:14.5px">${esc(x.name)}</div>`)}${line('Average, estimate',x=>`<div class="avg">${f1(x.avg)}</div>`)}${line('Change',x=>`<div class="s">${x.st?sgn(x.avg-now):'–'}</div>`)}${line('Fake scores',x=>`<div class="s">${x.st?Object.values(x.st.scores).filter(v=>v!=='').length+x.st.fake.length:'–'}</div>`)}${line('Letter',x=>`<div class="s">${letter(x.avg)}</div>`)}</div></div><div style="height:12px"></div><div class="card">${list.map((x,i)=>`<div class="row"><div class="grow"><input class="f plain" aria-label="Scenario name" value="${esc(x.name)}" data-i="scenN" data-x="${c.id}" data-y="${i}"></div><button class="pill" ${act('scenDel',c.id,i)}>Remove</button></div>`).join('')}</div><div style="height:12px"></div><button class="btn" ${act('scenSave',c.id)}>Save what I have now</button>`}
+const SAME={alg:90.4,chem:87.9,eng:93.2,span:89.5,hist:82.1,cs:96,pe:100};
+function wiLast(){return `<div class="card">${CLASSES.filter(c=>SAME[c.id]!=null).map(c=>{const a=avgOf(c.rows),d=a-SAME[c.id];return `<div class="row"><div class="grow"><div class="t" style="font-size:15px">${esc(c.name)}</div><div class="s">${f1(SAME[c.id])} at this point last quarter</div></div><div class="avg">${f1(a)}</div><div class="s" style="font-weight:700;min-width:38px;text-align:right">${sgn(d)}</div></div>`}).join('')}</div><div class="foot">Works from what your phone saved last quarter.</div>`}
+function wiSheet(c,tool){let b=(!tool||['try','drop','scen'].includes(tool))?`<div class="sec" data-live style="margin-bottom:14px">${wiHead(c)}</div>`:'';if(!tool)return b+`<div class="card">${WT.map(([k,t,sub])=>navRow(t,sub,'wiT',k)).join('')}${navRow('Long term GPA goal','Pick a GPA by graduation','openGoal')}</div><div class="foot">${esc(c.name)}. Everything here is an estimate and nothing changes your real grades.${NB}</div>`;
+ return b+({need:needPage,try:wiTry,retest:wiRetest,cushion:wiCushion,sem:wiSem,drop:wiDrop,scen:wiScen,last:wiLast})[tool](c)}
+function goalPage(){const G=S.ggoal,cur=4.1,done=3,left=5,n=7,b=4;const need=(+G*(done+left)-cur*done)/left;const pts=need*n-b;const a=Math.ceil(pts-3*n-1e-9);let mix,per=n;if(need>5||a>n)mix='Out of reach, even all As with these classes';else if(a<=0){const bs=Math.ceil(pts-2*n-1e-9);mix=bs<=0?'Mostly Cs would do it':bs>=n?`All ${n} Bs`:`${bs} Bs and ${n-bs} Cs`}else mix=a>=n?`All ${n} As`:`${a} A${a>1?'s':''} and ${n-a} B${n-a>1?'s':''}`;
+ return `<div class="sec">${hd(`Estimate, ${cur.toFixed(2)} weighted so far over ${done} semesters`,'By ','graduation',{big:1})}<div class="card"><div class="row"><div class="grow t">GPA I want</div><input class="f" type="number" step="0.01" inputmode="decimal" aria-label="GPA goal" value="${esc(G)}" data-i="ggoal"></div></div></div><div class="sec" data-live><div class="lab" style="margin-bottom:6px">Grades needed each semester</div><div class="card">${Array.from({length:left},(_,i)=>`<div class="row"><div class="grow"><div class="t" style="font-size:15px">Semester ${done+i+1}</div><div class="s">${mix}</div></div><div class="avg">${need>5?'–':need.toFixed(2)}</div></div>`).join('')}</div><div class="foot">Sample assumes ${n} graded classes a semester, ${b} of them with honors weight, and the same pace every semester.</div></div>`}
+// GPA
+const letter=v=>v>=90?'A':v>=80?'B':v>=70?'C':v>=60?'D':'F';const LP={A:4,B:3,C:2,D:1,F:0};
+const gpaCls=()=>allCls().filter(c=>c.level!=='A'&&(c.typed||avgOf(c.rows)!=null));
+const gpaAvg=c=>c.typed?c.grade:avgOf(c.rows);
+const bump=c=>(c.level==='H'||c.level==='AP'||c.level==='DC')?1:0;
+function gpa(mapLetter){const cs=gpaCls();let u=0,w=0;for(const c of cs){const L=mapLetter?mapLetter(c):letter(gpaAvg(c));u+=LP[L];w+=LP[L]+(LP[L]>0?bump(c):0)}return{u:u/cs.length,w:w/cs.length}}
+function gpaPage(){const g=gpa();return `<div class="sec">${hd('Estimate, your school decides the real one',g.w.toFixed(2)+' ','weighted',{big:1})}<div class="s" style="padding:0 0 10px;font-size:15px">${g.u.toFixed(2)} unweighted</div><div class="card">${allCls().map(c=>{const a=c.typed?c.grade:avgOf(c.rows);return `<div class="row"><div class="grow"><div class="t" style="font-size:15px">${esc(c.name)}</div><div class="s">${c.level==='A'?'Left out of GPA':bump(c)?'Honors weight, adds 1':'Regular weight'}</div></div><div class="avg">${a==null?'':letter(a)}</div></div>`}).join('')}</div></div>
+ <div class="sec"><div class="card">${navRow('What do I need','Target grade to the score you need','push','need')}${navRow('GPA what if','Change a class, see what a B does','push','gpawi')}${navRow('Missing work effect','What each 0 costs you now','push','misseff')}${navRow('Long term GPA goal','Pick a GPA by graduation, see grades needed','push','gpagoal')}</div></div>`}
+function needPage(){const n=S.need,c=cls(n.cid);const pick=CLASSES.filter(x=>avgOf(x.rows)!=null);return `<div class="sec"><div class="chips">${pick.map(x=>`<button class="chip${x.id===n.cid?' on':''}" ${act('needC',x.id)}>${esc(x.name)}</button>`).join('')}</div>${seg('needK',n.kind,[['test','Next test'],['final','Final']])}<div style="height:10px"></div><div class="card"><div class="row"><div class="grow t">Grade you want</div><input class="f" type="number" inputmode="decimal" aria-label="Target grade" value="${n.target}" data-i="needT"></div><div class="pad" style="border-top:1px solid var(--rule)" data-live>${needText(c)}</div></div></div>`}
+function needText(c){const n=S.need,t=+n.target,a=avgOf(c.rows);if(n.kind==='final'){if(c.q1==null)return '<div class="s">Needs a Quarter 1 grade.</div>';const need=semNeed(c.q1,a,t);return resBlock(need,`on the final`,`For a ${t} semester, from Q1 ${c.q1} and Q2 ${f1(a)}. ${splitLine()}`,t)}const up=c.rows.find(r=>r.cat==='Test'&&!scored(r)&&r.d>=0&&!r.pending),title=up?up.title:'a 100 point test',total=up?up.total:100,r=nextNeed(c,t,total);if(!r.reach)return `<div class="t">Out of reach on this one</div><div class="s">A perfect score on ${esc(title)} gets you to ${f1(r.best)}.</div>`;return resBlock(r.need,`on ${esc(title)}`,`Out of ${total}. You're at ${f1(a)} now.`,t)}
+function resBlock(need,on,sub,t){if(need<=0)return `<div class="t">You hit ${t} even with a 0</div><div class="s">${sub}</div>`;if(need>100)return `<div class="t">You'd need ${f1(need)}</div><div class="s">More than 100. ${sub}</div>`;return `<div class="big-res">${Math.ceil(need)} <i>${on}</i></div><div class="s" style="margin-top:4px">${sub}</div>`}
+function gpaWi(){const base=gpa();const L=c=>S.gw[c.id]||letter(gpaAvg(c));const g=gpa(L);const d=g.w-base.w;return `<div class="sec">${hd(`Now ${base.w.toFixed(2)} weighted, change ${(d>=0?'+':'−')+Math.abs(d).toFixed(2)}`,g.w.toFixed(2)+' ','what if',{big:1})}<div class="s" style="padding-bottom:10px;font-size:15px">${g.u.toFixed(2)} unweighted, estimate</div><div class="card">${gpaCls().map(c=>`<div class="pad" style="border-top:1px solid var(--rule)"><div class="t" style="font-size:15px;margin-bottom:6px">${esc(c.name)}</div>${seg('gw:'+c.id,L(c),['A','B','C','D','F'].map(x=>[x,x]))}</div>`).join('')}</div></div><button class="btn ghost" ${act('gwReset')}>Reset</button>`}
+function missEff(){const m=missing();if(!m.length)return `<div class="sec">${hd('','Nothing ','missing',{big:1})}</div>`;return `<div class="sec">${hd('Missing counts as 0 in your grade','Missing ','work')}</div>`+m.map(({c,r})=>{const a=avgOf(c.rows),wo=avgOf(c.rows.filter(x=>x!==r));return `<div class="card" style="margin-bottom:10px"><div class="pad"><div class="t">${esc(r.title)}</div><div class="s" style="margin-bottom:8px">${esc(c.name)}, ${r.total} points</div><div class="dual"><div><div class="lab">Your grade now</div><div class="avg">${f1(a)}</div></div><div><div class="lab">The 0 costs you</div><div class="avg">${sgn(a-wo)}</div></div></div></div></div>`}).join('')+`<div class="foot">To see a score you expect, type it in What if.</div>`}
+// LOG, ALERTS
+function changes(){return `<div class="sec">${hd('Since you last looked','What ','changed',{big:1})}<div class="card">${S.log.map(l=>{const c=cls(l.cid);return `<div class="row"><div class="grow"><div class="t" style="font-size:15px">${esc(l.title)}, ${l.line}</div><div class="s">${esc(c.name)}, ${l.ago}. Average ${f1(l.before)} to ${f1(l.after)}</div></div><div class="avg" style="font-size:15px">${sgn(l.after-l.before)}</div></div>`}).join('')}</div></div>`}
+function alerts(){return `<div class="sec">${hd('Grade changes','Recent ','alerts',{big:1})}<div class="card">${S.log.map(l=>{const c=cls(l.cid);return `<div class="row"><div class="grow"><div class="t" style="font-size:15px">${esc(c.name)}${S.mute[l.cid]?' (muted)':''}</div><div class="s">${alertBody(l)}</div><div class="s">${l.ago}</div></div></div>`}).join('')}</div><div class="foot">Your phone does the checking, so an alert can arrive late. Change the rules in Settings.</div></div><button class="btn ghost" ${act('sampleAlert')}>Show me one</button>`}
+const alertBody=l=>`${esc(l.title)}: ${l.line}. Average ${f1(l.before)} to ${f1(l.after)}${l.after<S.under?`, under your ${S.under}`:''}.${l.low?` Under your ${S.line} retest line. You can retest or waterfall this.`:''}`;
+// PACE
+function pacePage(){const r=rowBy('hist3').r,due=dueOf(r);const days=due;return `<div class="sec">${hd('AP World History, due '+short(due),'History ','Project',{})}<div class="s" style="padding-bottom:10px">Due ${inDays(days)}. Here's a pace across the days. Rename or move any of them.</div><div class="card">${S.pace.map((p,i)=>{const n=p.off-1;const rem=n>=0?`Reminder ${short(n)}, 7 PM`:`Reminder ${short(p.off)}, 7 AM`;return `<div class="row${S.done['cp'+i]?' done':''}"><div class="mark" role="button" tabindex="0" aria-label="Mark checkpoint" ${act('tick','cp'+i)}><b class="${S.done['cp'+i]?'on':p.off<=0?'u':''}"></b></div><div class="grow"><input class="f plain" aria-label="Checkpoint name" value="${esc(p.title)}" data-i="paceN" data-x="${i}"><div class="s">${short(p.off)}</div><div class="s">${rem}</div></div><button class="pill round" aria-label="One day earlier" ${act('paceM',i,-1)}>‹</button><button class="pill round" aria-label="One day later" ${act('paceM',i,1)}>›</button></div>`}).join('')}</div><div class="foot">Reminders go out the night before each one. The next one shows on Home, all of them on Calendar.</div></div>`}
+// CALENDAR
+function calendar(){const cm=S.calM??0;const base=new Date(T0.getFullYear(),T0.getMonth()+cm,1);const off1=off(base),lead=base.getDay(),len=new Date(base.getFullYear(),base.getMonth()+1,0).getDate();
+ const open=items().filter(i=>i.off!=null&&!S.done[i.id]);const mk={};open.forEach(i=>mk[i.off]=1);
+ let g='';['S','M','T','W','T','F','S'].forEach(w=>g+=`<div class="w">${w}</div>`);for(let i=0;i<lead;i++)g+='<div></div>';
+ for(let i=0;i<len;i++){const o=off1+i;g+=`<button class="dy${o===0?' tod':''}${o===S.sel?' sel':''}" ${act('day',o)}><span>${i+1}</span>${mk[o]?`<u class="${o<=0?'u':''}"></u>`:''}</button>`}
+ const day=sortI(items().filter(i=>i.off===S.sel)),op=day.filter(i=>!S.done[i.id]).length;
+ const head=!day.length?hd(long(S.sel),'Nothing ','due'):!op?hd(long(S.sel),'All ','done'):hd(long(S.sel),S.sel===0?count(op)+' left ':count(op)+' ',S.sel===0?'today':'due',{urgent:S.sel<=0});
+ return strip()+`<div class="sec"><div class="card"><div class="cal"><div class="calh"><span class="grow">${MOL[base.getMonth()]} ${base.getFullYear()}</span><button aria-label="Last month" ${act('calM',-1)}>‹</button><button aria-label="Next month" ${act('calM',1)}>›</button></div><div class="calg">${g}</div></div></div></div><div class="sec">${head}${day.length?`<div class="card">${day.map(i=>todoRow(i,false)).join('')}</div>`:''}</div>`}
+// BELL
+function bell(){const v=S.look;let body=v==='dial'?bellDial():v==='tape'?bellTape():bellBig();return `<div class="sec" style="margin-bottom:14px"><div class="lab" style="margin-bottom:6px">Sample school day. Pick a look.</div>${seg('look',v,[['big','1 Big number'],['dial','2 Dial'],['tape','3 Tape']])}<div style="height:8px"></div>${seg('bday',S.bellDay,[['A','A day, today'],['B','B day, next']])}</div><div class="sec">${body}</div>`}
+const bellProg=(d)=>S.bellDay==='A'?nowMin():(d?0:0);
+function sel(ps){if(S.bellSel!=null&&ps[S.bellSel])return S.bellSel;if(S.bellDay==='A'){const n=nowInfo();return n?n.i:0}return 0}
+function bellDial(){const ps=periods(S.bellDay),m=bellProg(),i0=sel(ps),st=510,en=920,ang=t=>(t-st)/(en-st)*340+10,R_=112,C=150;const pol=a=>{const r=(a-90)*Math.PI/180;return[C+R_*Math.cos(r),C+R_*Math.sin(r)]};
+ const arc=(a,b)=>{const[x1,y1]=pol(a),[x2,y2]=pol(b);return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${R_} ${R_} 0 ${b-a>180?1:0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`};
+ let segs='';ps.forEach((p,i)=>{const a=ang(p.s),b=ang(p.e),w=i===i0?24:20,prog=S.bellDay==='A'?Math.max(0,Math.min(1,(m-p.s)/(p.e-p.s))):0;segs+=`<g ${act('bsel',i)}><path d="${arc(a,b)}" fill="none" stroke="var(--empty)" stroke-width="${w}"/>${prog>0?`<path d="${arc(a,a+(b-a)*prog)}" fill="none" stroke="var(--ink)" stroke-width="${w}"/>`:''}<path d="${arc(a,b)}" fill="none" stroke="transparent" stroke-width="44"/></g>`});
+ const p=ps[i0],isNow=S.bellDay==='A'&&m>=p.s&&m<p.e,left=Math.ceil(p.e-m);const next=ps[i0+1];const[px,py]=pol(ang(S.bellDay==='A'?Math.min(en,Math.max(st,m)):st));
+ return `<div class="card"><div class="pad" data-live><svg class="dial" viewBox="0 0 300 300">${segs}${S.bellDay==='A'?`<circle cx="${px}" cy="${py}" r="6" fill="var(--paper)" stroke="var(--ink)" stroke-width="3"/>`:''}
+ <text x="150" y="${isNow?132:136}" text-anchor="middle" font-size="${isNow?62:40}" font-weight="800">${isNow?left:hm(p.s)}</text><text x="150" y="${isNow?157:162}" text-anchor="middle" font-size="19" font-style="italic" font-weight="700" style="font-family:var(--serif)">${isNow?'min left':'to '+hm(p.e)}</text><text x="150" y="186" text-anchor="middle" font-size="14.5" font-weight="700">${esc(p.name.length>20?p.name.slice(0,19)+'.':p.name)}</text><text x="150" y="205" text-anchor="middle" font-size="12.5" opacity=".75">${esc(p.room)}${next?', then '+esc(next.room):''}</text></svg></div></div>`}
+function bellTape(){const ps=periods(S.bellDay),m=bellProg(),px=1.7;let h='';ps.forEach((p,i)=>{const prev=ps[i-1];if(prev&&p.s>prev.e)h+=`<div class="tg" style="height:${(p.s-prev.e)*px}px;padding-left:12px">${p.s-prev.e} min walk</div>`;const today=S.bellDay==='A',prog=today?Math.max(0,Math.min(1,(m-p.s)/(p.e-p.s))):0,cur=today&&m>=p.s&&m<p.e;h+=`<div class="tw${cur?' cur':''}"><span class="tick" style="top:0">${hm(p.s)}</span><div class="tb" style="height:${(p.e-p.s)*px}px"><div class="fill" style="height:${prog*100}%"></div><div class="t">${esc(p.name)}</div><div class="s">${esc(p.room)}, to ${hm(p.e)}</div>${cur?`<div class="s" style="position:relative;margin-top:6px;font-weight:700;color:var(--ink)">${Math.ceil(p.e-m)} min left</div>`:''}</div>${cur?`<div class="nowl" style="top:${prog*100}%"><span>${hm(Math.floor(m))}</span></div>`:''}</div>`});
+ return `<div class="tapew"><div id="tape"><div data-live>${h}</div></div></div>`}
+function bellBig(){const ps=periods(S.bellDay),m=bellProg(),i0=sel(ps),p=ps[i0],isNow=S.bellDay==='A'&&m>=p.s&&m<p.e,left=Math.ceil(p.e-m),next=ps[i0+1],tot=ps[ps.length-1].e-ps[0].s;
+ return `<div class="card" style="position:relative"><div class="pad" data-live><div class="letter">${S.bellDay}</div><div class="bign"${isNow?'':' style="font-size:84px;letter-spacing:-3px;padding:14px 0 8px"'}>${isNow?left:hm(p.s)}</div><div class="bigm">${isNow?'min left':'to '+hm(p.e)}</div><div class="t" style="margin-top:12px;font-size:19px">${esc(p.name)}, ${esc(p.room)}</div><div class="s" style="font-size:14.5px">${next?'Then '+esc(next.name)+', '+esc(next.room):'Last class of the day'}</div><div class="dayb">${ps.map((q,i)=>{const pr=S.bellDay==='A'?Math.max(0,Math.min(1,(m-q.s)/(q.e-q.s))):0;return `<button aria-label="${esc(q.name)}" class="${i===i0?'sel':''}" style="flex:${q.e-q.s}" ${act('bsel',i)}><i style="width:${pr*100}%"></i></button>`}).join('')}</div><div class="s" style="display:flex;justify-content:space-between;font-size:11.5px"><span>${hm(ps[0].s)}</span><span>Tap a block</span><span>${hm(ps[ps.length-1].e)}</span></div></div></div>`}
+// SETTINGS, WIDGETS
+function settings(){return `<div class="sec"><div class="lab" style="margin-bottom:6px">Alert rules</div><div class="card"><div class="row"><div class="grow"><div class="t">Alert me under</div><div class="s">When a class average drops below this</div></div><input class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${S.under}" data-i="under"></div>${CLASSES.map(c=>`<div class="row"><div class="grow t" style="font-size:15px">Mute ${esc(c.name)}</div>${tog(S.mute[c.id],'mute',c.id)}</div>`).join('')}</div></div>
+ <div class="sec"><div class="card">${navRow('Widgets','Next due, test countdown, last grade change','push','widgets')}<div class="pad"><div class="t">Retest line</div><div class="s" style="margin-bottom:8px">Picked at setup. A new test grade under this sends you a reminder. Sample pick: 80.</div>${seg('lineP',[80,90].includes(S.line)&&!S.lineOwn?String(S.line):'own',[['80','80'],['90','90'],['own','Type your own']])}${S.lineOwn||![80,90].includes(S.line)?`<div style="height:8px"></div><input class="f w" type="number" inputmode="decimal" aria-label="Retest line" value="${S.line}" data-i="line">`:''}</div><div class="row"><div class="grow"><div class="t">Face ID to open</div>${S.faceid?`<div class="s" role="button" tabindex="0" ${act('lock')} style="text-decoration:underline">Try it now</div>`:''}</div>${tog(S.faceid,'faceid')}</div></div></div>
+ <div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${act('signout')}><div class="t">Sign out</div></div></div></div><div class="foot" style="padding-top:0">Preview. Some features aren't built yet.<br>Preview with made up sample data. Independent app. Not made by your school or district.</div>`}
+function wData(kind,cid){const ok=x=>cid==='all'||x===cid;
+ if(kind==='due'){const it=sortI(items().filter(i=>i.off!=null&&i.off>=0&&!S.done[i.id]&&(cid==='all'||(i.rid&&rowBy(i.rid).c.id===cid))))[0];return it?{k:'Next due',v:esc(it.title),s:(it.off===0?'Today':it.off===1?'Tomorrow':short(it.off))}:{k:'Next due',v:'All clear',s:''}}
+ if(kind==='test'){let best=null;for(const c of CLASSES)if(ok(c.id))for(const r of c.rows)if(r.cat==='Test'&&!scored(r)&&!r.pending&&r.d>=0){const o=dueOf(r);if(!best||o<best.o)best={o,t:r.title}}return best?{k:'Test countdown',h:best.o,v:'days',s:esc(best.t)}:{k:'Test countdown',v:'No tests',s:''}}
+ const l=S.log.find(x=>ok(x.cid));if(!l)return{k:'Last grade change',v:'Nothing yet',s:''};return{k:'Last grade change',v:esc(l.line),s:`${esc(l.title)}, ${sgn(l.after-l.before)}`}}
+function wg(kind,size,cid){const w=wData(kind,cid);return `<div class="wg ${size==='medium'?'medium':'small'}"><div class="k">${w.k}</div><div>${w.h!=null?`<div class="h">${w.h} <span class="bigm" style="font-size:18px">${w.v}</span></div>`:`<div class="v">${w.v}</div>`}<div class="s">${w.s}</div></div></div>`}
+function lockShot(){const a=wData('due','all'),b=wData('test','all'),c=wData('change','all');return `<div class="lock"><div class="d">${long(0)}</div><div class="clock">9:37</div><div class="lw"><div class="c"><b>${b.h??''}</b><small>days</small></div><div class="c"><b>${c.v.split(' ')[0]}</b><small>last</small></div><div class="r">${a.v}<small>${a.s}, next due</small></div><div class="r">${c.s}<small>Last grade change</small></div></div></div>`}
+function widgets(){const opts=[['due','Next due'],['test','Test countdown'],['change','Last grade change']];const pick=CLASSES.filter(c=>c.rows.length);return `<div class="sec">${hd('Pick a size and a class','Your ','widgets',{big:1})}</div>`+opts.map(([k,l])=>{const o=S.wg[k];return `<div class="sec"><div class="lab" style="margin-bottom:6px">${l}</div><div class="card"><div class="pad"><div class="wgrid">${wg(k,o.size,o.cid)}</div>${seg('wgS:'+k,o.size,[['small','Small'],['medium','Medium']])}<div class="chips" style="margin-top:8px;padding-bottom:0"><button class="chip${o.cid==='all'?' on':''}" ${act('wgC',k,'all')}>All classes</button>${pick.map(c=>`<button class="chip${o.cid===c.id?' on':''}" ${act('wgC',k,c.id)}>${esc(c.name)}</button>`).join('')}</div></div></div></div>`}).join('')+`<div class="sec"><div class="lab" style="margin-bottom:6px">Lock screen</div>${lockShot()}</div>`}
+// SHEETS
+function sheet(){const s=S.sheet;if(!s)return '';let t='',b='',l='',r='';
+ if(s.k==='wi'){const c=cls(s.cid);t=s.tool?WT.find(w=>w[0]===s.tool)[1]:'What if';if(s.tool)l=`<button class="pill round" aria-label="Back" ${act('wiT','')}>\u2039</button>`;r=`<button class="pill" ${act('closeSheet')}>Done</button>`;b=wiSheet(c,s.tool)}
+ if(s.k==='district'){t='School district';l=`<button class="pill" ${act('closeSheet')}>Cancel</button>`;b=`<div class="card">${['Maple Ridge ISD','Cedar Hollow ISD','Riverbend ISD','Sample Valley ISD'].map(n=>`<div class="row" role="button" tabindex="0" ${act('pickD',n)}><div class="t">${n}</div></div>`).join('')}</div><div style="height:12px"></div><button class="pill" style="width:100%;padding:13px" ${act('pickD','')}>My district isn't listed</button><div class="foot">Sample district names, all made up.</div>`}
+ if(s.k==='add'){t='Add to-do';l=`<button class="pill" ${act('closeSheet')}>Cancel</button>`;r=`<button class="pill" ${act('saveTodo')}>Save</button>`;const f=S.form;b=`<div class="card"><div class="pad"><input class="f w" placeholder="What do you need to do?" value="${esc(f.title||'')}" data-i="form" data-x="title" aria-label="To-do"></div><div class="row"><div class="grow t">Due date</div>${tog(f.hasDate,'formDate')}</div>${f.hasDate?`<div class="row"><div class="grow t">Due</div><input class="f" type="date" aria-label="Due" value="${f.due||iso(1)}" data-i="form" data-x="due"></div>`:''}</div>`}
+ if(s.k==='tests'){t='Test dates';r=`<button class="pill" ${act('closeSheet')}>Done</button>`;b=`<div class="card">${CATALOG.map(k=>`<div class="pad" style="border-top:1px solid var(--rule)"><div class="t" style="margin-bottom:8px">${k.name}, ${k.teacher}</div>${seg('pick:'+k.key,S.picks[k.key]||'off',[['off','Off'],['A','A day'],['B','B day']])}</div>`).join('')}</div><div class="foot">Dates come from Test Date Radar and are unofficial. Confirm with your teacher.</div>`}
+ if(s.k==='task'){const it=items().find(i=>i.id===s.id);if(!it){S.sheet=null;return ''}t=it.title;r=`<button class="pill" ${act('closeSheet')}>Done</button>`;const row=it.rid?rowBy(it.rid).r:null;
+  b=`<div class="card"><div class="row"><div class="mark" role="button" tabindex="0" aria-label="Toggle done" ${act('tick',it.id)}><b class="${S.done[it.id]?'on':''}"></b></div><div class="grow"><div class="t">${S.done[it.id]?'Done':'Not done yet'}</div>${it.detail?`<div class="s">${esc(it.detail)}</div>`:''}</div></div>${it.off!=null?`<div class="row"><div class="grow"><div class="t" style="font-size:15px">Your due date${row?NB:''}</div>${row?`<div class="s">Teacher's date ${short(row.d)}${row.id in S.over?'. Your copy only.':''}</div>`:''}</div><input class="f" type="date" aria-label="Your due date" value="${iso(it.off)}" data-c="due" data-x="${esc(it.id)}"></div>`:''}${row&&row.id in S.over?`<div class="row" role="button" tabindex="0" ${act('resetDue',row.id)}><div class="s" style="text-decoration:underline">Go back to the teacher's date</div></div>`:''}</div>`;
+  if(it.off!=null&&it.off>=0)b+=`<div style="height:12px"></div><div class="lab" style="margin-bottom:6px">Reminders${NB}</div><div class="card">${it.off>0?`<div class="row"><div class="grow t" style="font-size:15px">Night before</div><div class="s">${short(it.off-1)}, 7 PM</div></div>`:''}<div class="row"><div class="grow t" style="font-size:15px">Morning of</div><div class="s">${short(it.off)}, 7 AM</div></div></div>`;
+  if(it.big)b+=`<div style="height:12px"></div><button class="btn" ${act('openPace')}>See the pace for this project</button>`;
+  if(row)b+=`<div style="height:10px"></div><button class="btn ghost" ${act('openAsg',row.id)}>Assignment details</button>`;
+  if(it.src==='typed')b+=`<div style="height:10px"></div><button class="btn ghost" ${act('delTodo',it.id)}>Delete</button>`}
+ if(s.k==='period'){t='Marking period';r=`<button class="pill" ${act('closeSheet')}>Done</button>`;b=`<div class="card">${[['Q1','Quarter 1'],['Q2','Quarter 2, current'],['Q3','Quarter 3'],['Q4','Quarter 4']].map(([k,n])=>`<div class="row" role="button" tabindex="0" ${act('setP',k)}><div class="grow t">${n}</div>${S.period===k?'<span class="t">✓</span>':''}</div>`).join('')}</div><div class="foot">Opens on the current quarter.${NB}</div>`}
+ if(s.k==='mail'){const c=cls(s.cid),rr=s.rid?rowBy(s.rid).r:null;t='Email teacher';r=`<button class="pill" ${act('closeSheet')}>Done</button>`;const subj=rr?`${c.name}: ${rr.title}`:`${c.name}: question`;b=`<div class="card"><div class="row"><div class="s" style="width:50px">To</div><div class="t" style="font-size:15px">${esc(c.teacher)}</div></div><div class="row"><div class="s" style="width:50px">Subject</div><div class="t" style="font-size:15px">${esc(subj)}</div></div><div class="pad" style="border-top:1px solid var(--rule);font-size:15px;line-height:1.4">Hi ${esc(c.teacher)},<br><br>I had a question about ${esc(rr?rr.title:'my grade in '+c.name)}${rr?` (${scoreLine(rr)}, ${c.name})`:''}. Could you take a look when you get a chance?<br><br>Thank you,<br>Sample Student</div></div><div class="foot">A draft preview. Nothing gets sent from here.${NB}</div>`}
+ if(s.k==='addclass'){const f=S.form;const full=S.typed.length>=TYPED_CAP;t='Add a class';l=`<button class="pill" ${act('closeSheet')}>Cancel</button>`;if(!full)r=`<button class="pill" ${act('saveClass')}>Add</button>`;b=full?`<div class="card"><div class="pad"><div class="t">You've used all ${TYPED_CAP}</div><div class="s">Typed in classes stop at ${TYPED_CAP}. Classes from your gradebook have no limit.</div></div></div>`:`<div class="card"><div class="pad"><input class="f w" placeholder="Class name, like Dual Credit English" value="${esc(f.cname||'')}" data-i="form" data-x="cname" aria-label="Class name"></div><div class="row"><div class="grow t">Current grade</div><input class="f" type="number" inputmode="decimal" aria-label="Current grade" placeholder="90" value="${esc(f.cgrade||'')}" data-i="form" data-x="cgrade"></div><div class="pad" style="border-top:1px solid var(--rule)">${seg('clvl',f.clvl||'DC',[['DC','Dual credit'],['AP','Self study AP'],['R','Regular']])}</div></div><div class="foot">${S.typed.length} of ${TYPED_CAP} typed in classes used. Classes from your gradebook have no limit.</div>`}
+ return `<div class="dim" ${act('dimClose')}><div class="sheet${animKey()!==lastAnim?' anim':''}" role="dialog" aria-modal="true"><div class="bar"><div style="min-width:70px">${l}</div><div class="ttl">${esc(t)}${s.k==='wi'?NB:''}</div><div style="min-width:70px;text-align:right">${r}</div></div><div class="body">${b}</div></div></div>`}
+let lastSheet='',lastAnim='';const animKey=()=>S.sheet?S.sheet.k+(S.sheet.id||''):'';const sheetKey=()=>S.sheet?S.sheet.k+(S.sheet.tool||'')+(S.sheet.id||''):'';
+// SIGN IN
+function signin(){const rev=S.dist||S.notList;return `<div class="scr"><div class="scroll nt" style="padding-top:calc(env(safe-area-inset-top) + 44px)"><div class="sec">${hd('School gradebook',rev?'Sign ':'Choose your ',rev?'in':'district',{big:1})}<div class="card"><div class="row" role="button" tabindex="0" ${act('chooseD')}><div class="grow t">${S.notList?"My district isn't listed":S.dist?esc(S.dist):'Search districts'}</div>${chev}</div>${S.notList?`<div class="row"><div class="t" style="color:var(--sec)">gradebook.yourdistrict.example</div></div>`:''}</div></div>
+ ${rev?`<div class="sec"><div class="card"><div class="row"><div class="t">Sample Student</div></div><div class="row"><div class="t" style="letter-spacing:2px">••••••••</div></div></div><div class="foot">Nothing to type here, this preview doesn't take a login.</div></div><button class="btn" ${act('enter')}>Sign in</button>`:''}
+ <div class="foot" style="margin-top:22px;padding-left:0;padding-right:0">Preview. Some features aren't built yet.<br>Preview with made up sample data<br>Independent app. Not made by your school or district.</div></div>${sheet()}</div>`}
+// SHELL
+const ICONS={home:'<path d="M3.5 11.5 12 4l8.5 7.5V20h-6v-5h-5v5h-6z" fill="currentColor"/>',grades:'<path d="M5 5h14M5 12h14M5 19h9" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/>',calendar:'<rect x="3.5" y="5" width="17" height="15.5" rx="3.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',bell:'<circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 7v5l3.2 2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>'};
+const LABELS={home:'Home',grades:'Grades',calendar:'Calendar',bell:'Bell'};
+const topR=()=>{const s=S.stacks[S.tab];return s[s.length-1]};
+function pageOf(r){const[n,x]=r;switch(n){case 'class':{const c=cls(x);return{t:c.name,b:classPage(c),e:''}}case 'asg':return{t:rowBy(x).r.title,b:asgPage(x),e:NB};case 'gpagoal':return{t:'GPA goal',b:goalPage(),e:NB};case 'gpa':return{t:'GPA',b:gpaPage(),e:NB};case 'need':return{t:'What do I need',b:needPage(),e:NB};case 'gpawi':return{t:'GPA what if',b:gpaWi(),e:NB};case 'misseff':return{t:'Missing work',b:missEff(),e:NB};case 'changes':return{t:'What changed',b:changes(),e:NB};case 'alerts':return{t:'Alerts',b:alerts(),e:NB};case 'settings':return{t:'Settings',b:settings(),e:NB};case 'widgets':return{t:'Widgets',b:widgets(),e:NB};case 'pace':return{t:'Pacing',b:pacePage(),e:NB}}}
+function view(){if(S.scr==='in')return signin();const r=topR();let nav,body;
+ if(r){const p=pageOf(r);nav=`<div class="nav sub"><button class="pill round" aria-label="Back" ${act('back')}>‹</button><div class="ttl">${esc(p.t)}</div>${p.e}</div>`;body=p.b}
+ else if(S.tab==='home'){nav=`<div class="nav"><div class="ttl">Home</div><button class="pill" ${act('sheet','tests')}>Test dates</button><button class="pill round" aria-label="Add" ${act('sheet','add')}>+</button></div>`;body=home()}
+ else if(S.tab==='grades'){nav=`<div class="nav"><div class="ttl">Grades</div>${S.edit?`<button class="pill" ${act('edit')}>Done</button>`:`<button class="pill" ${act('edit')}>Edit</button><button class="pill round" aria-label="Settings" ${act('push','settings')}><svg width="19" height="19" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8" cy="17" r="2.4" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>`}</div>`;body=grades()}
+ else if(S.tab==='calendar'){nav=`<div class="nav"><div class="ttl">Calendar</div></div>`;body=calendar()}
+ else{nav=`<div class="nav"><div class="ttl">Bell</div>${NB}</div>`;body=bell()}
+ return `<div class="scr">${nav}<div class="scroll" id="main">${body}</div></div><nav class="tabs">${['home','grades','calendar','bell'].map(t=>`<button class="tab${S.tab===t?' on':''}" ${act('tab',t)}><svg width="24" height="24" viewBox="0 0 24 24">${ICONS[t]}</svg>${LABELS[t]}</button>`).join('')}</nav>${sheet()}${S.banner?`<div class="banner${S.banner.fresh?' anim':''}" role="status" ${act('bannerTap')}><div class="t">${esc(S.banner.t)}</div><div class="s">${S.banner.b}</div></div>`:''}${S.lock?`<div class="lk" ${act('unlock')}><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M8.5 9v1.5M15.5 9v1.5M12 9v4l-1 .6M8.8 16c2 1.6 4.4 1.6 6.4 0"/></svg><div class="t">Face ID</div></div>`:''}`}
+const routeKey=()=>S.scr+'/'+S.tab+'/'+S.stacks[S.tab].map(r=>r.join(':')).join('/');
+let lastKey='';
+function render(){const m=$('#main');if(m&&lastKey)S.scroll[lastKey]=m.scrollTop;const sb=$('.sheet .body');const st=sb?sb.scrollTop:0,same=sheetKey()===lastSheet;$('#app').innerHTML=view();lastSheet=sheetKey();lastAnim=animKey();const nb=$('.sheet .body');if(nb&&same)nb.scrollTop=st;lastKey=routeKey();const n=$('#main');if(n)n.scrollTop=S.scroll[lastKey]||0;const t=$('#tape');if(t){const cu=t.querySelector('.cur');t.scrollTop=S.tapeTop??(cu?cu.offsetTop-8:0)}}
+function live(){const nodes=$$('[data-live]');if(!nodes.length)return;const tmp=document.createElement('div');tmp.innerHTML=view();const fresh=tmp.querySelectorAll('[data-live]');if(fresh.length!==nodes.length){render();return}nodes.forEach((n,i)=>{if(n.innerHTML!==fresh[i].innerHTML)n.innerHTML=fresh[i].innerHTML})}
+// RELOAD
+function startLoad(apply){if(S.loading)return;S.loading=true;render();setTimeout(()=>{S.loading=false;S.updated=Date.now();if(apply){S.wait=Date.now()+6e4;applyNext()}render()},1300)}
+function applyNext(){const q=[['chem','Reactions Test',78],['span','Workbook 5',16]][S.qi];if(!q)return;S.qi++;const c=cls(q[0]),r=c.rows.find(x=>x.title===q[1]),before=avgOf(c.rows);r.score=q[2];delete r.pending;const after=avgOf(c.rows);const l={cid:c.id,title:r.title,cat:r.cat,line:scoreLine(r),low:under(r),before,after,ago:'Just now'};S.log.unshift(l);if(!S.mute[c.id])showBanner(c.name,alertBody(l))}
+let bT;function showBanner(t,b){S.banner={t,b,fresh:true};setTimeout(()=>{if(S.banner)S.banner.fresh=false},400);clearTimeout(bT);bT=setTimeout(()=>{S.banner=null;render()},6000)}
+// ACTIONS
+const A={
+ chooseD(){S.sheet={k:'district'}},pickD(n){S.dist=n||null;S.notList=!n;S.sheet=null},
+ enter(){S.scr='app';S.tab='home';startLoad(false);return false},
+ closeSheet(){S.sheet=null;S.form={}},dimClose(x,y,el,ev){if(ev.target===el){S.sheet=null;S.form={}}else return false},
+ tab(t){if(S.tab===t)S.stacks[t]=[];S.tab=t;S.edit=false},
+ push(x,y){S.edit=false;S.stacks[S.tab].push(y!=null?[x,y]:[x])},back(){S.stacks[S.tab].pop()},
+ sheet(k){S.form={};S.sheet={k}},task(id){S.sheet={k:'task',id}},
+ tick(id){if(S.done[id])delete S.done[id];else S.done[id]=1},
+ reload(){startLoad(true);return false},
+ goBell(){S.tab='bell';S.stacks.bell=[]},
+ edit(){S.edit=!S.edit},period(){S.sheet={k:'period'}},setP(k){S.period=k;S.sheet=null},
+ mv(id,d){const o=S.order,i=o.indexOf(id),j=i+ +d;if(j>=0&&j<o.length){[o[i],o[j]]=[o[j],o[i]]}},hide(id){S.hide[id]=!S.hide[id]},delClass(id){S.typed=S.typed.filter(c=>c.id!==id);S.order=S.order.filter(x=>x!==id)},
+ signout(){S.scr='in';S.dist=null;S.notList=false;S.edit=false;S.tab='home';Object.keys(S.stacks).forEach(k=>S.stacks[k]=[]);S.updated=null},
+ mail(cid,rid){S.sheet={k:'mail',cid,rid}},
+ gpt(cid,i){S.gsel[cid]=+i},
+ wiReset(cid){delete S.wi[cid]},wiOpen(cid){S.sheet={k:'wi',cid,tool:null}},wiT(k){S.sheet.tool=k||null;if(k==='need')S.need.cid=S.sheet.cid},openGoal(){S.sheet=null;S.stacks[S.tab].push(['gpagoal'])},
+ fkAdd(cid){const w=wi(cid),f=w.fk;if(!f.name.trim()||!(+f.pts>0)||f.score==='')return false;w.fake.push({id:'f'+S.nextT++,name:f.name.trim(),cat:f.cat,pts:f.pts,score:f.score});w.fk={name:'',cat:f.cat,pts:f.pts,score:''}},fkDel(cid,id){const w=wi(cid);w.fake=w.fake.filter(f=>f.id!==id)},lineP(v){if(v==='own')S.lineOwn=true;else{S.lineOwn=false;S.line=+v}},wiDropT(cid){const w=wi(cid);w.drop=!w.drop},
+ scenSave(cid){const c=cls(cid),l=S.scen[cid]||(S.scen[cid]=[]);const st=JSON.parse(JSON.stringify(wi(cid)));l.push({name:'Scenario '+(l.length+1),st,avg:wiAvg(c,st)});S.sheet.tool='scen'},scenDel(cid,i){S.scen[cid].splice(+i,1)},
+gwReset(){S.gw={}},
+ needC(id){S.need.cid=id},needK(k){S.need.kind=k},wiFill(cid,v){const c=cls(cid),w=wi(cid);for(const r of blankLeft(c)){let p=+v;if(v==='usual'){const q=c.rows.filter(x=>x.cat===r.cat&&scored(x));p=q.length?q.reduce((a,x)=>a+x.score,0)/q.reduce((a,x)=>a+x.total,0)*100:avgOf(c.rows)}w.scores[r.id]=String(Math.round(p/100*r.total*10)/10)}},
+ sampleAlert(){const l=S.log[0];showBanner(cls(l.cid).name,alertBody(l))},bannerTap(){S.banner=null;S.tab='grades';S.stacks.grades=[['changes']]},
+ paceM(i,d){const p=S.pace[+i],due=dueOf(rowBy('hist3').r),n=p.off+ +d;if(n>=0&&n<=due)p.off=n;},
+ openPace(){S.sheet=null;S.stacks[S.tab].push(['pace'])},openAsg(id){S.sheet=null;S.stacks[S.tab].push(['asg',id])},
+ resetDue(id){delete S.over[id]},delTodo(id){S.todos=S.todos.filter(t=>t.id!==id);S.sheet=null},
+ formDate(){S.form.hasDate=!S.form.hasDate},saveTodo(){const f=S.form,t=(f.title||'').trim();if(!t)return false;S.todos.push({id:'t'+S.nextT++,title:t,off:f.hasDate?fromIso(f.due||iso(1)):null});S.sheet=null;S.form={}},
+ saveClass(){const f=S.form,n=(f.cname||'').trim(),g=parseFloat(f.cgrade);if(!n||isNaN(g)||S.typed.length>=TYPED_CAP)return false;const lvl=f.clvl||'DC',id='x'+S.nextT++;S.typed.push({id,typed:true,name:n,grade:g,level:lvl,levelName:{DC:'dual credit',AP:'self study AP',R:'regular'}[lvl],teacher:'',abs:0,tardy:0,rows:[]});S.order.push(id);S.sheet=null;S.form={}},
+ clvl(v){S.form.clvl=v},
+ day(o){S.sel=+o},calM(d){S.calM=(S.calM??0)+ +d},
+ look(v){S.look=v;S.bellSel=null;S.tapeTop=null},bday(v){S.bellDay=v;S.bellSel=null;S.tapeTop=null},bsel(i){S.bellSel=+i},
+ mute(id){S.mute[id]=!S.mute[id]},faceid(){S.faceid=!S.faceid;if(S.faceid)A.lock()},
+ lock(){S.lock=true;setTimeout(A.unlock,1300)},unlock(){if(!S.lock)return false;S.lock=false;S.tab='home';S.stacks.home=[];S.scroll={};lastKey='';S.updated=null;startLoad(false);return false},
+ wgC(k,c){S.wg[k].cid=c},
+};
+document.addEventListener('click',ev=>{if(lpFired){lpFired=false;return}const el=ev.target.closest('[data-a]');if(!el)return;const a=el.dataset.a,x=el.dataset.x,y=el.dataset.y;let out;
+ if(a.includes(':')){const[k,id]=a.split(':');if(k==='gw')S.gw[id]=x;else if(k==='pick'){if(x==='off')delete S.picks[id];else S.picks[id]=x}else if(k==='wgS')S.wg[id].size=x;else if(k==='fkC')wi(id).fk.cat=x}
+ else if(A[a])out=A[a](x,y,el,ev);
+ if(out!==false)render()});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[role=button]')){e.preventDefault();e.target.click()}});
+const I={rename(v,x){cls(x).name=v},goal(v,x){if(v==='')delete S.goals[x];else S.goals[x]=+v},
+ wi(v,x,y){wi(x).scores[y]=v},wiX(v,x){wi(x).extra=v},wiC(v,x,y){wi(x).corr[y]=v},fin(v,x){S.fin[x]=v},needT(v){S.need.target=v},
+ fk(v,x,y){wi(x).fk[y]=v},wiCu(v,x,y){wi(x).curve[y]=v},sem(v,x,y){S.sem[x][y]=v},scenN(v,x,y){S.scen[x][+y].name=v},ggoal(v){S.ggoal=v},under(v){S.under=+v||0},line(v){S.line=+v||0},paceN(v,x){S.pace[+x].title=v},form(v,x){S.form[x]=v}};
+document.addEventListener('input',e=>{const d=e.target.dataset;if(d.i&&I[d.i]){I[d.i](e.target.value,d.x,d.y);live()}});
+document.addEventListener('change',e=>{const d=e.target.dataset;if(d.c==='due'&&e.target.value){const n=fromIso(e.target.value),id=d.x;const t=S.todos.find(q=>q.id===id);if(t)t.off=n;else if(/^cp/.test(id))S.pace[+id.slice(2)].off=n;else if(rowBy(id))S.over[id]=n;render()}});
+document.addEventListener('scroll',e=>{if(e.target&&e.target.id==='tape')S.tapeTop=e.target.scrollTop},true);
+// long press + pull
+let lpT,lpFired=false,pullY=null,pullD=0;
+document.addEventListener('pointerdown',e=>{const el=e.target.closest('[data-lp]');if(el)lpT=setTimeout(()=>{lpFired=true;S.edit=true;render();setTimeout(()=>lpFired=false,700)},520)});
+['pointerup','pointercancel','pointermove'].forEach(n=>document.addEventListener(n,e=>{if(n!=='pointermove'||Math.abs(e.movementY)>3)clearTimeout(lpT)}));
+document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-lp]'))e.preventDefault()});
+document.addEventListener('touchstart',e=>{const m=$('#main');pullY=(m&&m.contains(e.target)&&m.scrollTop<=0&&!S.stacks[S.tab].length&&S.tab!=='bell'&&!e.target.closest('#tape'))?e.touches[0].clientY:null;pullD=0},{passive:true});
+document.addEventListener('touchmove',e=>{if(pullY==null)return;pullD=e.touches[0].clientY-pullY},{passive:true});
+document.addEventListener('touchend',()=>{if(pullY!=null&&pullD>80){if(Date.now()>=S.wait)startLoad(true)}pullY=null},{passive:true});
+setInterval(()=>{if(S.scr==='app'&&!S.lock&&!S.loading){if(S.wait&&Date.now()>=S.wait&&$('.strip .pill[disabled]')){S.wait=0}live()}},1000);
+render();
+</script>
+</body>
+</html>
