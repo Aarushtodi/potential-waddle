@@ -1,0 +1,119 @@
+/**
+ * Boot and event wiring. Data flow, one direction:
+ *
+ *   tap / keystroke  ->  actions.js changes `state`  ->  render.js redraws from `state`
+ *
+ * One delegated listener per event type reads the data-* attributes the views put on elements,
+ * so views never attach listeners themselves.
+ */
+import { qs } from './format.js';
+import { state, whatIfFor, whatIfAverage } from './state.js';
+import { CLASSES } from './sample-data.js';
+import { render, refreshLive } from './render.js';
+import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
+
+const LONG_PRESS_MS = 520;
+const PULL_TO_REFRESH_PX = 80;
+
+// Set by a long press so the click that follows it does not also open the class.
+let longPressFired = false;
+let longPressTimer;
+
+document.addEventListener('click', event => {
+  if (longPressFired) {
+    longPressFired = false;
+    return;
+  }
+  const element = event.target.closest('[data-action]');
+  if (!element) return;
+  const { action, x, y } = element.dataset;
+  const handler = actions[action];
+  const result = handler ? handler(x, y, element, event) : undefined;
+  if (result !== false) render();
+});
+
+// Rows marked role=button work from the keyboard too.
+document.addEventListener('keydown', event => {
+  if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('[role=button]')) {
+    event.preventDefault();
+    event.target.click();
+  }
+});
+
+// Typing updates state, then only the live regions, so the field keeps focus.
+document.addEventListener('input', event => {
+  const { input, x, y } = event.target.dataset;
+  if (input && inputHandlers[input]) {
+    inputHandlers[input](event.target.value, x, y);
+    refreshLive();
+  }
+});
+
+document.addEventListener('change', event => {
+  const { change, x } = event.target.dataset;
+  if (change === 'dueDate' && event.target.value) {
+    changeDueDate(x, event.target.value);
+    render();
+  }
+});
+
+document.addEventListener('scroll', event => {
+  if (event.target && event.target.id === 'tape') state.tapeScrollTop = event.target.scrollTop;
+}, true);
+
+// ---- Long press a class to edit the list ---------------------------------------------------
+
+document.addEventListener('pointerdown', event => {
+  if (!event.target.closest('[data-long-press]')) return;
+  longPressTimer = setTimeout(() => {
+    longPressFired = true;
+    state.editingClasses = true;
+    render();
+    setTimeout(() => (longPressFired = false), 700);
+  }, LONG_PRESS_MS);
+});
+for (const type of ['pointerup', 'pointercancel', 'pointermove']) {
+  document.addEventListener(type, event => {
+    if (type !== 'pointermove' || Math.abs(event.movementY) > 3) clearTimeout(longPressTimer);
+  });
+}
+document.addEventListener('contextmenu', event => {
+  if (event.target.closest('[data-long-press]')) event.preventDefault();
+});
+
+// ---- Pull to refresh on a tab's root page --------------------------------------------------
+
+let pullStartY = null;
+let pullDistance = 0;
+document.addEventListener('touchstart', event => {
+  const main = qs('#main');
+  const canPull = main && main.contains(event.target) && main.scrollTop <= 0
+    && !state.pageStacks[state.tab].length && state.tab !== 'bell' && !event.target.closest('#tape');
+  pullStartY = canPull ? event.touches[0].clientY : null;
+  pullDistance = 0;
+}, { passive: true });
+document.addEventListener('touchmove', event => {
+  if (pullStartY == null) return;
+  pullDistance = event.touches[0].clientY - pullStartY;
+}, { passive: true });
+document.addEventListener('touchend', () => {
+  if (pullStartY != null && pullDistance > PULL_TO_REFRESH_PX && Date.now() >= state.nextUpdateAllowedAt) {
+    startRefresh(true);
+  }
+  pullStartY = null;
+}, { passive: true });
+
+// ---- Once a second: clock, "Updated N min ago", Update cooldown ---------------------------
+
+setInterval(() => {
+  if (state.screen !== 'app' || state.locked || state.loading) return;
+  if (state.nextUpdateAllowedAt && Date.now() >= state.nextUpdateAllowedAt && qs('.strip .pill[disabled]')) {
+    state.nextUpdateAllowedAt = 0;
+  }
+  refreshLive();
+}, 1000);
+
+render();
+
+// Handle for the Playwright checks in dev/shots.js. The app itself never reads it.
+window.gradeApp = { state, actions, render, CLASSES, whatIfFor, whatIfAverage };
