@@ -1142,10 +1142,10 @@ input[type=date].f {
   padding: 0 16px;
 }
 
-/* The art is the hero: drawn 1.3x, centered in the upper part of the slide. That part has a
-   fixed height, so the headline right under it is in the same spot on every slide. */
+/* The art is the hero: drawn 1.3x, centered in all the space above the text. The text block
+   sits just above the dots with a fixed height, so the headline is in the same spot on every slide. */
 .intro-art {
-  flex: 0 0 48%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1158,6 +1158,8 @@ input[type=date].f {
 }
 
 .intro-text {
+  flex: none;
+  height: 200px;
   padding-top: 8px;
 }
 
