@@ -25,13 +25,14 @@ It deploys as a static site on Vercel.
 
 ```
 index.html              Shell only: one <div id="app">, the stylesheet, and js/app.js
-css/app.css             All styles. Light and dark themes, phone frame on wide screens
+css/app.css             All styles. Light and dark themes (data-theme or the phone setting), phone frame on wide screens
 js/app.js               Boot. Wires click / input / change / touch events to actions, starts the 1 s tick
 js/state.js             The one mutable `state` object, plus selectors (read-only questions about it)
 js/actions.js           Everything a tap or keystroke does. Also the simulated gradebook refresh
 js/render.js            render(): redraw from state. refreshLive(): patch only [data-live] parts
 js/grade-math.js        Pure grade math: averages, weights, what if, semester split, GPA (JSDoc'd)
 js/schedule.js          Bell schedule: current period, minutes left
+js/theme.js             Appearance: Light, Dark or Match my phone, saved in localStorage, crossfade on change
 js/format.js            Escaping, sample calendar (day offsets), number and date text
 js/sample-data.js       SAMPLE DATA: classes, rows, past report card, bell schedule, test dates
 js/views/shell.js       view(): top bar + current page + tab bar + sheet / banner / Face ID cover
@@ -47,6 +48,7 @@ js/views/sheets.js      Other bottom sheets: district, add to-do, test dates, ta
 js/views/changes.js     What changed and Alerts pages
 js/views/pace.js        Pacing page for the long project
 js/views/intro.js       Intro slides before the district pick (and from Settings > Show intro again)
+js/views/theme-pick.js  Pick a look, after the intro and before sign in (3 cards with mini Home pictures)
 js/views/signin.js      Sign in
 dev/                    Handoff notes and a Playwright check script. Not deployed (.vercelignore)
 ```
@@ -94,4 +96,4 @@ what a student hopes:
 | Face ID is a 1.3 s cover | Real Face ID |
 | Email teacher shows a draft | Opens Mail |
 | Widgets and lock screen are pictures | Real iOS widgets |
-| State resets on reload | Saved on the phone |
+| State resets on reload (except the Appearance pick, kept in localStorage) | Saved on the phone |

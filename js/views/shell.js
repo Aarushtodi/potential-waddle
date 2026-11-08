@@ -7,6 +7,7 @@ import { state, findClass, findRow } from '../state.js';
 import { actionAttrs } from './components.js';
 import { introView } from './intro.js';
 import { signInView } from './signin.js';
+import { themePickView } from './theme-pick.js';
 import { homeNav, homeView, missingPageView } from './home.js';
 import { gradesView, classView, assignmentView } from './grades.js';
 import { gpaView, needView, gpaWhatIfView, gpaGoalView } from './gpa.js';
@@ -76,6 +77,7 @@ function tabRoot(tab) {
 
 export function view() {
   if (state.screen === 'intro') return introView();
+  if (state.screen === 'theme') return themePickView();
   if (state.screen === 'signin') return signInView();
 
   const stack = state.pageStacks[state.tab];

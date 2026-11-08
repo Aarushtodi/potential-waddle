@@ -1,4 +1,4 @@
-/** Settings page (alert rules, retest line, Face ID) and the Widgets preview page. */
+/** Settings page (alert rules, retest line, Face ID, appearance) and the Widgets preview page. */
 import { escapeHtml, shortDate, longDate, signed } from '../format.js';
 import { isScored } from '../grade-math.js';
 import { CLASSES } from '../sample-data.js';
@@ -6,6 +6,7 @@ import { state, todoItems, sortByDue, findRow, effectiveDue } from '../state.js'
 import { actionAttrs, heading, navRow, segmented, toggle } from './components.js';
 
 const RETEST_LINE_CHOICES = [80, 90];
+const THEME_CHOICES = [['light', 'Light'], ['dark', 'Dark'], ['system', 'Match my phone']];
 
 export function settingsView() {
   const muteRows = CLASSES.map(course =>
@@ -42,6 +43,8 @@ export function settingsView() {
     + `<div class="row"><div class="grow"><div class="t">Hide scores</div>`
     + `<div class="s">Home shows words instead of grades and points</div></div>`
     + `${toggle(state.hideScores, 'toggleHideScores')}</div>`
+    + `<div class="pad"><div class="t" style="margin-bottom:8px">Appearance</div>`
+    + `<div class="seg-fit">${segmented('pickTheme', state.theme, THEME_CHOICES)}</div></div>`
     + `</div></div>`
     + `<div class="sec"><div class="card">${navRow('Show intro again', '', 'showIntro')}</div></div>`
     + `<div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('signOut')}>`

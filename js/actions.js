@@ -17,6 +17,7 @@ import {
 import { render } from './render.js';
 import { alertText } from './views/changes.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
+import { THEMES, saveTheme, applyTheme, crossfade } from './theme.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
 
@@ -88,11 +89,26 @@ export const actions = {
   skipIntro() {
     state.screen = state.introReturnTo;
   },
-  /** Settings > Show intro again. Leaving it goes back to Settings, not to sign in. */
+  /** Settings > Show intro again. Leaving it goes back to Settings, skipping Pick a look and sign in. */
   showIntro() {
     state.introSlide = 0;
     state.introReturnTo = 'app';
     state.screen = 'intro';
+  },
+
+  // Appearance (Pick a look screen and Settings): applies right away with a crossfade.
+  pickTheme(theme) {
+    if (!THEMES.includes(theme) || theme === state.theme) return false;
+    crossfade(() => {
+      state.theme = theme;
+      saveTheme(theme);
+      applyTheme(theme);
+      render();
+    });
+    return false;
+  },
+  finishThemePick() {
+    state.screen = 'signin';
   },
 
   // Sign in

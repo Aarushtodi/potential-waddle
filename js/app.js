@@ -12,6 +12,7 @@ import { CLASSES } from './sample-data.js';
 import { render, refreshLive, collapseHeader } from './render.js';
 import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
+import { applyTheme } from './theme.js';
 
 const LONG_PRESS_MS = 520;
 const PULL_TO_REFRESH_PX = 80;
@@ -143,6 +144,7 @@ setInterval(() => {
   refreshLive();
 }, 1000);
 
+applyTheme(state.theme);
 render();
 
 // Handle for the Playwright checks in dev/shots.js. The app itself never reads it.
