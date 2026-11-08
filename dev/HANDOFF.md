@@ -19,6 +19,7 @@ Batches applied:
   - Extra shots script: /private/tmp/claude-501/-Users-todismacbook/1e7f8f7d-bacc-4f11-9c35-83a360759172/scratchpad/shots2.js (may be gone after the session; it pushes stacks and calls A.wiOpen / A.wiT / A.wiFill, then screenshots b2-*.png). Those are pre refactor names; now gradeApp.actions.openWhatIf / openWhatIfTool / quickFill.
 - Refactor 11/7 (no behavior change): split into css/ + js/ ES modules, descriptive names, README.md, dev/ folder. Regression check: node ~/code/grade-app-shots/capture-all.js <url> <outDir> (166 click driven shots, light, dark, desktop, frozen clock, plus a DOM dump), then python3 ~/code/grade-app-shots/compare.py <before> <after>. Before set: ~/code/grade-app-shots/before-refactor/run6.
 - Intro slides 11/8 (his doc item 1), commit 8c426db, backup tag pre-intro-1108: js/views/intro.js, state.screen starts 'intro', Settings 'Show intro again' (returns to Settings). capture-all.js skips the intro first (old names unchanged) and adds I-/J- intro runs; old script capture-all.bak-preintro.js. Sets: before-intro, after-intro.
+- Intro round 2 11/8 (commits 0167514, 3d5a383, tag pre-intro-fix-1108): intro art 1.3x zoom, text fixed above dots; ABS caps; SEEN_CHANGES = [class, title], dated by row due via format.relativeDay; English +2 HW rows. Latest shot set: ~/code/grade-app-shots/after-intro3.
 Open: guesses 16 to 30, batches come from b5.
 Rules:
 - He talks to b5, not to me. Report every batch to todismacbook-b5 via SendMessage: what changed, the curl result, shot paths, anything I read into his answers.
