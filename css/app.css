@@ -1528,3 +1528,13 @@ input[type=date].f {
 .bn.l1 .bn-big { font-size: 29px; letter-spacing: -.8px; }
 .bn.l1 .bn-line { font-size: 14px; }
 .bn.l1 .bn-chip { padding: 4px 8px; }
+
+/* Look 3 is short, so it gets a solid strip behind it that hides the Home header text under it. */
+.banner.bnw.strip {
+  left: 0;
+  right: 0;
+  top: 0;
+  padding: calc(env(safe-area-inset-top) + 8px) 10px 12px;
+  background: var(--bar);
+  border-radius: 0 0 22px 22px;
+}

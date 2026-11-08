@@ -52,7 +52,7 @@ export const bannerBody = (look, d) => [null, look1, look2, look3][look](d);
 
 /** The live banner for a chosen look (positioned over the screen like today's). */
 export function liveBanner(b) {
-  return `<div class="banner bnw${b.fresh ? ' anim' : ''}" role="status" ${actionAttrs('tapBanner')}>`
+  return `<div class="banner bnw${bannerLook === 3 ? ' strip' : ''}${b.fresh ? ' anim' : ''}" role="status" ${actionAttrs('tapBanner')}>`
     + `${bannerBody(bannerLook, b.data)}</div>`;
 }
 
