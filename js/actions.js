@@ -369,18 +369,9 @@ export const actions = {
   },
 
   // Bell
-  pickBellLook(look) {
-    state.bellLook = look;
-    state.bellSelected = null;
-    state.tapeScrollTop = null;
-  },
   pickBellDay(day) {
     state.bellDay = day;
-    state.bellSelected = null;
     state.tapeScrollTop = null;
-  },
-  selectPeriod(index) {
-    state.bellSelected = +index;
   },
 
   // Settings
