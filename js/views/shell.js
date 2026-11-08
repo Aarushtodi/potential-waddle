@@ -7,9 +7,9 @@ import { state, findClass, findRow } from '../state.js';
 import { actionAttrs } from './components.js';
 import { introView } from './intro.js';
 import { signInView } from './signin.js';
-import { homeView } from './home.js';
+import { homeNav, homeView, missingPageView } from './home.js';
 import { gradesView, classView, assignmentView } from './grades.js';
-import { gpaView, needView, gpaWhatIfView, missingEffectView, gpaGoalView } from './gpa.js';
+import { gpaView, needView, gpaWhatIfView, gpaGoalView } from './gpa.js';
 import { changesView, alertsView } from './changes.js';
 import { settingsView, widgetsView } from './settings.js';
 import { paceView } from './pace.js';
@@ -46,7 +46,7 @@ const PAGES = {
   gpa: () => ({ title: 'GPA', body: gpaView() }),
   need: () => ({ title: 'What do I need', body: needView() }),
   gpaWhatIf: () => ({ title: 'GPA what if', body: gpaWhatIfView() }),
-  missingEffect: () => ({ title: 'Missing work', body: missingEffectView() }),
+  missingEffect: () => ({ title: 'Missing work', body: missingPageView() }),
   changes: () => ({ title: 'What changed', body: changesView() }),
   alerts: () => ({ title: 'Alerts', body: alertsView() }),
   settings: () => ({ title: 'Settings', body: settingsView() }),
@@ -56,14 +56,7 @@ const PAGES = {
 
 /** Top bar and body for a tab's root page. */
 function tabRoot(tab) {
-  if (tab === 'home') {
-    return {
-      nav: `<div class="nav"><div class="ttl">Home</div>`
-        + `<button class="pill" ${actionAttrs('openSheet', 'testDates')}>Test dates</button>`
-        + `<button class="pill round" aria-label="Add" ${actionAttrs('openSheet', 'addTodo')}>+</button></div>`,
-      body: homeView(),
-    };
-  }
+  if (tab === 'home') return { nav: homeNav(), body: homeView() };
   if (tab === 'grades') {
     const buttons = state.editingClasses
       ? `<button class="pill" ${actionAttrs('toggleEditClasses')}>Done</button>`
@@ -71,7 +64,13 @@ function tabRoot(tab) {
         + `<button class="pill round" aria-label="Settings" ${actionAttrs('openPage', 'settings')}>${SETTINGS_ICON}</button>`;
     return { nav: `<div class="nav"><div class="ttl">Grades</div>${buttons}</div>`, body: gradesView() };
   }
-  if (tab === 'calendar') return { nav: `<div class="nav"><div class="ttl">Calendar</div></div>`, body: calendarView() };
+  if (tab === 'calendar') {
+    return {
+      nav: `<div class="nav"><div class="ttl">Calendar</div>`
+        + `<button class="pill" ${actionAttrs('openSheet', 'testDates')}>Test dates</button></div>`,
+      body: calendarView(),
+    };
+  }
   return { nav: `<div class="nav"><div class="ttl">Bell</div></div>`, body: bellView() };
 }
 

@@ -1201,3 +1201,115 @@ input[type=date].f {
   padding: 0 16px calc(env(safe-area-inset-bottom) + 24px);
   flex: none;
 }
+
+/* ---- Home (look H4) ---- */
+
+.ttlw {
+  flex: 1;
+  min-width: 0;
+}
+
+.ttlw .ttl {
+  line-height: 1.1;
+}
+
+.upd {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--sec);
+  margin-top: 2px;
+}
+
+.upd .chev {
+  font-size: 13px;
+  margin-left: 4px;
+}
+
+.badge-wrap {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 11px/17px var(--sans);
+  text-align: center;
+}
+
+.row.zero .t {
+  font-size: 16.5px;
+}
+
+.row.zero .u {
+  color: var(--urgent);
+}
+
+.row.zero .g {
+  color: var(--sec);
+}
+
+.row.abs .mark b {
+  border-color: var(--sec);
+  opacity: .7;
+}
+
+.card.hide .mark b.u {
+  border-color: var(--ring);
+}
+
+.chip.cls {
+  font-weight: 600;
+}
+
+.chip.cls b {
+  font-weight: 800;
+  margin-left: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip-cls {
+  margin: 0 -16px 2px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.nowg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--sec);
+  padding: 4px 2px 0;
+}
+
+.card.quiet .t {
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.row.more {
+  min-height: 42px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.row.more .s {
+  font-weight: 600;
+}
+
+.nav.home {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+.nav.home .latest {
+  flex-basis: 100%;
+  margin-top: 0;
+}

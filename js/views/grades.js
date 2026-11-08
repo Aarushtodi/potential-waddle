@@ -18,27 +18,29 @@ export function gradesView() {
   const list = state.editingClasses ? orderedClasses() : visibleClasses();
   const shownCount = visibleClasses().length;
   let html = statusStrip();
+  // GPA sits on top as one small row; What changed and Alerts live on Home, Sign out in Settings.
+  if (!state.editingClasses) {
+    html += `<div class="sec" style="margin-bottom:16px"><div class="card">`
+      + `<div class="row more" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
+      + `<div class="grow t" style="font-size:15.5px">GPA</div><div class="s">Calculator, an estimate</div>${CHEVRON}</div>`
+      + `</div></div>`;
+  }
   html += `<div class="sec"><div style="display:flex;align-items:flex-end;gap:8px"><div class="grow">`
     + heading('From your gradebook', countWord(shownCount) + ' ', shownCount === 1 ? 'class' : 'classes', { big: 1 })
     + `</div><button class="pill" style="margin-bottom:8px" ${actionAttrs('openPeriodPicker')}>`
     + `${state.period} <span style="opacity:.6">▾</span></button></div>`;
 
   if (state.editingClasses) {
-    html += `<div class="card">${list.map(editRow).join('')}</div></div>`;
+    // Add a class lives in Edit, not as a standing row.
+    html += `<div class="card">${list.map(editRow).join('')}`
+      + navRow('Add a class', `Dual credit, self study AP. ${state.typedClasses.length} of ${TYPED_CLASS_LIMIT} used`,
+        'openSheet', 'addClass')
+      + `</div></div>`;
     return html;
   }
 
   html += `<div class="card">${list.map(classRow).join('')}</div>`;
   html += `<div class="foot">Long press a class to rename, reorder or hide.</div></div>`;
-  html += `<div class="sec"><div class="card">`
-    + navRow('GPA', 'Calculator and what ifs, an estimate', 'openPage', 'gpa')
-    + navRow('What changed', 'Since you last looked, with points effect', 'openPage', 'changes')
-    + navRow('Alerts', state.gradeChanges.length + ' recent', 'openPage', 'alerts')
-    + navRow('Add a class', `Dual credit, self study AP. ${state.typedClasses.length} of ${TYPED_CLASS_LIMIT} used`,
-      'openSheet', 'addClass')
-    + `</div></div>`;
-  html += `<div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('signOut')}>`
-    + `<div class="t">Sign out</div></div></div></div>`;
   return html;
 }
 
@@ -66,7 +68,7 @@ function editRow(course) {
     ? `<button class="pill" ${actionAttrs('removeTypedClass', course.id)}>Remove</button>`
     : `<button class="pill" ${actionAttrs('toggleHideClass', course.id)}>${hidden ? 'Show' : 'Hide'}</button>`;
   return `<div class="row" style="${hidden ? 'opacity:.5' : ''}"><div class="grow">`
-    + `<input class="f plain" aria-label="Class name" value="${escapeHtml(course.name)}" data-input="renameClass" data-x="${course.id}">`
+    + `<input class="f plain" aria-label="Rename ${escapeHtml(course.name)}" value="${escapeHtml(course.name)}" data-input="renameClass" data-x="${course.id}">`
     + `${hidden ? '<div class="s">Hidden</div>' : ''}</div>`
     + `<button class="pill round" aria-label="Move up" ${actionAttrs('moveClass', course.id, -1)}>↑</button>`
     + `<button class="pill round" aria-label="Move down" ${actionAttrs('moveClass', course.id, 1)}>↓</button>`

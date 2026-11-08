@@ -36,10 +36,10 @@ js/format.js            Escaping, sample calendar (day offsets), number and date
 js/sample-data.js       SAMPLE DATA: classes, rows, past report card, bell schedule, test dates
 js/views/shell.js       view(): top bar + current page + tab bar + sheet / banner / Face ID cover
 js/views/components.js  Shared HTML pieces: headings, rows, segmented controls, to-do rows
-js/views/home.js        Home tab
+js/views/home.js        Home tab (look H4: missing card, Latest line, class chips, grouped to-dos) and the Missing work page
 js/views/grades.js      Grades tab: class list, one class (with grade graph), one assignment
 js/views/what-if.js     What if sheet and its 8 tools (the only place the app predicts)
-js/views/gpa.js         GPA page, What do I need, GPA what if, Missing work, GPA goal
+js/views/gpa.js         GPA page, What do I need, GPA what if, GPA goal
 js/views/calendar.js    Calendar tab
 js/views/bell.js        Bell tab, three looks: big number, dial, tape
 js/views/settings.js    Settings and the Widgets preview

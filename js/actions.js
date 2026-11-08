@@ -107,6 +107,7 @@ export const actions = {
   signIn() {
     state.screen = 'app';
     state.tab = 'home';
+    state.firstOpen = true;
     startRefresh(false);
     return false;
   },
@@ -124,11 +125,13 @@ export const actions = {
   switchTab(tab) {
     // Tapping the tab you are on goes back to its root page, like iOS.
     if (state.tab === tab) state.pageStacks[tab] = [];
+    if (tab !== 'home') state.firstOpen = false;
     state.tab = tab;
     state.editingClasses = false;
   },
   openPage(name, id) {
     state.editingClasses = false;
+    state.firstOpen = false;
     currentStack().push(id != null ? [name, id] : [name]);
   },
   back() {
@@ -155,6 +158,19 @@ export const actions = {
   refresh() {
     startRefresh(true);
     return false;
+  },
+  /** Tap on Home's "Updated N min ago": the same as pull to refresh, for a mouse. */
+  refreshFromHome() {
+    if (Date.now() < state.nextUpdateAllowedAt) return false;
+    startRefresh(true);
+    return false;
+  },
+  /** Home: "N more", "N any time" and the folded Missing work row open and close in place. */
+  toggleHomeGroup(key) {
+    state.homeExpanded[key] = !state.homeExpanded[key];
+  },
+  toggleHideScores() {
+    state.hideScores = !state.hideScores;
   },
 
   // To-dos

@@ -8,7 +8,6 @@
 import { escapeHtml, shortDate } from '../format.js';
 import { state, SEMESTER_SPLIT } from '../state.js';
 import { PAST_REPORT_CARD } from '../sample-data.js';
-import { currentPeriod } from '../schedule.js';
 
 /** data-action plus up to two arguments, all escaped. */
 export function actionAttrs(action, x, y) {
@@ -66,19 +65,6 @@ export function statusStrip() {
       : `<button class="pill" ${actionAttrs('refresh')}>Update</button>`;
   }
   return `<div class="strip" data-live><span class="grow">${label}</span>${button}</div>`;
-}
-
-/** Home's "Algebra II Honors, 23 min left" line. Tapping it opens the Bell tab. */
-export function nowLine() {
-  const now = currentPeriod();
-  if (!now) {
-    return `<div class="now"><div class="grow"><div class="t">School is out</div>`
-      + `<div class="s">Sample school day, A day</div></div></div>`;
-  }
-  const next = now.next ? 'Next: ' + escapeHtml(now.next.room) : 'Last class';
-  return `<div class="now" role="button" tabindex="0" ${actionAttrs('openBell')}>`
-    + `<div class="grow" data-live><div class="t">${escapeHtml(now.period.name)}, ${now.minutesLeft} min left</div>`
-    + `<div class="s">${next}. Sample school day, A day</div></div>${CHEVRON}</div>`;
 }
 
 /** One to-do row with its tick circle. Missing work opens the assignment, checkpoints open the pace. */

@@ -1,7 +1,10 @@
-/** Calendar tab: a month grid with a dot on days that have open to-dos, and the selected day's list. */
+/**
+ * Calendar tab: a month grid with a dot on days that have open to-dos, and the selected day's list
+ * with its progress bars. The Test dates button sits in this tab's top bar.
+ */
 import { SAMPLE_TODAY, MONTHS_LONG, offsetOf, longDate, countWord } from '../format.js';
 import { state, todoItems, sortByDue } from '../state.js';
-import { actionAttrs, heading, statusStrip, todoRow } from './components.js';
+import { actionAttrs, heading, statusStrip, todoRow, progressBars } from './components.js';
 
 const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -42,6 +45,11 @@ export function calendarView() {
     + `<button aria-label="Next month" ${actionAttrs('changeMonth', 1)}>›</button></div>`
     + `<div class="calg">${grid}</div></div></div></div>`
     + `<div class="sec">${head}`
-    + (dayItems.length ? `<div class="card">${dayItems.map(item => todoRow(item, false)).join('')}</div>` : '')
+    + (dayItems.length
+      ? `<div class="card">${progressBars(dayItems)}${dayItems.map(item => todoRow(item, false)).join('')}</div>`
+      : '')
+    + (Object.values(state.testDatePicks).some(Boolean)
+      ? `<div class="foot">Test dates are unofficial, confirm with your teacher.</div>`
+      : '')
     + `</div>`;
 }

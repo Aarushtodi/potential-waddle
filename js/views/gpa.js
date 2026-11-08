@@ -1,14 +1,14 @@
 /**
- * GPA page and its tools: What do I need, GPA what if, Missing work effect, Long term goal.
+ * GPA page and its tools: What do I need, GPA what if, Long term goal (Missing work is in home.js).
  * All of these are estimates; the school computes the real GPA.
  */
-import { escapeHtml, oneDecimal, signed } from '../format.js';
+import { escapeHtml, oneDecimal } from '../format.js';
 import {
-  isScored, classAverage, averageEffect, scoreNeededOnNext, finalExamNeeded,
+  isScored, classAverage, scoreNeededOnNext, finalExamNeeded,
   letterGrade, weightBonus, computeGpa, gpaGoalPlan,
 } from '../grade-math.js';
 import { CLASSES, SAMPLE_GPA_HISTORY } from '../sample-data.js';
-import { state, SEMESTER_SPLIT, findClass, orderedClasses, missingWork } from '../state.js';
+import { state, SEMESTER_SPLIT, findClass, orderedClasses } from '../state.js';
 import { actionAttrs, heading, navRow, segmented, splitExplanation } from './components.js';
 
 const BIG_TITLE = 'style="font-size:15px"';
@@ -36,7 +36,7 @@ export function gpaView() {
     + `<div class="sec"><div class="card">`
     + navRow('What do I need', 'Target grade to the score you need', 'openPage', 'need')
     + navRow('GPA what if', 'Change a class, see what a B does', 'openPage', 'gpaWhatIf')
-    + navRow('Missing work effect', 'What each 0 costs you now', 'openPage', 'missingEffect')
+    + navRow('Missing work', 'Missing and absent, each counts as 0', 'openPage', 'missingEffect')
     + navRow('Long term GPA goal', 'Pick a GPA by graduation, see grades needed', 'openPage', 'gpaGoal')
     + `</div></div>`;
 }
@@ -106,23 +106,6 @@ export function gpaWhatIfView() {
       + segmented('setGpaWhatIfLetter', letterFor(course), ['A', 'B', 'C', 'D', 'F'].map(l => [l, l]), course.id)
       + `</div>`).join('')
     + `</div></div><button class="btn ghost" ${actionAttrs('resetGpaWhatIf')}>Reset</button>`;
-}
-
-// ---- Missing work effect ------------------------------------------------------------------
-
-/** Missing work already counts as 0, so this shows what each 0 is costing right now. */
-export function missingEffectView() {
-  const missing = missingWork();
-  if (!missing.length) return `<div class="sec">${heading('', 'Nothing ', 'missing', { big: 1 })}</div>`;
-  return `<div class="sec">${heading('Missing counts as 0 in your grade', 'Missing ', 'work')}</div>`
-    + missing.map(({ course, row }) =>
-      `<div class="card" style="margin-bottom:10px"><div class="pad"><div class="t">${escapeHtml(row.title)}</div>`
-      + `<div class="s" style="margin-bottom:8px">${escapeHtml(course.name)}, ${row.total} points</div>`
-      + `<div class="dual">`
-      + `<div><div class="lab">Your grade now</div><div class="avg">${oneDecimal(classAverage(course.rows))}</div></div>`
-      + `<div><div class="lab">The 0 costs you</div><div class="avg">${signed(averageEffect(course.rows, row))}</div></div>`
-      + `</div></div></div>`).join('')
-    + `<div class="foot">To see a score you expect, type it in What if.</div>`;
 }
 
 // ---- Long term GPA goal -------------------------------------------------------------------

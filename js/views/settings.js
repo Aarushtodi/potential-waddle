@@ -39,6 +39,9 @@ export function settingsView() {
     + `<div class="sec"><div class="card">`
     + navRow('Widgets', 'Next due, test countdown, last grade change', 'openPage', 'widgets')
     + retestLine + faceId
+    + `<div class="row"><div class="grow"><div class="t">Hide scores</div>`
+    + `<div class="s">Home shows words instead of grades and points</div></div>`
+    + `${toggle(state.hideScores, 'toggleHideScores')}</div>`
     + `</div></div>`
     + `<div class="sec"><div class="card">${navRow('Show intro again', '', 'showIntro')}</div></div>`
     + `<div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('signOut')}>`

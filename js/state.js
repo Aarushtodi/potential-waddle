@@ -43,6 +43,11 @@ export const state = {
   queuedScoreIndex: 0,
   banner: null, // { title, body, fresh }
 
+  // Home
+  firstOpen: false, // true on the Home right after sign in, until the student leaves it
+  homeExpanded: {}, // to-do group key (or 'zero') -> true when its "N more" was tapped
+  hideScores: false, // Settings: Home shows words instead of grades and points
+
   // To-dos
   doneIds: {}, // id -> 1 for every ticked to-do, checkpoint or assignment
   dueOverrides: {}, // row id -> the student's own due date (the teacher's date stays in HAC)
