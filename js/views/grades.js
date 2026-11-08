@@ -45,7 +45,7 @@ export function gradesView() {
 export function classRow(course) {
   const average = periodAverage(course);
   const attendance = [
-    course.absences ? course.absences + ' abs' : '',
+    course.absences ? course.absences + ' ABS' : '',
     course.tardies ? course.tardies + ' tardy' : '',
   ].filter(Boolean).join(', ');
   const subtitle = course.typed

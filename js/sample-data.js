@@ -55,6 +55,8 @@ export const CLASSES = [
     level: 'H', absences: 0, tardies: 0, q1: 95,
     rows: [
       assignment('Essay 1', 'Test', -35, 89, 100),
+      assignment('Grammar Check', 'HW', -26, 9, 10),
+      assignment('Short Story Notes', 'HW', -19, 18, 20),
       assignment('Essay 2', 'Test', -14, 94, 100),
       assignment('Reading Notes', 'HW', -5, 17, 20),
       assignment('Vocabulary Packet', 'HW', -3, null, 14, { missing: 1 }),
@@ -163,12 +165,15 @@ export const LAST_QUARTER_SAME_POINT = {
   alg: 90.4, chem: 87.9, eng: 93.2, span: 89.5, hist: 82.1, cs: 96, pe: 100,
 };
 
-/** Grade changes already seen before the preview opens: [class id, row index, when]. */
+/**
+ * Grade changes already seen before the preview opens: [class id, row title].
+ * Each one is dated the day of its row (its due offset), so "when" always matches the row.
+ */
 export const SEEN_CHANGES = [
-  ['cs', 1, 'Yesterday'],
-  ['span', 1, 'Yesterday'],
-  ['eng', 2, '2 days ago'],
-  ['alg', 3, 'Last week'],
+  ['eng', 'Reading Notes'],
+  ['cs', 'Arrays Test'],
+  ['span', 'Speaking Check'],
+  ['alg', 'Unit 3 Test'],
 ];
 
 /** Scores that "arrive" one per Update tap, to show the refresh and the alert banner. */

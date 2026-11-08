@@ -12,7 +12,7 @@ import {
   SAMPLE_TODOS, SAMPLE_PACE,
 } from './sample-data.js';
 import { classAverage, averageEffect, isScored, countsAsZero, applyWhatIf, solveSemesterSplit } from './grade-math.js';
-import { scoreText } from './format.js';
+import { scoreText, relativeDay } from './format.js';
 
 /** Students can type in classes HAC does not have (dual credit, self study AP), up to this many. */
 export const TYPED_CLASS_LIMIT = 8;
@@ -227,12 +227,19 @@ export function gradeChangeEntry(course, row, before, after, when) {
   };
 }
 
-for (const [classId, index, when] of SEEN_CHANGES) {
+for (const [classId, title] of sortedSeenChanges()) {
   const course = findClass(classId);
-  const row = course.rows[index];
+  const row = course.rows.find(candidate => candidate.title === title);
+  const when = relativeDay(row.due);
   const effect = averageEffect(course.rows, row);
   const after = classAverage(course.rows);
   state.gradeChanges.push(gradeChangeEntry(course, row, after - effect, after, when));
+}
+
+/** SEEN_CHANGES newest first, by the day of each row. */
+function sortedSeenChanges() {
+  const day = ([classId, title]) => findClass(classId).rows.find(row => row.title === title).due;
+  return [...SEEN_CHANGES].sort((a, b) => day(b) - day(a));
 }
 
 // ---- Render keys ---------------------------------------------------------------------------

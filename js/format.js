@@ -51,6 +51,14 @@ export function shortDate(offset) {
   return WEEKDAYS[d.getDay()].slice(0, 3) + ' ' + MONTHS_SHORT[d.getMonth()] + ' ' + d.getDate();
 }
 
+/** "Today", "Yesterday", "3 days ago" up to 6 days, then the date ("Thu Oct 29"). */
+export function relativeDay(offset) {
+  if (offset === 0) return 'Today';
+  if (offset === -1) return 'Yesterday';
+  if (offset < 0 && offset > -7) return -offset + ' days ago';
+  return shortDate(offset);
+}
+
 /** "Tuesday, Nov 10" */
 export function longDate(offset) {
   const d = dateAt(offset);

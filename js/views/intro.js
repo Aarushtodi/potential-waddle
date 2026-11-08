@@ -47,7 +47,7 @@ export function introView() {
 
   const slides = SLIDES.map((slide, i) =>
     `<section class="intro-slide" aria-hidden="${i !== current}">`
-    + `<div class="intro-art" inert>${slide.art()}</div>`
+    + `<div class="intro-art" inert><div class="intro-art-inner">${slide.art()}</div></div>`
     + `<div class="intro-text"><div class="hd big">${slide.lead}<i>${slide.accent}</i></div>`
     + `<div class="intro-sub">${slide.sub}</div></div>`
     + `</section>`).join('');

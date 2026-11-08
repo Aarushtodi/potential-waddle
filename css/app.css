@@ -1139,22 +1139,26 @@ input[type=date].f {
   flex: 0 0 100%;
   display: flex;
   flex-direction: column;
-  padding: 0 16px 8cqh;
+  padding: 0 16px;
 }
 
-/* Art sits just above the text; the text block has a fixed height so the headline
-   is in the same spot on every slide. */
+/* The art is the hero: drawn 1.3x, centered in the upper part of the slide. That part has a
+   fixed height, so the headline right under it is in the same spot on every slide. */
 .intro-art {
-  flex: 1;
+  flex: 0 0 48%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  margin-bottom: 40px;
+  justify-content: center;
+  min-height: 0;
   pointer-events: none;
 }
 
+.intro-art-inner {
+  zoom: 1.3;
+}
+
 .intro-text {
-  height: 190px;
+  padding-top: 8px;
 }
 
 .intro-art input::-webkit-inner-spin-button,
