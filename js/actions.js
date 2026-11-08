@@ -16,6 +16,7 @@ import {
 } from './state.js';
 import { render } from './render.js';
 import { alertText } from './views/changes.js';
+import { bannerData } from './views/banner.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
@@ -55,12 +56,12 @@ function applyNextQueuedScore() {
   const after = classAverage(course.rows);
   const change = gradeChangeEntry(course, row, before, after, 'Just now');
   state.gradeChanges.unshift(change);
-  if (!state.mutedClasses[course.id]) showBanner(course.name, alertText(change));
+  if (!state.mutedClasses[course.id]) showBanner(course.name, alertText(change), change);
 }
 
 let bannerTimer;
-function showBanner(title, body) {
-  state.banner = { title, body, fresh: true };
+function showBanner(title, body, change) {
+  state.banner = { title, body, fresh: true, data: bannerData(change) };
   // Slide in only on the first render; later renders show it in place.
   setTimeout(() => {
     if (state.banner) state.banner.fresh = false;
@@ -352,7 +353,7 @@ export const actions = {
   // Alerts
   showSampleAlert() {
     const latest = state.gradeChanges[0];
-    showBanner(findClass(latest.classId).name, alertText(latest));
+    showBanner(findClass(latest.classId).name, alertText(latest), latest);
   },
   tapBanner() {
     state.banner = null;
