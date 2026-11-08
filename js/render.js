@@ -25,12 +25,30 @@ export function render() {
   const newMain = qs('#main');
   if (newMain) newMain.scrollTop = state.scrollPositions[ui.lastRouteKey] || 0;
   slideIntroTrack();
+  collapseHeader();
   // Bell tape: keep where the student scrolled, otherwise start at the current period.
   const tape = qs('#tape');
   if (tape) {
     const current = tape.querySelector('.cur');
     tape.scrollTop = state.tapeScrollTop ?? (current ? current.offsetTop - 8 : 0);
   }
+}
+
+/** Scroll distance over which Home's big title collapses into the slim bar. */
+const COLLAPSE_PX = 64;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+/**
+ * Home's collapsing header: --c on .scr goes from 0 (top) to 1 (collapsed) with the scroll
+ * position. Reduced motion: just two states, and CSS fades between them.
+ */
+export function collapseHeader() {
+  const bar = qs('.cbar');
+  const main = qs('#main');
+  if (!bar || !main) return;
+  const y = Math.max(0, main.scrollTop);
+  const c = reducedMotion.matches ? (y > COLLAPSE_PX / 2 ? 1 : 0) : Math.min(1, y / COLLAPSE_PX);
+  bar.parentElement.style.setProperty('--c', c.toFixed(3));
 }
 
 /**

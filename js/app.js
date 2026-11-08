@@ -9,7 +9,7 @@
 import { qs } from './format.js';
 import { state, whatIfFor, whatIfAverage } from './state.js';
 import { CLASSES } from './sample-data.js';
-import { render, refreshLive } from './render.js';
+import { render, refreshLive, collapseHeader } from './render.js';
 import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 
@@ -58,9 +58,17 @@ document.addEventListener('change', event => {
   }
 });
 
+// Home's header collapses with the scroll position, at most once a frame.
+let collapseFrame = 0;
 document.addEventListener('scroll', event => {
   if (event.target && event.target.id === 'tape') state.tapeScrollTop = event.target.scrollTop;
-}, true);
+  if (event.target && event.target.id === 'main' && !collapseFrame) {
+    collapseFrame = requestAnimationFrame(() => {
+      collapseFrame = 0;
+      collapseHeader();
+    });
+  }
+}, { capture: true, passive: true });
 
 // ---- Long press a class to edit the list ---------------------------------------------------
 

@@ -1304,12 +1304,81 @@ input[type=date].f {
   font-weight: 600;
 }
 
-.nav.home {
-  flex-wrap: wrap;
-  row-gap: 0;
+/* ---- Home's collapsing header (iOS large title) ----
+   --c is 0 at the top and 1 once collapsed (set by render.js from the scroll position).
+   The bar sits over the page; the big title is the first thing in the page and scrolls with it.
+   Only opacity and transform change, so nothing below moves. */
+
+.cbar {
+  --bar-h: 44px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  min-height: 0;
+  height: calc(env(safe-area-inset-top) + var(--bar-h));
+  padding: 0;
+  background: none;
+  pointer-events: none;
 }
 
-.nav.home .latest {
-  flex-basis: 100%;
-  margin-top: 0;
+/* Bar background and hairline, only once collapsed. */
+.cbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bar);
+  opacity: var(--c, 0);
+  box-shadow: 0 .5px 0 var(--rule), 0 4px 12px rgba(0,0,0,calc(var(--c, 0) * .06));
+}
+
+.cbar-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: env(safe-area-inset-top);
+  line-height: var(--bar-h);
+  text-align: center;
+  font-weight: 700;
+  font-size: 17px;
+  opacity: calc((var(--c, 0) - .6) * 2.5);
+  transform: translateY(calc((1 - var(--c, 0)) * 6px));
+}
+
+/* At the top the buttons sit where they always did (beside the big title); collapsed they
+   shrink a little and center in the 44px bar. */
+.cbar-buttons {
+  position: absolute;
+  right: 16px;
+  top: calc(env(safe-area-inset-top) + 20px);
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+  transform-origin: right center;
+  transform: translateY(calc(var(--c, 0) * -16px)) scale(calc(1 - var(--c, 0) * .14));
+}
+
+/* The big title block, laid out like the old top bar (same padding and background). */
+.bigtitle {
+  background: var(--bar);
+  margin: -10px -16px 10px;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px 8px;
+  opacity: calc(1 - var(--c, 0) * 1.8);
+}
+
+.bigtitle .ttl {
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.1;
+  padding-right: 96px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cbar::before,
+  .cbar-title,
+  .cbar-buttons,
+  .bigtitle {
+    transition: opacity .2s, transform .2s;
+  }
 }

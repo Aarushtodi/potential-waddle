@@ -259,21 +259,33 @@ function latestLine() {
   return `<div class="upd latest" role="button" tabindex="0" ${actionAttrs('openPage', 'changes')}>${text}${CHEVRON}</div>`;
 }
 
+/**
+ * iOS large title header, in two parts:
+ *   homeNav()        a slim bar laid over the top of the page: small centered "Home" (hidden at the
+ *                    top), Alerts and +. Its background and hairline only show once collapsed.
+ *   homeTitleBlock() the big "Home", Updated and Latest, the first thing in the scrolling page, so it
+ *                    slides up with the content and fades out.
+ * render.js sets --c on .scr from the scroll position (0 at the top, 1 after COLLAPSE_PX) and CSS
+ * does the rest with opacity and transform only.
+ */
 export function homeNav() {
   const alertCount = state.gradeChanges.length;
-  // The Latest line wraps under the title row so it gets the full width, not the space left by the buttons.
-  return `<div class="nav home"><div class="ttlw"><div class="ttl">Home</div>${updatedLine()}</div>`
+  return `<div class="nav cbar"><div class="cbar-title" aria-hidden="true">Home</div><div class="cbar-buttons">`
     + `<button class="pill round badge-wrap" aria-label="Alerts, ${alertCount}" ${actionAttrs('openPage', 'alerts')}>`
     + `${ALERTS_ICON}${alertCount ? `<span class="badge">${alertCount}</span>` : ''}</button>`
     + `<button class="pill round" aria-label="Add" ${actionAttrs('openSheet', 'addTodo')}>+</button>`
-    + `${latestLine()}</div>`;
+    + `</div></div>`;
+}
+
+function homeTitleBlock() {
+  return `<div class="bigtitle"><div class="ttl">Home</div>${updatedLine()}${latestLine()}</div>`;
 }
 
 // ---- Home -----------------------------------------------------------------------------------
 
 export function homeView() {
   const items = zeroItems();
-  let html = '';
+  let html = homeTitleBlock();
   if (state.firstOpen) {
     const graded = visibleClasses().filter(course => periodAverage(course) != null).length;
     html += `<div class="sec" style="margin-bottom:14px"><div class="lab">First update from your gradebook</div>`
