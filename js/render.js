@@ -7,6 +7,7 @@ import { qs, qsa } from './format.js';
 import { state, ui, sheetScrollKey, sheetAnimKey, routeKey } from './state.js';
 import { view } from './views/shell.js';
 import { afterRender as introMotion } from './views/intro-motion.js';
+import { afterGpaRender } from './views/gpa.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -29,6 +30,7 @@ export function render() {
   introMotion(); // slide pager + art motion, see js/views/intro-motion.js
   collapseHeader();
   placeTape();
+  afterGpaRender(); // GPA hero count up, see js/views/gpa.js
 }
 
 /**

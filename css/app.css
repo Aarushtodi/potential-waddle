@@ -1978,3 +1978,87 @@ html.vt-leave-intro::view-transition-new(root) {
   color: var(--sec);
 }
 
+
+/* ---- GPA page (js/views/gpa.js) ----
+   Hero "3.57 this semester", then one card of classes sorted by distance to a letter line.
+   The 2 closest show their distance in the pop color; nothing else is emphasized. */
+
+.gpa-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 4px;
+  margin: 2px 0 16px;
+  font-weight: 800;
+  font-size: 76px;
+  line-height: 1;
+  letter-spacing: -1.5px;
+}
+
+.gpa-n {
+  font-variant-numeric: tabular-nums;
+}
+
+.gpa-hero i {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+
+.gpa-row {
+  min-height: 46px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.gpa-row .t {
+  font-size: 15.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gpa-row .s {
+  flex: none;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.gpa-row .s.gpa-close {
+  color: var(--urgent);
+}
+
+.gpa-let {
+  flex: none;
+  font-size: 20px;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* Small "H" after an honors class name. */
+.gpa-h {
+  display: inline-block;
+  font: 800 10.5px/1 var(--sans);
+  letter-spacing: .3px;
+  padding: 2px 4px 1.5px;
+  border-radius: 5px;
+  border: 1.25px solid currentColor;
+  color: var(--sec);
+  vertical-align: 2px;
+  margin-left: 3px;
+}
+
+.gpa-unw {
+  padding-top: 2px;
+}
+
+.gpa-links .row {
+  min-height: 46px;
+}
+
+.gpa-links .t {
+  font-size: 15.5px;
+  font-weight: 600;
+}
