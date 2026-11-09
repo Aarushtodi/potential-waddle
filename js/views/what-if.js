@@ -19,7 +19,7 @@ import { needView } from './gpa.js';
 
 /** [key, title, subtitle] for each tool on the What if menu. */
 export const WHAT_IF_TOOLS = [
-  ['need', 'What do I need', 'Target grade to the score you need'],
+  ['need', 'Target', 'The score you need for a grade'],
   ['stack', 'Stack scores', 'Fake scores, corrections, a fake assignment'],
   ['retest', 'Retest', 'Type the retest score you expect'],
   ['cushion', 'Cushion', 'What you can get and keep your grade'],

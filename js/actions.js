@@ -389,6 +389,11 @@ export const actions = {
   },
 
   // GPA tools
+  /** Target page from a class page: the score you need, with that class already picked. */
+  openTarget(classId) {
+    state.needCalc.classId = classId;
+    actions.openPage('need');
+  },
   needPickClass(classId) {
     state.needCalc.classId = classId;
   },

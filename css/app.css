@@ -1591,14 +1591,26 @@ input[type=date].f {
   }
 }
 
-/* Class page: Graph, What if, Email teacher as three equal pills. */
+/* Class page: What if, Target, Email teacher as three equal pills. */
 .toolrow.three {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.toolrow.three .pill {
+.toolrow.three .pill,
+.toolrow.four .pill {
   font-size: 14px;
   padding: 11px 4px;
+}
+
+/* With Graph there are four: each column sized to its label, the spare width shared out,
+   so Email teacher stays on one line at 375 wide. */
+.toolrow.four {
+  grid-template-columns: repeat(4, auto);
+  gap: 6px;
+}
+
+.toolrow.four .pill {
+  white-space: nowrap;
 }
 
 /* Graph sheet: the line draws itself in once, when the sheet opens. */

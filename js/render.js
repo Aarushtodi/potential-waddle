@@ -7,7 +7,7 @@ import { qs, qsa } from './format.js';
 import { state, ui, sheetScrollKey, sheetAnimKey, routeKey } from './state.js';
 import { view } from './views/shell.js';
 import { afterRender as introMotion } from './views/intro-motion.js';
-import { afterGpaRender } from './views/gpa.js';
+import { afterGpaRender, afterNeedRender } from './views/gpa.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -31,6 +31,7 @@ export function render() {
   collapseHeader();
   placeTape();
   afterGpaRender(); // GPA hero count up, see js/views/gpa.js
+  afterNeedRender(); // Target page: picked class chip in view, see js/views/gpa.js
 }
 
 /**
