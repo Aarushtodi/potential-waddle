@@ -2093,7 +2093,7 @@ html.vt-leave-intro::view-transition-new(root) {
 
 .row.per.on .per-t,
 .row.per.on .per-r {
-/* ---- Alerts page (three looks, views/alerts.js) ---- */
+/* ---- Alerts page, Needs you (views/alerts.js) ---- */
 .al-dot {
   width: 11px;
   height: 11px;
@@ -2141,75 +2141,9 @@ html.vt-leave-intro::view-transition-new(root) {
   box-shadow: inset 4px 0 0 var(--urgent);
 }
 
-.al-day {
-  margin: 18px 0 6px;
-}
-
-.al-day:first-of-type {
-  margin-top: 6px;
-}
-
-.al-in {
-  align-items: flex-start;
-}
-
-.al-new {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  margin-top: 6px;
-  flex: none;
-  background: transparent;
-}
-
-.al-new.on {
-  background: var(--ink);
-}
-
-.al-new.on.u {
-  background: var(--urgent);
-}
-
-.al-tag {
-  font: 700 11.5px var(--sans);
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--sec);
-  margin: 0 0 2px 4px;
-}
-
-.al-tag.u {
-  color: var(--urgent);
-}
-
-.al-delta {
-  font: 800 19px var(--sans);
-  font-variant-numeric: tabular-nums;
-  padding-top: 14px;
-}
-
-.al-delta.u {
-  color: var(--urgent);
-}
-
-.al-cls {
-  margin-bottom: 10px;
-}
-
-.al-avg {
-  font: 800 22px var(--sans);
-  font-variant-numeric: tabular-nums;
-}
-
-.al-red {
-  color: var(--urgent);
-  font-weight: 700;
-}
-
 .row.per.nxt .per-r {
   color: var(--sec);
 }
-
 
 /* ---- GPA page (js/views/gpa.js) ----
    Hero "3.57 this semester", then one card of classes sorted by distance to a letter line.
@@ -2293,16 +2227,4 @@ html.vt-leave-intro::view-transition-new(root) {
 .gpa-links .t {
   font-size: 15.5px;
   font-weight: 600;
-.al-sub {
-  background: transparent;
-}
 
-.al-sub.quiet {
-  min-height: 34px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-
-.al-quiet {
-  padding: 4px 2px 0;
-}

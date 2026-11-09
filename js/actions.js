@@ -177,8 +177,7 @@ export const actions = {
     currentStack().push(id != null ? [name, id] : [name]);
   },
   back() {
-    const top = currentStack().pop();
-    if (top && top[0] === 'alerts') state.alertsUnread = 0;
+    currentStack().pop();
   },
   openBell() {
     state.tab = 'bell';

@@ -82,7 +82,6 @@ export const state = {
   // Settings
   alertUnder: 85,
   alertRules: { newGrade: true, under: true, zero: true, changed: true }, // Settings: what sends an alert
-  alertsUnread: 3, // rows on the Alerts page still marked new, cleared when the student leaves it
   hacDown: false, // preview only: ?hac=1 shows the 'can't read your gradebook' state
   mutedClasses: {},
   retestLine: 80, // picked at setup
@@ -230,10 +229,10 @@ export const blankRowsLeft = course => course.rows.filter(
 
 // ---- Grade change log -------------------------------------------------------------------
 
-export function gradeChangeEntry(course, row, before, after, when, day = 0) {
+export function gradeChangeEntry(course, row, before, after, when) {
   return {
     classId: course.id, title: row.title, category: row.category, scoreText: scoreText(row),
-    underRetestLine: isUnderRetestLine(row), before, after, when, day,
+    underRetestLine: isUnderRetestLine(row), before, after, when,
   };
 }
 
@@ -243,7 +242,7 @@ for (const [classId, title] of sortedSeenChanges()) {
   const when = relativeDay(row.due);
   const effect = averageEffect(course.rows, row);
   const after = classAverage(course.rows);
-  state.gradeChanges.push(gradeChangeEntry(course, row, after - effect, after, when, row.due));
+  state.gradeChanges.push(gradeChangeEntry(course, row, after - effect, after, when));
 }
 
 /** SEEN_CHANGES newest first, by the day of each row. */
