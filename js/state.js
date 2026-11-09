@@ -77,8 +77,7 @@ export const state = {
   needCalc: { classId: 'alg', target: 90, kind: 'test' }, // 'test' | 'final'
   gpaWhatIf: {}, // class id -> letter
   finals: { target: 90 },
-  whatIfMore: false, // What if look 2: the More group is open
-  whatIfPick: {}, // What if look 3: class id -> row id the smart line types into
+  whatIfMore: false, // What if sheet: the More group is open
   gpaGoal: '4.3',
 
   // Settings
