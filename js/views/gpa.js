@@ -156,7 +156,7 @@ function needResult(course) {
   // Next blank test in the gradebook. (A null due date compares as 0 here, so it still counts.)
   const nextTest = course.rows.find(row =>
     row.category === 'Test' && !isScored(row) && row.due >= 0 && !row.pending);
-  const title = nextTest ? nextTest.title : 'a 100 point test';
+  const title = nextTest ? nextTest.title : 'the next test';
   const total = nextTest ? nextTest.total : 100;
   const result = scoreNeededOnNext(course.rows, target, total);
   if (!result.reach) {

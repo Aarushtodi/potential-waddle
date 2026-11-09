@@ -15,7 +15,7 @@ const on = () => root.classList.contains('motion');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 reduce.addEventListener('change', () => root.classList.toggle('motion', !reduce.matches));
 const STAGGER_CAP = 5;
-const ODO_TIMEOUT_MS = 1000;
+const ODO_TIMEOUT_MS = 1200; // hold 140 + stage 780 + two frames, with room for a slow frame
 const CLEANUP_MS = 900;
 
 /** The tap being handled: what was tapped, where the picked pill sat, and the numbers before. */
@@ -149,7 +149,6 @@ function sheetEntrance() {
   const changed = key !== last.sheet;
   last.sheet = key;
   if (changed && sheet && sheet.kind === 'whatIf') stagger(document.querySelector('.sheet .body'));
-  return changed && sheet && sheet.kind === 'whatIf';
 }
 
 // ---- Odometer (car row 5) ----------------------------------------------------------------
@@ -177,60 +176,72 @@ function leadingText(el) {
 
 const finishers = new Set();
 
-/** `from` rewritten to the shape of `to`, lined up on the decimal point ('9.5' for '10.25' is '09.50'). */
-function alignTo(from, to) {
-  if (!from || !/^[\d.]+$/.test(from)) return null;
-  const [toInt, toFrac = ''] = to.split('.');
+/**
+ * Old and new lined up on the decimal point, one pair per spot ('9.5' to '10.25' gives
+ * [['','1'],['9','0'],['.','.'],['5','2'],['','5']]). An empty side means that digit isn't there.
+ */
+function pairUp(from, to) {
   const [fromInt, fromFrac = ''] = from.split('.');
-  const int = fromInt.padStart(toInt.length, '0').slice(-toInt.length);
-  const frac = fromFrac.padEnd(toFrac.length, '0').slice(0, toFrac.length);
-  return to.includes('.') ? int + '.' + frac : int;
+  const [toInt, toFrac = ''] = to.split('.');
+  const intLen = Math.max(fromInt.length, toInt.length);
+  const fracLen = Math.max(fromFrac.length, toFrac.length);
+  const pairs = [];
+  for (let i = 0; i < intLen; i += 1) {
+    pairs.push([fromInt[i - (intLen - fromInt.length)] || '', toInt[i - (intLen - toInt.length)] || '']);
+  }
+  if (from.includes('.') || to.includes('.')) pairs.push(['.', '.']);
+  for (let i = 0; i < fracLen; i += 1) pairs.push([fromFrac[i] || '', toFrac[i] || '']);
+  return pairs;
 }
 
-/** Roll the leading number of `el` from `from` (or zeros) to its current text. */
+/**
+ * Roll the leading number of `el` from `from` to its current text. Each digit that changed is a
+ * two cell slot, old over new (new under old when the number went down), so every frame shows
+ * the old digit, the new one, or both in passing; never a blank window or a third digit.
+ * Digits that didn't change are plain text and never move.
+ */
 function roll(el, from) {
   const node = el.firstChild;
   if (!node || node.nodeType !== 3) return;
   const full = node.textContent;
   const to = full.trim();
-  if (!/^[\d.]+$/.test(to)) return;
+  const NUM = /^\d+(\.\d+)?$/;
+  if (!from || from === to || !NUM.test(to) || !NUM.test(from)) return;
+  const pairs = pairUp(from, to);
+  const moving = pairs.filter(([a, b]) => a !== b).length;
+  if (!moving) return; // same digits ('100' to '100.0' only gains a place): nothing to roll
+  const up = parseFloat(to) >= parseFloat(from);
   const trailing = full.slice(full.indexOf(to) + to.length);
-  if (from === to) return;
-  const old = alignTo(from, to); // the old number in the new one's shape, digit for digit
-  const digits = [...to].filter(ch => ch !== '.').length;
   const odo = document.createElement('span');
   odo.className = 'odo';
   odo.setAttribute('aria-hidden', 'true');
-  const strips = [];
+  const slots = [];
   let column = 0;
-  [...to].forEach((ch, i) => {
-    if (ch === '.') {
-      odo.append('.');
-      return;
+  for (const [was, now] of pairs) {
+    if (was === now) {
+      odo.append(now); // the decimal point and unchanged digits: plain text, still
+      continue;
     }
-    const end = +ch;
-    const start = old ? +old[i] : 0;
-    // Roll forward through the strip: a digit that didn't change stays put, one that goes up
-    // lands in the first 0 to 9 run, one that goes down (or opens from 0) runs on into the second.
-    const stop = old && start === end ? end : start < end ? end : end + 10;
     const col = document.createElement('span');
     col.className = 'odo-col';
     const ph = document.createElement('span');
     ph.className = 'odo-ph';
-    ph.textContent = ch;
+    ph.textContent = now || was; // holds the width while rolling
     const strip = document.createElement('span');
     strip.className = 'odo-s';
-    strip.innerHTML = '0123456789'.repeat(2).split('').map(d => `<b>${d}</b>`).join('');
-    const shorter = digits - 1 - column; // left columns land first
+    // Going up the new digit comes from below; going down it comes from above.
+    const cells = up ? [was, now] : [now, was];
+    strip.innerHTML = cells.map(d => `<b>${d}</b>`).join('');
+    const shorter = moving - 1 - column; // left columns land first
     strip.style.transitionDuration = `calc(var(--t-stage) - ${shorter} * var(--t-step))`;
     column += 1;
-    const win = document.createElement('span'); // the clip window: one line plus a little bleed
+    const win = document.createElement('span'); // the clip window: exactly one line
     win.className = 'odo-win';
     win.append(strip);
     col.append(ph, win);
     odo.append(col);
-    strips.push([strip, stop, start]);
-  });
+    slots.push(strip);
+  }
   const real = document.createElement('span');
   real.className = 'vh';
   real.textContent = to;
@@ -239,17 +250,18 @@ function roll(el, from) {
   spot.append(odo, real);
   el.replaceChild(spot, node);
   if (trailing) spot.after(trailing);
-  // Space the strip digits by the measured line plus a gap, so a big glyph that spills past its
-  // line box never shows in the next column window (the window is the line plus half the gap).
-  // Each digit cell is one line tall with the same line height, so its glyph sits exactly where the
-  // plain number will. The window reaches a little past the line so tall glyphs aren't cut.
+  // Each cell is one line tall with the same line height, so its glyph sits exactly where the
+  // plain number will. A small gap between the two cells: in passing the window always shows
+  // part of a digit (a full line gap left it empty at the half way point).
   const lineHeight = odo.querySelector('.odo-col').getBoundingClientRect().height;
-  const gap = Math.round(lineHeight); // a full line between digits: the window holds one digit at a time
+  const gap = Math.round(lineHeight * 0.15);
   const step = lineHeight + gap;
   odo.style.setProperty('--odo-h', lineHeight + 'px');
   odo.style.setProperty('--odo-gap', gap + 'px');
-  for (const [strip, , start] of strips) strip.style.transform = `translateY(${-start * step}px)`;
-  odo.getBoundingClientRect(); // commit the start offsets, or the roll would start from 0
+  const startY = up ? 0 : -step;
+  const endY = up ? -step : 0;
+  for (const strip of slots) strip.style.transform = `translateY(${startY}px)`;
+  odo.getBoundingClientRect(); // commit the start offsets before the transition is turned on
   let timer = 0;
   const finish = () => {
     clearTimeout(timer);
@@ -257,14 +269,12 @@ function roll(el, from) {
     if (spot.isConnected) spot.replaceWith(to);
   };
   finishers.add(finish);
-  const lastStrip = strips.filter(([, stop, start]) => stop !== start).pop()[0]; // rightmost moving digit ends last
-  lastStrip.addEventListener('transitionend', finish, { once: true });
+  slots[slots.length - 1].addEventListener('transitionend', finish, { once: true }); // rightmost ends last
   timer = setTimeout(finish, ODO_TIMEOUT_MS);
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    for (const [strip, stop, start] of strips) {
-      if (stop === start) continue; // this digit didn't change: it stays put
+    for (const strip of slots) {
       strip.classList.add('go');
-      strip.style.transform = `translateY(${-stop * step}px)`;
+      strip.style.transform = `translateY(${endY}px)`;
     }
   }));
 }
@@ -275,19 +285,12 @@ export function finishOdometers() {
 }
 for (const type of ['pointerdown', 'keydown']) document.addEventListener(type, finishOdometers, true);
 
-function odometers(sheetOpened, pageOpened) {
+function odometers() {
   for (const [key, el] of numberSpots()) {
     const text = leadingText(el);
     const before = tap && tap.numbers ? tap.numbers[key] : undefined;
-    if (before && before !== text) {
-      roll(el, before);
-      continue;
-    }
-    const opened = key === 'need' ? pageOpened : sheetOpened;
-    if (opened && !session('odo:' + key)) {
-      session('odo:' + key, '1');
-      roll(el, null);
-    }
+    // Opening a screen shows the real number at once; only a tap that changed it rolls.
+    if (before && before !== text) roll(el, before);
   }
 }
 
@@ -338,13 +341,10 @@ export function afterMotionRender() {
       if (grid) grid.classList.add(+tap.x > 0 ? 'mo-next' : 'mo-prev');
     }
   }
-  const before = last.depth;
-  const beforeTab = last.tab;
   pageEntrance();
-  const pageOpened = last.tab !== beforeTab || last.depth > before;
-  const sheetOpened = sheetEntrance();
+  sheetEntrance();
   nowPing();
-  if (on()) odometers(sheetOpened, pageOpened);
+  if (on()) odometers();
   homeGrades(on()); // the seen map stays current either way
   tap = null;
 }
