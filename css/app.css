@@ -2093,6 +2093,10 @@ html.vt-leave-intro::view-transition-new(root) {
 
 .row.per.on .per-t,
 .row.per.on .per-r {
+  color: var(--urgent);
+  font-weight: 700;
+}
+
 /* ---- Alerts page, Needs you (views/alerts.js) ---- */
 .al-dot {
   width: 11px;
@@ -2227,4 +2231,4 @@ html.vt-leave-intro::view-transition-new(root) {
 .gpa-links .t {
   font-size: 15.5px;
   font-weight: 600;
-
+}

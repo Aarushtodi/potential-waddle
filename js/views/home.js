@@ -258,19 +258,19 @@ function todoSection(shownAbove) {
 
 // ---- Grades ---------------------------------------------------------------------------------
 
-/**
- * Every class as a filled tile, short name over a big grade, three across so all of them show
- * without scrolling sideways. Tap opens the class. Hide scores: names only. The Latest line
- * sits under the tiles.
- */
-function gradeTiles() {
-  const tiles = visibleClasses().filter(course => periodAverage(course) != null).map(course =>
-    `<button class="gtile" ${actionAttrs('openPage', 'class', course.id)}>`
-    + `<span class="gtile-n">${escapeHtml(shortName(course))}</span>`
-    + (state.hideScores ? '' : `<span class="gtile-g">${oneDecimal(periodAverage(course))}</span>`)
-    + `</button>`).join('');
-  return `<div class="sec grades-sec"><div class="gtiles${state.hideScores ? ' hide' : ''}">${tiles}</div>`
-    + `${latestLine()}</div>`;
+/** One chip per class with its average (scrolls sideways). Tap opens the class. The Latest line sits under it. */
+function classStrip() {
+  const chips = visibleClasses().filter(course => periodAverage(course) != null).map(course =>
+    `<button class="chip cls" ${actionAttrs('openPage', 'class', course.id)}>${escapeHtml(shortName(course))}`
+    + (state.hideScores ? '' : ` <b>${oneDecimal(periodAverage(course))}</b>`) + `</button>`).join('');
+  return `<div class="sec grades-sec"><div class="chips strip-cls">${chips}</div>${latestLine()}</div>`;
+}
+
+/** The Grades tab's GPA row, repeated at the bottom of Home. Opens the GPA page. */
+function gpaRow() {
+  if (real.on) return '';
+  return `<div class="sec"><div class="card"><div class="row more" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
+    + `<div class="grow t" style="font-size:15.5px">GPA</div><div class="s">Calculator, an estimate</div>${CHEVRON}</div></div></div>`;
 }
 
 // ---- Top bar --------------------------------------------------------------------------------
@@ -347,5 +347,5 @@ export function homeView() {
     html += lead.html;
     shownAbove = lead.shown;
   }
-  return html + gradeTiles() + todoSection(shownAbove);
+  return html + classStrip() + todoSection(shownAbove) + gpaRow();
 }

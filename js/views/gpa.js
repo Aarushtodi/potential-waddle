@@ -68,7 +68,7 @@ export function gpaView() {
   const rows = ranked.map((item, i) => classRow(item, i < CLOSE_COUNT && item.points <= NEAR)).join('');
   return `<div class="sec">`
     + `<div class="gpa-hero"><span class="gpa-n" data-gpa-count="${gpa.weighted.toFixed(2)}">${gpa.weighted.toFixed(2)}</span>`
-    + `<i>this semester</i></div>`
+    + ` <i>this semester</i></div>`
     + (rows ? `<div class="card">${rows}</div>` : '')
     + `<div class="foot">Estimate. Your school sets the real GPA. Advisory doesn't count.</div>`
     + `<div class="foot gpa-unw">${gpa.unweighted.toFixed(2)} unweighted</div></div>`
