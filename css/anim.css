@@ -142,69 +142,75 @@
 
 /* ---- 4. Odometer: each digit is a 0 to 9 strip, left digits land first (car row 5) ----- */
 
-.odo-col {
-  position: relative;
-  display: inline-block;
-}
-
-/* The window is exactly one line, clipped top and bottom only (overflow clip, not hidden, so the
-   sides stay open). WebKit ignores clip-path on inline boxes, hence a window. The column itself
-   never clips, so its baseline stays on the hidden real digit. */
-.odo-win {
-  position: absolute;
-  inset: 0;
-  overflow-x: visible;
-  overflow-y: clip;
-}
-
-/* Same width digits, at rest and while rolling, so nothing shifts when the roll swaps back to text. */
 :is(.big-res, .hd.big, .glead-g, .glist-g),
 .odo-w {
   font-variant-numeric: tabular-nums;
 }
 
 .odo-w {
+  position: relative;
   display: inline-block;
   white-space: nowrap;
 }
 
+/* The real number sets the layout and stays visible until the overlay has painted. */
+.odo-real {
+  display: inline-block;
+}
+
+.odo-w.on .odo-real {
+  color: transparent;
+}
+
+.odo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  visibility: hidden;
+}
+
+.odo-w.on .odo {
+  visibility: visible;
+}
+
+.odo-col {
+  position: relative;
+  display: inline-block;
+}
+
+/* The placeholder gives the column its width and one line of height. */
 .odo-ph {
   display: block;
   visibility: hidden;
 }
 
+/* The window is exactly the column, clipped on every side; the 2px of side room keeps wide glyphs whole. */
+.odo-win {
+  position: absolute;
+  inset: 0 -2px;
+  overflow: hidden;
+}
+
+/* 21 cells (blank, 0 to 9, 0 to 9), each 1/21 of the strip: translate percentages land any digit with no measuring. */
 .odo-s {
   position: absolute;
-  top: 0;
-  transition-property: none; /* the inline duration alone would animate placing the start digit */
   left: 0;
   right: 0;
+  top: 0;
+  height: 2100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  will-change: transform;
 }
 
 .odo-s b {
-  display: block;
-  font: inherit; /* first: the font shorthand would reset line-height */
-  height: var(--odo-h);
-  line-height: var(--odo-h);
-  margin-bottom: var(--odo-gap);
-}
-
-.odo-s.go {
-  transition-property: transform;
-  transition-timing-function: var(--ease);
-  transition-delay: var(--t-hold);
-}
-
-.odo-w .vh {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  flex: 0 0 calc(100% / 21);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-weight: inherit;
 }
 
 /* ---- 5. Nothing keeps moving ----------------------------------------------------------- */

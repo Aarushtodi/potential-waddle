@@ -15,8 +15,8 @@ const on = () => root.classList.contains('motion');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 reduce.addEventListener('change', () => root.classList.toggle('motion', !reduce.matches));
 const STAGGER_CAP = 5;
-const ODO_TIMEOUT_MS = 1000;
 const CLEANUP_MS = 900;
+const CELL = 100 / 21; // one strip cell, in percent of the strip
 
 /** The tap being handled: what was tapped, where the picked pill sat, and the numbers before. */
 let tap = null;
@@ -187,86 +187,122 @@ function alignTo(from, to) {
   return to.includes('.') ? int + '.' + frac : int;
 }
 
-/** Roll the leading number of `el` from `from` (or zeros) to its current text. */
+/** A token such as --t-stage ('780ms') as a number of milliseconds. */
+function tokenMs(name, fallback) {
+  const v = getComputedStyle(root).getPropertyValue(name).trim();
+  const n = parseFloat(v);
+  if (!Number.isFinite(n)) return fallback;
+  return v.endsWith('ms') ? n : v.endsWith('s') ? n * 1000 : n;
+}
+
+/**
+ * Roll the leading number of `el` from `from` to its current text.
+ * Nothing is measured. The real number stays in the page, visible, and sets the layout. Over it
+ * sits an overlay of columns: a digit placeholder gives each column its tabular width and line
+ * height, and a 20 cell strip (0 to 9 twice) fills it. The strip is 2000% of the column tall, each
+ * cell 5%, so a translate of -(index / 20) * 100% lands any digit with no pixel maths. Web
+ * Animations with fill both holds the old digit through the hold. The overlay replaces the real
+ * number only after every animation reports ready and one frame painted, in a single class flip.
+ * With no old value (first open) each digit makes one full turn and lands on itself.
+ */
 function roll(el, from) {
   const node = el.firstChild;
-  if (!node || node.nodeType !== 3) return;
+  if (!node || node.nodeType !== 3 || !el.animate) return;
   const full = node.textContent;
   const to = full.trim();
-  if (!/^[\d.]+$/.test(to)) return;
+  if (!/^[\d.]+$/.test(to) || from === to) return;
+  // The old number in the new one's shape, digit for digit. A new leading digit starts from a
+  // blank cell; an old number with more digits than the new one can't be shown truthfully in the
+  // new shape, so that rare case takes one full turn instead (no old value to roll from).
+  const toInt = to.split('.')[0].length;
+  const old = from && /^[\d.]+$/.test(from) && from.split('.')[0].length <= toInt ? alignTo(from, to) : null;
+  const pad = old ? toInt - from.split('.')[0].length : 0;
+  let k = 0;
+  const plan = [...to].map((ch, i) => {
+    if (ch === '.') return null;
+    const end = +ch;
+    const blank = k < pad; // leading digit the old number didn't have
+    k += 1;
+    // 21 cells: 0 is blank, 1 to 10 are 0 to 9, 11 to 20 are 0 to 9 again. Up lands in the first
+    // run, down (or a full turn) runs on into the second.
+    const first = end + 1;
+    if (!old) return { ch, start: first, stop: first + 10 };
+    const start = blank ? 0 : +old[i] + 1;
+    const stop = blank ? first : start === first ? start : start < first ? first : first + 10;
+    return { ch, start, stop };
+  });
   const trailing = full.slice(full.indexOf(to) + to.length);
-  if (from === to) return;
-  const old = alignTo(from, to); // the old number in the new one's shape, digit for digit
-  const digits = [...to].filter(ch => ch !== '.').length;
-  const odo = document.createElement('span');
-  odo.className = 'odo';
-  odo.setAttribute('aria-hidden', 'true');
+
+  const real = document.createElement('span');
+  real.className = 'odo-real';
+  real.textContent = to;
+  const overlay = document.createElement('span');
+  overlay.className = 'odo';
+  overlay.setAttribute('aria-hidden', 'true');
   const strips = [];
-  let column = 0;
-  [...to].forEach((ch, i) => {
-    if (ch === '.') {
-      odo.append('.');
+  plan.forEach(d => {
+    if (!d) {
+      overlay.append('.');
       return;
     }
-    const end = +ch;
-    const start = old ? +old[i] : 0;
-    // Roll forward through the strip: a digit that didn't change stays put, one that goes up
-    // lands in the first 0 to 9 run, one that goes down (or opens from 0) runs on into the second.
-    const stop = old && start === end ? end : start < end ? end : end + 10;
     const col = document.createElement('span');
     col.className = 'odo-col';
     const ph = document.createElement('span');
     ph.className = 'odo-ph';
-    ph.textContent = ch;
+    ph.textContent = d.ch;
+    const win = document.createElement('span');
+    win.className = 'odo-win';
     const strip = document.createElement('span');
     strip.className = 'odo-s';
-    strip.innerHTML = '0123456789'.repeat(2).split('').map(d => `<b>${d}</b>`).join('');
-    const shorter = digits - 1 - column; // left columns land first
-    strip.style.transitionDuration = `calc(var(--t-stage) - ${shorter} * var(--t-step))`;
-    column += 1;
-    const win = document.createElement('span'); // the clip window: one line plus a little bleed
-    win.className = 'odo-win';
+    for (let n = 0; n < 21; n += 1) {
+      const cell = document.createElement('b');
+      cell.textContent = n === 0 ? '' : String((n - 1) % 10);
+      strip.append(cell);
+    }
+    strip.style.transform = `translateY(${-d.start * CELL}%)`;
     win.append(strip);
     col.append(ph, win);
-    odo.append(col);
-    strips.push([strip, stop, start]);
+    overlay.append(col);
+    strips.push({ strip, ...d });
   });
-  const real = document.createElement('span');
-  real.className = 'vh';
-  real.textContent = to;
   const spot = document.createElement('span');
   spot.className = 'odo-w';
-  spot.append(odo, real);
+  spot.append(real, overlay);
   el.replaceChild(spot, node);
   if (trailing) spot.after(trailing);
-  // Space the strip digits by the measured line plus a gap, so a big glyph that spills past its
-  // line box never shows in the next column window (the window is the line plus half the gap).
-  // Each digit cell is one line tall with the same line height, so its glyph sits exactly where the
-  // plain number will. The window reaches a little past the line so tall glyphs aren't cut.
-  const lineHeight = odo.querySelector('.odo-col').getBoundingClientRect().height;
-  const gap = Math.round(lineHeight); // a full line between digits: the window holds one digit at a time
-  const step = lineHeight + gap;
-  odo.style.setProperty('--odo-h', lineHeight + 'px');
-  odo.style.setProperty('--odo-gap', gap + 'px');
-  for (const [strip, , start] of strips) strip.style.transform = `translateY(${-start * step}px)`;
-  odo.getBoundingClientRect(); // commit the start offsets, or the roll would start from 0
+
+  const stage = tokenMs('--t-stage', 780);
+  const step = tokenMs('--t-step', 45);
+  const hold = tokenMs('--t-hold', 140);
+  const ease = getComputedStyle(root).getPropertyValue('--ease').trim() || 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const moving = strips.filter(d => d.stop !== d.start);
+  const anims = [];
   let timer = 0;
+  let done = false;
   const finish = () => {
+    if (done) return;
+    done = true;
     clearTimeout(timer);
     finishers.delete(finish);
+    anims.forEach(a => a.cancel());
     if (spot.isConnected) spot.replaceWith(to);
   };
   finishers.add(finish);
-  const lastStrip = strips.filter(([, stop, start]) => stop !== start).pop()[0]; // rightmost moving digit ends last
-  lastStrip.addEventListener('transitionend', finish, { once: true });
-  timer = setTimeout(finish, ODO_TIMEOUT_MS);
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    for (const [strip, stop, start] of strips) {
-      if (stop === start) continue; // this digit didn't change: it stays put
-      strip.classList.add('go');
-      strip.style.transform = `translateY(${-stop * step}px)`;
-    }
-  }));
+  timer = setTimeout(finish, hold + stage + 600);
+  moving.forEach(d => {
+    const shorter = moving.length - 1 - moving.indexOf(d); // left columns land first
+    const anim = d.strip.animate(
+      [{ transform: `translateY(${-d.start * CELL}%)` }, { transform: `translateY(${-d.stop * CELL}%)` }],
+      { duration: Math.max(stage - shorter * step, 200), delay: hold, easing: ease, fill: 'both' },
+    );
+    anims.push(anim);
+  });
+  // The longest animation ends the roll; the rest land earlier.
+  const last = anims.reduce((a, b) => (b.effect.getComputedTiming().endTime > a.effect.getComputedTiming().endTime ? b : a));
+  last.finished.then(finish, () => {});
+  Promise.all(anims.map(a => a.ready)).then(() => requestAnimationFrame(() => {
+    if (!done) spot.classList.add('on'); // one flip: overlay shows, real digits go clear
+  }), finish);
 }
 
 /** Any press or key skips a running roll straight to the number (car row 5). */
