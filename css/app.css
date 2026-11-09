@@ -2244,3 +2244,58 @@ html.vt-leave-intro::view-transition-new(root) {
   font-size: 15.5px;
   font-weight: 600;
 }
+
+/* ---- Grades block on Home: Lowest leads ---- */
+.glist-row {
+  min-height: 48px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.glist-g {
+  font: 700 24px/1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  min-width: 64px;
+  text-align: right;
+}
+
+.glead-g.u {
+  color: var(--urgent);
+}
+
+.glist-row.small .glist-g {
+  font-size: 19px;
+}
+
+.glead {
+  padding: 16px 18px 15px;
+}
+
+.glead-k {
+  font: 600 13px var(--sans);
+  color: var(--sec);
+}
+
+.glead-r {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.glead-n {
+  font: 700 22px var(--sans);
+}
+
+.glead-g {
+  font: 800 52px/1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+
+.glead-d {
+  font: 500 13.5px var(--sans);
+  color: var(--sec);
+  margin-top: 4px;
+}
