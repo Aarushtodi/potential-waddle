@@ -1412,3 +1412,37 @@ input[type=date].f {
     stroke-dashoffset: 0;
   }
 }
+
+/* Calendar, today: the day's periods (moved here from Home's bell line). */
+.row.per .per-t {
+  width: 46px;
+  flex: none;
+  font-size: 13.5px;
+  color: var(--sec);
+  font-variant-numeric: tabular-nums;
+}
+
+.row.per .t {
+  font-size: 16px;
+}
+
+.row.per .per-r {
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.row.per.past {
+  opacity: .45;
+}
+
+.row.per.on .per-t,
+.row.per.on .per-r {
+  color: var(--urgent);
+  font-weight: 700;
+}
+
+.row.per.nxt .per-r {
+  color: var(--sec);
+}
+
