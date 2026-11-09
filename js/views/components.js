@@ -6,8 +6,7 @@
  * arguments. One click listener in app.js reads them (see actionAttrs).
  */
 import { escapeHtml, shortDate } from '../format.js';
-import { state, SEMESTER_SPLIT } from '../state.js';
-import { PAST_REPORT_CARD } from '../sample-data.js';
+import { state } from '../state.js';
 
 /** data-action plus up to two arguments, all escaped. */
 export function actionAttrs(action, x, y) {
@@ -99,9 +98,3 @@ export function progressBars(items) {
   return `<div class="prog"><div class="bars">${bars}</div><em>${done} of ${total} done</em></div>`;
 }
 
-/** Says where the semester split came from, everywhere a final exam estimate is shown. */
-export function splitExplanation() {
-  return `Each quarter ${SEMESTER_SPLIT.quarterPercent} percent, exam ${SEMESTER_SPLIT.examPercent} percent. `
-    + `Worked out from your past report card (sample: ${PAST_REPORT_CARD.length} classes from last year, `
-    + `Q1, Q2, exam and semester grade).`;
-}

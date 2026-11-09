@@ -14,7 +14,7 @@ import { CLASSES, LAST_QUARTER_SAME_POINT } from '../sample-data.js';
 import {
   state, SEMESTER_SPLIT, whatIfFor, whatIfAverage, blankRowsLeft, isUnderRetestLine,
 } from '../state.js';
-import { actionAttrs, navRow, segmented, toggle, sectionLabel, splitExplanation, CHEVRON } from './components.js';
+import { actionAttrs, navRow, segmented, toggle, sectionLabel, CHEVRON } from './components.js';
 import { needView } from './gpa.js';
 
 /** [key, title] for each tool on the What if menu. The title also heads the tool's sheet. */
@@ -158,8 +158,7 @@ function finalsResult(course) {
   if (q1 == null) return '<div class="s">Needs a Quarter 1 grade.</div>';
   const target = state.finals.target;
   const need = finalExamNeeded(SEMESTER_SPLIT, q1, q2, +target);
-  const note = `<div class="s">Estimate, semester ${escapeHtml(target)} from Q1 ${q1} and Q2 ${oneDecimal(q2)} here. `
-    + `${splitExplanation()}</div>`;
+  const note = `<div class="s">Q1 ${q1}, Q2 ${oneDecimal(q2)}</div>`;
   if (need <= 0) return `<div class="t">You hit ${escapeHtml(target)} even with a 0 on the final</div>${note}`;
   if (need > 100) {
     return `<div class="t">You'd need ${oneDecimal(need)} on the final</div>`
@@ -250,8 +249,7 @@ function semesterResult(course) {
   if (need <= 0) needLine = `Any final gets you ${escapeHtml(inputs.target)}`;
   else if (need > 100) needLine = `You'd need ${oneDecimal(need)}, more than 100`;
   else needLine = `You need ${Math.ceil(need)} on the final for ${escapeHtml(inputs.target)}`;
-  return `${withFinal}<div class="t" style="margin-top:6px">${needLine}</div>`
-    + `<div class="s">Estimate. ${splitExplanation()} No past final, like a freshman? The app asks you once.</div>`;
+  return `${withFinal}<div class="t" style="margin-top:6px">${needLine}</div>`;
 }
 
 function semesterTool(course) {
