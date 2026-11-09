@@ -94,10 +94,12 @@ export function classView(course) {
   // Tools only make sense for the current quarter, where the rows can still change.
   if (state.period === 'Q2' && average != null) {
     // Graph only when there are 2+ graded points to draw; it opens in a sheet (graphSheetBody).
+    // Target opens the score you need page with this class already picked.
     const graph = graphSeries(course).length >= 2;
-    html += `<div class="toolrow${graph ? ' three' : ''}">`
+    html += `<div class="toolrow ${graph ? 'four' : 'three'}">`
       + (graph ? `<button class="pill" ${actionAttrs('openGraph', course.id)}>Graph</button>` : '')
       + `<button class="pill" ${actionAttrs('openWhatIf', course.id)}>What if</button>`
+      + `<button class="pill" ${actionAttrs('openTarget', course.id)}>Target</button>`
       + `<button class="pill" ${actionAttrs('openEmailDraft', course.id)}>Email teacher</button></div>`;
   }
   html += `</div>`;

@@ -40,7 +40,7 @@ js/views/components.js  Shared HTML pieces: headings, rows, segmented controls, 
 js/views/home.js        Home tab (look H4: missing card, Latest line, class chips, grouped to-dos) and the Missing work page
 js/views/grades.js      Grades tab: class list, one class (with grade graph), one assignment
 js/views/what-if.js     What if sheet and its 8 tools (the only place the app predicts)
-js/views/gpa.js         GPA page, What do I need, GPA what if, GPA goal
+js/views/gpa.js         GPA page, Target, GPA what if, GPA goal
 js/views/calendar.js    Calendar tab
 js/views/bell.js        Bell tab: the day as a tape, now line on the A day, A/B day toggle
 js/views/settings.js    Settings and the Widgets preview

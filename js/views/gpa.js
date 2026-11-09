@@ -1,5 +1,6 @@
 /**
- * GPA page and its tools: What do I need, GPA what if, Long term goal (Missing work is in home.js).
+ * GPA page and its tools: GPA what if, Long term goal (Missing work is in home.js). Also the
+ * Target page (the score you need for a grade), opened from a class page with that class set.
  * All of these are estimates; the school computes the real GPA.
  *
  * The GPA page: the weighted number as the hero, then the counted classes sorted by how close
@@ -73,7 +74,6 @@ export function gpaView() {
     + `<div class="foot">Estimate. Your school sets the real GPA. Advisory doesn't count.</div>`
     + `<div class="foot gpa-unw">${gpa.unweighted.toFixed(2)} unweighted</div></div>`
     + `<div class="sec"><div class="card gpa-links">`
-    + navRow('What do I need', '', 'openPage', 'need')
     + navRow('GPA what if', '', 'openPage', 'gpaWhatIf')
     + navRow('By graduation', '', 'openPage', 'gpaGoal')
     + `</div></div>`;
@@ -110,13 +110,13 @@ export function afterGpaRender() {
   counter.raf = requestAnimationFrame(frame);
 }
 
-// ---- What do I need -----------------------------------------------------------------------
+// ---- Target ------------------------------------------------------------------------------
 
 export function needView() {
   const calc = state.needCalc;
   const course = findClass(calc.classId);
   const choices = CLASSES.filter(other => classAverage(other.rows) != null);
-  return `<div class="sec"><div class="chips">`
+  return `<div class="sec"><div class="chips need-chips">`
     + choices.map(other =>
       `<button class="chip${other.id === calc.classId ? ' on' : ''}" ${actionAttrs('needPickClass', other.id)}>`
       + `${escapeHtml(other.name)}</button>`).join('')
@@ -126,6 +126,22 @@ export function needView() {
     + `<div class="card"><div class="row"><div class="grow t">Grade you want</div>`
     + `<input class="f" type="number" inputmode="decimal" aria-label="Target grade" value="${calc.target}" data-input="needTarget"></div>`
     + `<div class="pad" style="border-top:1px solid var(--rule)" data-live>${needResult(course)}</div></div></div>`;
+}
+
+/**
+ * A redraw puts the class chips back at the start, so a picked class far down the list (say
+ * Health and PE, opened from its class page) would sit off screen. Bring it to the middle.
+ * Called by render.js after every full redraw.
+ */
+export function afterNeedRender() {
+  for (const row of document.querySelectorAll('.need-chips')) {
+    const on = row.querySelector('.chip.on');
+    if (!on) continue;
+    const box = row.getBoundingClientRect();
+    const chip = on.getBoundingClientRect();
+    if (chip.left >= box.left && chip.right <= box.right) continue;
+    row.scrollLeft += chip.left + chip.width / 2 - (box.left + box.width / 2);
+  }
 }
 
 function needResult(course) {
