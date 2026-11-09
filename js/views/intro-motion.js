@@ -38,15 +38,18 @@ const ENTRANCES = [
   { scrubEnd: 1500, parts: [
     { sel: '.intro-art .card', delay: 250, dur: 1000, y: 14 },
     { sel: '.lockline', delay: 900, dur: 600 },
+    { sel: '.intro-text i', delay: 1300, dur: 600, pop: true },
   ] },
   { scrubEnd: 400, parts: [
     { sel: '.intro-art-inner', delay: 0, dur: 400 },
+    { sel: '.intro-text i', delay: 1500, dur: 600, pop: true },
   ] },
   { scrubEnd: 1250, parts: [
     { sel: '.intro-art .card', delay: 100, dur: 400 },
     { sel: '.intro-art .row:nth-child(1)', delay: 250, dur: 700, y: -10 },
     { sel: '.intro-art .row:nth-child(2)', delay: 550, dur: 700, y: -10 },
     { sel: '.mark b.draw circle', delay: 1250, dur: 1000, ring: true },
+    { sel: '.intro-text i', delay: 1650, dur: 600, pop: true },
   ] },
 ];
 const entranceEnd = e => Math.max(...e.parts.map(p => p.delay + p.dur));
@@ -181,10 +184,15 @@ function applyEntrance(slide, index, ent) {
     const node = slide.querySelector(part.sel);
     if (!node) continue;
     if (ent.phase === 'done') {
-      node.style.opacity = node.style.transform = node.style.strokeDashoffset = '';
+      node.style.opacity = node.style.transform = node.style.strokeDashoffset = node.style.color = '';
       continue;
     }
     const raw = Math.max(0, Math.min(1, (ent.t - part.delay) / part.dur));
+    if (part.pop) {
+      // The headline's accent word fills in with the pop color once the art has landed.
+      node.style.color = `color-mix(in srgb, var(--urgent) ${Math.round(easeInOut(raw) * 100)}%, var(--ink))`;
+      continue;
+    }
     if (part.ring) {
       node.style.strokeDashoffset = String(RING * (1 - easeInOut(raw)));
       continue;

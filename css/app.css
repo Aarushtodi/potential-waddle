@@ -1415,6 +1415,11 @@ input[type=date].f {
 
 /* ---- Intro slides as pages you can half swipe, see js/views/intro-motion.js ---- */
 
+/* The pop color: each slide's accent word (one tap, a paywall, first) ends in it; intro-motion.js fades it in. */
+.intro .intro-text .hd i {
+  color: var(--urgent);
+}
+
 .lockline {
   display: flex;
   gap: 6px;
