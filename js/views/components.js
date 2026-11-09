@@ -68,9 +68,10 @@ export function statusStrip() {
 }
 
 /** One to-do row with its tick circle. Missing work opens the assignment, checkpoints open the pace. */
-export function todoRow(item, showDate = true) {
+export function todoRow(item, showDate = true, { redToday = true } = {}) {
   const done = !!state.doneIds[item.id];
-  const urgent = item.due != null && item.due <= 0 && !done;
+  // Red ring: overdue, and (unless redToday is off, as on Home) due today.
+  const urgent = item.due != null && (item.due < 0 || (redToday && item.due === 0)) && !done;
   const subtitle = [item.detail, showDate && item.due != null ? shortDate(item.due) : null]
     .filter(Boolean).join(', ');
   let open;

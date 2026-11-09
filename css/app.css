@@ -16,7 +16,7 @@
   color-scheme: light dark;
   --paper: #D8D2C6;
   --bar: #D8D2C6;
-  --card: #EAE4D8;
+  --card: #EDE8DD;
   --ink: #181812;
   --sec: #4A473F;
   --urgent: #A83030;
@@ -38,13 +38,13 @@
 :root[data-theme=dark],
 .pal-dark {
   color-scheme: dark;
-  --paper: #12120C;
+  --paper: #0B0B07;
   --bar: #000;
-  --card: #1E1E17;
+  --card: #24241C;
   --ink: #F0F0E4;
   --sec: #A9A99A;
   --urgent: #D87058;
-  --rule: #33332A;
+  --rule: #3A3A30;
   --ring: #6E6E60;
   --done: #48B868;
   --graded: #86B4E3;
@@ -55,13 +55,13 @@
 
 @media(prefers-color-scheme:dark) {
   :root:not([data-theme=light]) {
-    --paper: #12120C;
+    --paper: #0B0B07;
     --bar: #000;
-    --card: #1E1E17;
+    --card: #24241C;
     --ink: #F0F0E4;
     --sec: #A9A99A;
     --urgent: #D87058;
-    --rule: #33332A;
+    --rule: #3A3A30;
     --ring: #6E6E60;
     --done: #48B868;
     --graded: #86B4E3;
@@ -610,12 +610,12 @@ input[type=date].f {
 }
 
 :root[data-theme=dark] .tog.on:after {
-  background: #12120C;
+  background: #0B0B07;
 }
 
 @media(prefers-color-scheme:dark) {
   :root:not([data-theme=light]) .tog.on:after {
-    background: #12120C;
+    background: #0B0B07;
   }
 }
 
@@ -1343,22 +1343,6 @@ input[type=date].f {
   border-color: var(--ring);
 }
 
-.chip.cls {
-  font-weight: 600;
-}
-
-.chip.cls b {
-  font-weight: 800;
-  margin-left: 3px;
-  font-variant-numeric: tabular-nums;
-}
-
-.strip-cls {
-  margin: 0 -16px 2px;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
 .nowg {
   display: flex;
   align-items: center;
@@ -1381,6 +1365,145 @@ input[type=date].f {
 
 .row.more .s {
   font-weight: 600;
+}
+
+/* ---- Home hierarchy (11/9) ----
+   One thing leads (the missing work card, or the all clear heading), the grades come next as
+   filled tiles with a big number, and the to-dos are smaller and quieter. Red means missing or
+   overdue, nothing else. */
+
+.lead-sec {
+  margin-bottom: 20px;
+}
+
+.card.lead .row.zero {
+  min-height: 62px;
+  padding-top: 14px;
+  padding-bottom: 13px;
+}
+
+.card.lead .row.zero .t {
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+/* Missing work: the title row carries a wash of the urgent red, so the lead reads first. */
+.card.lead.urgent .row.zero {
+  background: color-mix(in srgb, var(--urgent) 11%, var(--card));
+}
+
+.card.lead.urgent .row.zero + .row {
+  border-top-color: color-mix(in srgb, var(--urgent) 22%, var(--rule));
+}
+
+.card.lead .row .t {
+  font-size: 17px;
+}
+
+.grades-sec {
+  margin-bottom: 22px;
+}
+
+.gtiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.gtile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+  padding: 11px 12px 10px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gtile:active {
+  opacity: .7;
+}
+
+.gtile-n {
+  max-width: 100%;
+  font: 600 13px/1.2 var(--sans);
+  color: var(--sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gtile-g {
+  font: 700 28px/1.05 var(--sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+}
+
+/* Hide scores: names only, so the tile title takes the weight. */
+.gtiles.hide .gtile {
+  min-height: 52px;
+  justify-content: center;
+}
+
+.gtiles.hide .gtile-n {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.grades-sec .upd.latest {
+  margin-top: 10px;
+  padding: 0 2px;
+  font-size: 13px;
+}
+
+/* To-dos: smaller rows, gray rings unless overdue (b.u), so chores sit below the lead. */
+.card.quiet .row {
+  min-height: 44px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 10px;
+}
+
+.card.quiet .t {
+  font-size: 15px;
+}
+
+.card.quiet .s {
+  font-size: 12.5px;
+}
+
+.card.quiet .row.more {
+  min-height: 40px;
+}
+
+.card.quiet .mark b {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+.card.quiet .mark b.on:after {
+  left: 5.5px;
+  top: 2px;
+  width: 5px;
+  height: 9.5px;
+  border-width: 0 2.3px 2.3px 0;
+}
+
+/* Hide scores keeps every ring gray, overdue included. */
+.card.quiet .mark b:not(.u):not(.on),
+.card.lead .mark b:not(.u):not(.on),
+.card.hide .mark b.u {
+  border-color: var(--sec);
+  opacity: .55;
 }
 
 /* ---- Home's collapsing header (iOS large title) ----
@@ -1728,13 +1851,13 @@ input[type=date].f {
 }
 
 .force-light {
-  --paper: #D8D2C6; --bar: #D8D2C6; --card: #EAE4D8; --ink: #181812; --sec: #4A473F;
+  --paper: #D8D2C6; --bar: #D8D2C6; --card: #EDE8DD; --ink: #181812; --sec: #4A473F;
   --urgent: #A83030; --rule: #CBC4B5; --up: #2E7A47; --chip-bg: #E0D9CB;
 }
 
 .force-dark {
-  --paper: #12120C; --bar: #000; --card: #1E1E17; --ink: #F0F0E4; --sec: #A9A99A;
-  --urgent: #E0806A; --rule: #33332A; --up: #55C27A; --chip-bg: #2C2C23;
+  --paper: #0B0B07; --bar: #000; --card: #24241C; --ink: #F0F0E4; --sec: #A9A99A;
+  --urgent: #E0806A; --rule: #3A3A30; --up: #55C27A; --chip-bg: #2C2C23;
 }
 
 @media(prefers-color-scheme:dark) {
