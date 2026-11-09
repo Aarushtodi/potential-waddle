@@ -7,7 +7,8 @@
  *   question opens   the whole screen body slides in 24px and fades up as one (no mask through text)
  *   progress bar     rule draw from the last step's width to this one's
  *   tile tapped      pop: scale from --press-scale back to 1
- *   Your plan        cover plate (once a session): the picks tick off, then it fades out over the
+ *   Your plan        cover plate (once a session): fades in over --t-press (the plan under it is
+ *                    hidden until the plate leaves), the picks tick off, then it fades out over the
  *                    plan, which is already drawn at its real numbers, then it is removed.
  *                    Any tap skips, and that tap's click is swallowed so it never lands on Start.
  *                    The whole moment stays under PLATE_CAP_MS.
@@ -86,9 +87,10 @@ function runPlate() {
 
   const hold = token('--t-hold');
   const tick = token('--t-press');
+  const enter = tick; // the plate's own fade in (CSS .gplate animation), ticks start after it
   const gap = rows.length > 1 ? TICK_SPREAD_MS / (rows.length - 1) : 0;
-  rows.forEach((row, i) => plateTimers.push(setTimeout(() => row.classList.add('on'), i * gap)));
-  const liftAt = Math.max(hold, (rows.length - 1) * gap + tick);
+  rows.forEach((row, i) => plateTimers.push(setTimeout(() => row.classList.add('on'), enter + i * gap)));
+  const liftAt = enter + Math.max(hold, (rows.length - 1) * gap + tick);
 
   let done = false;
   const finish = () => {

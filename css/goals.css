@@ -175,10 +175,11 @@
   padding: 12px 8px;
 }
 
-/* Look A: the label is as big as the number. */
+/* Look A: the label is as big as the number, lines balanced (no lone "an"). */
 .look-a .g-num,
 .look-a .g-lab {
   font: 500 22px/1.12 var(--sans);
+  text-wrap: balance;
 }
 
 .look-a .g-tile.on {
@@ -365,6 +366,23 @@
 .gplate.lift,
 .gplate.lift .gplate-in {
   opacity: 0;
+}
+
+/* Plate entrance: a fade in, never a one frame cut. Backwards fill only, so the lift fade still runs. */
+.gplate {
+  animation: g-plate-in var(--t-press) linear backwards;
+}
+
+@keyframes g-plate-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* While the plate comes in and ticks, the plan under it stays hidden, so the fade in shows the
+   bare screen turning into the plate, not the plan flashing first. */
+.scr.goals.plan:has(.gplate:not(.lift)) > :not(.gplate) {
+  visibility: hidden;
 }
 
 .gplate-in {

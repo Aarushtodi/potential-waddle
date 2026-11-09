@@ -152,6 +152,9 @@ export const actions = {
     state.sheet = null;
   },
   signIn() {
+    // A sign in opens like a fresh app: every screen at the top, so on a 2nd sign in Home shows the
+    // goal cards first, not where it was scrolled before sign out (cleared before goalsStart renders).
+    state.scrollPositions = {};
     // Picks kept from an earlier sign in: straight to Home, no second Goals setup.
     if (state.goals.length) return actions.goalsStart();
     // Goals come next, so the plan is built from the real grades just read.

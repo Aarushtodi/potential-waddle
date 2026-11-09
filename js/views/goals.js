@@ -22,9 +22,9 @@ import { planPlateDue } from './goals-motion.js';
 
 export const GOALS = [
   { key: 'gpa', label: 'Raise my GPA' },
-  { key: 'missing', label: 'Never miss an assignment' },
+  { key: 'missing', label: 'Never miss an\u00a0assignment' },
   { key: 'finals', label: 'Ace finals' },
-  { key: 'keepA', label: 'Get an A in a class' },
+  { key: 'keepA', label: 'Get an\u00a0A in a class' },
 ];
 export const GOAL_ALERT_LINES = [90, 85, 80];
 
@@ -109,7 +109,7 @@ function questionBody(step) {
   }
   if (step === 'which') {
     const classes = gradedClasses();
-    return riseTitle('Which classes need an ', 'A?')
+    return riseTitle('Which classes need an\u00a0', 'A?')
       + `<div class="g-tiles n${classes.length > 4 ? 'many' : classes.length}" role="group" aria-label="Classes">`
       + classes.map(course => tile(state.goalAClasses.includes(course.id), 'toggleGoalClass', course.id,
         oneDecimal(periodAverage(course)), shortName(course))).join('')
@@ -118,7 +118,7 @@ function questionBody(step) {
   return riseTitle('Tell me when a class drops ', 'under')
     + `<div class="g-tiles n3 single" role="radiogroup" aria-label="Alert line">`
     + GOAL_ALERT_LINES.map(line => tile(state.goalAlert === line, 'pickGoalAlert', line, String(line),
-      underCount(line) + ' under', true)).join('')
+      underCount(line) + (underCount(line) === 1 ? ' class under' : ' classes under'), true)).join('')
     + `</div>`;
 }
 
@@ -166,7 +166,7 @@ function planBlock(key) {
   }
   if (key === 'finals') {
     if (!SEMESTER_SPLIT) return '';
-    return `<div class="card g-plan"><div class="g-plan-k">Finals</div><div class="g-plan-n">${finalsText()}</div>`
+    return `<div class="card g-plan"><div class="g-plan-k">Finals worth</div><div class="g-plan-n">${finalsText()}</div>`
       + finalsTests().map(item => `<div class="g-plan-row"><span class="grow">${escapeHtml(item.title)}</span>`
         + `<span class="g-plan-s">${escapeHtml(item.course)}, ${escapeHtml(shortDate(item.due))}</span></div>`).join('')
       + `</div>`;

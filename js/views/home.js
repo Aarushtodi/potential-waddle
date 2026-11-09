@@ -438,7 +438,7 @@ function finalsCard() {
   const rows = finalsTests().map(item => `<div class="row glist-row small">`
     + `<div class="grow t">${escapeHtml(item.title)}</div>`
     + `<span class="glist-s">${escapeHtml(item.course)}, ${escapeHtml(shortDate(item.due))}</span></div>`).join('');
-  return `<div class="sec"><div class="card glead"><div class="glead-k">Finals</div>`
+  return `<div class="sec"><div class="card glead"><div class="glead-k">Finals worth</div>`
     + `<div class="glead-r"><span class="glead-g">${SEMESTER_SPLIT.examPercent}%</span></div></div>`
     + (rows ? `<div class="card quiet" style="margin-top:8px">${rows}</div>` : '')
     + `</div>`;
