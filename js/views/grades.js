@@ -23,7 +23,7 @@ export function gradesView() {
   if (!state.editingClasses && !real.on) {
     html += `<div class="sec" style="margin-bottom:16px"><div class="card">`
       + `<div class="row more" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
-      + `<div class="grow t" style="font-size:15.5px">GPA</div><div class="s">Calculator, an estimate</div>${CHEVRON}</div>`
+      + `<div class="grow t" style="font-size:15.5px">GPA</div>${CHEVRON}</div>`
       + `</div></div>`;
   }
   html += `<div class="sec"><div style="display:flex;align-items:flex-end;gap:8px"><div class="grow">`
@@ -34,14 +34,14 @@ export function gradesView() {
   if (state.editingClasses) {
     // Add a class lives in Edit, not as a standing row.
     html += `<div class="card">${list.map(editRow).join('')}`
-      + navRow('Add a class', `Dual credit, self study AP. ${state.typedClasses.length} of ${TYPED_CLASS_LIMIT} used`,
+      + navRow('Add a class', `${state.typedClasses.length} of ${TYPED_CLASS_LIMIT} used`,
         'openSheet', 'addClass')
       + `</div></div>`;
     return html;
   }
 
   html += `<div class="card">${list.map(classRow).join('')}</div>`;
-  html += `<div class="foot">Long press a class to rename, reorder or hide.</div></div>`;
+  html += `</div>`;
   return html;
 }
 
@@ -84,7 +84,7 @@ export function classView(course) {
   if (course.typed) {
     return `<div class="sec">`
       + heading('Added by you, ' + escapeHtml(course.levelName), oneDecimal(course.grade) + ' ', 'average', { big: 1 })
-      + `<div class="card"><div class="row"><div class="s">You typed this class in, so there is no gradebook behind it.</div></div></div></div>`;
+      + `<div class="card"><div class="row"><div class="s">No assignments yet</div></div></div></div>`;
   }
   const label = assignmentCount(rows.length);
   let html = `<div class="sec">`
@@ -105,7 +105,7 @@ export function classView(course) {
   html += `</div>`;
   if (!rows.length) {
     return html + `<div class="sec"><div class="card"><div class="row">`
-      + `<div class="s" style="font-size:15px">Nothing in the gradebook for this class yet.</div></div></div></div>`;
+      + `<div class="s" style="font-size:15px">No assignments yet</div></div></div></div>`;
   }
   const upcoming = rows.filter(row => row.due != null && effectiveDue(row) >= 0)
     .sort((a, b) => effectiveDue(a) - effectiveDue(b));

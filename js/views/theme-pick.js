@@ -10,7 +10,7 @@ import { actionAttrs, heading } from './components.js';
 const LOOKS = [
   { theme: 'light', name: 'Light' },
   { theme: 'dark', name: 'Dark' },
-  { theme: 'system', name: 'Match my phone', sub: 'Switches with your iPhone' },
+  { theme: 'system', name: 'Match my phone' },
 ];
 
 const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24"><path d="M5 12.5 10 17.5 19 7" '
@@ -41,7 +41,6 @@ export function themePickView() {
     return `<button class="look${on ? ' on' : ''}" role="radio" aria-checked="${on}" ${actionAttrs('pickTheme', look.theme)}>`
       + `<span aria-hidden="true">${preview(look.theme)}</span>`
       + `<span class="grow"><span class="t">${look.name}</span>`
-      + (look.sub ? `<span class="s">${look.sub}</span>` : '')
       + `</span><span class="look-radio" aria-hidden="true">${on ? CHECK : ''}</span></button>`;
   }).join('');
 

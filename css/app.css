@@ -1254,12 +1254,6 @@ input[type=date].f {
   margin: 0;
 }
 
-.intro-sub {
-  font-size: 17px;
-  line-height: 1.35;
-  color: var(--sec);
-}
-
 .intro-dots {
   display: flex;
   justify-content: center;
@@ -1680,12 +1674,6 @@ input[type=date].f {
   font-size: 20px;
 }
 
-.look .s {
-  display: block;
-  margin-top: 3px;
-  font-size: 15px;
-}
-
 .look-radio {
   flex: none;
   width: 26px;
@@ -1945,16 +1933,6 @@ input[type=date].f {
   color: var(--urgent);
 }
 
-.lockline {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: center;
-  font-size: 12.5px;
-  color: var(--sec);
-  margin-top: 10px;
-}
-
 /* motion.js moves the track, the parallax and every entrance itself (inline transform, opacity
    and the ring's stroke, once per frame), so there are no CSS transitions or keyframes here.
    Without motion.js running (reduced motion) everything shows its end state. */
@@ -1972,7 +1950,6 @@ input[type=date].f {
 .m8 .intro-art,
 .m8 .intro-art .card,
 .m8 .intro-art .row,
-.m8 .lockline,
 .m8 .intro-art-inner {
   will-change: transform, opacity;
 }
@@ -2134,10 +2111,6 @@ html.vt-leave-intro::view-transition-new(root) {
 
 .al-empty .t {
   font-size: 20px;
-}
-
-.al-empty .s {
-  margin: 4px 0 0;
 }
 
 .al-check {

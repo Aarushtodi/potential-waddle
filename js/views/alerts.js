@@ -121,8 +121,7 @@ export function alertsView() {
     + `<button class="pill" ${item.action}>${item.step}</button></div>`).join('');
   const body = items.length
     ? `<div class="card">${rows}</div>`
-    : `<div class="card al-empty"><div class="t">Nothing needs you.</div>`
-      + `<div class="s">New grades still show up under What changed.</div></div>`;
+    : `<div class="card al-empty"><div class="t">Nothing needs you.</div></div>`;
   // The cleared list is sample only: the real app would keep what it saw clear on this phone.
   const cleared = real.on ? '' : `<div class="sec"><div class="lab" style="margin:0 0 6px">Cleared this week</div><div class="card quiet">`
     + ALERT_CLEARED.map(entry => `<div class="row"><span class="al-check">✓</span>`
@@ -131,6 +130,6 @@ export function alertsView() {
   return `<div class="sec">${hacBanner()}`
     + heading(checkedText(), items.length ? 'Needs ' : 'All ', items.length ? 'you' : 'clear', { big: 1 })
     + body + `</div>` + cleared
-    + `<div class="card al-foot">${navRow('What changed', 'Every new grade, newest first', 'openPage', 'changes')}`
-    + navRow('Alert rules', 'What sends an alert, your number, muted classes', 'openPage', 'settings') + `</div>`;
+    + `<div class="card al-foot">${navRow('What changed', '', 'openPage', 'changes')}`
+    + navRow('Alert rules', '', 'openPage', 'settings') + `</div>`;
 }

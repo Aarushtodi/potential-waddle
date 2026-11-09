@@ -26,7 +26,7 @@ export function paceView() {
       + `<button class="pill round" aria-label="One day later" ${actionAttrs('moveCheckpoint', i, 1)}>›</button></div>`;
   }).join('');
   return `<div class="sec">${heading('AP World History, due ' + shortDate(due), 'History ', 'Project', {})}`
-    + `<div class="s" style="padding-bottom:10px">Due ${inDays(due)}. Here's a pace across the days. Rename or move any of them.</div>`
+    + `<div class="s" style="padding-bottom:10px">Due ${inDays(due)}</div>`
     + `<div class="card">${rows}</div>`
-    + `<div class="foot">Reminders go out the night before each one. The next one shows on Home, all of them on Calendar.</div></div>`;
+    + `</div>`;
 }

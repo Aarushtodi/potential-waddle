@@ -25,11 +25,11 @@ export function signInView() {
   if (districtChosen) {
     html += `<div class="sec"><div class="card"><div class="row"><div class="t">Sample Student</div></div>`
       + `<div class="row"><div class="t" style="letter-spacing:2px">••••••••</div></div></div>`
-      + `<div class="foot">Nothing to type here, this preview doesn't take a login.</div></div>`
+      + `</div>`
       + `<button class="btn" ${actionAttrs('signIn')}>Sign in</button>`;
   }
-  html += `<div class="foot" style="margin-top:22px;padding-left:0;padding-right:0">Preview. Some features aren't built yet.<br>`
-    + `Preview with made up sample data<br>Independent app. Not made by your school or district.</div>`
+  html += `<div class="foot" style="margin-top:22px;padding-left:0;padding-right:0">Preview with made up sample data<br>`
+    + `Independent app. Not made by your school or district.</div>`
     + `</div>${sheetView()}</div>`;
   return html;
 }

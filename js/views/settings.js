@@ -17,7 +17,7 @@ export function settingsView() {
   const usesPreset = RETEST_LINE_CHOICES.includes(state.retestLine) && !state.retestLineCustom;
   const showTypedLine = state.retestLineCustom || !RETEST_LINE_CHOICES.includes(state.retestLine);
   const retestLine = `<div class="pad"><div class="t">Retest line</div>`
-    + `<div class="s" style="margin-bottom:8px">Picked at setup. A new test grade under this sends you a reminder. Sample pick: 80.</div>`
+    + `<div style="height:8px"></div>`
     + segmented('pickRetestLine', usesPreset ? String(state.retestLine) : 'own',
       [['80', '80'], ['90', '90'], ['own', 'Type your own']])
     + (showTypedLine
@@ -32,25 +32,25 @@ export function settingsView() {
       : '')
     + `</div>${toggle(state.faceIdOn, 'toggleFaceId')}</div>`;
 
-  const ruleToggle = (key, title, hint) => `<div class="row"><div class="grow"><div class="t">${title}</div>`
-    + `<div class="s">${hint}</div></div>${toggle(state.alertRules[key], 'toggleAlertRule', key)}</div>`;
+  const ruleToggle = (key, title) => `<div class="row"><div class="grow"><div class="t">${title}</div>`
+    + `</div>${toggle(state.alertRules[key], 'toggleAlertRule', key)}</div>`;
   return `<div class="sec"><div class="lab" style="margin-bottom:6px">Alert rules</div><div class="card">`
-    + ruleToggle('newGrade', 'New grades', 'A score appears that was blank before')
-    + ruleToggle('zero', 'Zero or missing', 'Marked missing, absent or incomplete')
-    + ruleToggle('changed', 'Score changed', 'A teacher edits a score you already had')
+    + ruleToggle('newGrade', 'New grades')
+    + ruleToggle('zero', 'Zero or missing')
+    + ruleToggle('changed', 'Score changed')
     + `<div class="row"><div class="grow"><div class="t">Average under my number</div>`
-    + `<div class="s">Once when it drops below, again only after it climbs back</div></div>`
+    + `</div>`
     + `<input class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder">`
     + toggle(state.alertRules.under, 'toggleAlertRule', 'under') + `</div>`
     + `<div class="row"><div class="grow"><div class="t">Can't read your gradebook</div>`
-    + `<div class="s">Always on, so a quiet phone never looks like good news</div></div></div>`
+    + `</div></div>`
     + `<div class="row" role="button" tabindex="0" ${actionAttrs('showSampleAlert')}><div class="grow"><div class="t">Send a test alert</div></div></div>`
     + muteRows + `</div></div>`
     + `<div class="sec"><div class="card">`
-    + navRow('Widgets', 'Next due, test countdown, last grade change', 'openPage', 'widgets')
+    + navRow('Widgets', '', 'openPage', 'widgets')
     + retestLine + faceId
     + `<div class="row"><div class="grow"><div class="t">Hide scores</div>`
-    + `<div class="s">Home shows words instead of grades and points</div></div>`
+    + `</div>`
     + `${toggle(state.hideScores, 'toggleHideScores')}</div>`
     + `<div class="pad"><div class="t" style="margin-bottom:8px">Appearance</div>`
     + `<div class="seg-fit">${segmented('pickTheme', state.theme, THEME_CHOICES)}</div></div>`
@@ -58,8 +58,7 @@ export function settingsView() {
     + `<div class="sec"><div class="card">${navRow('Show intro again', '', 'showIntro')}</div></div>`
     + `<div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('signOut')}>`
     + `<div class="t">Sign out</div></div></div></div>`
-    + `<div class="foot" style="padding-top:0">Preview. Some features aren't built yet.<br>`
-    + `Preview with made up sample data. Independent app. Not made by your school or district.</div>`;
+    + `<div class="foot" style="padding-top:0">Preview with made up sample data. Independent app. Not made by your school or district.</div>`;
 }
 
 // ---- Widgets ------------------------------------------------------------------------------

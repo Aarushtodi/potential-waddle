@@ -18,27 +18,21 @@ const SAMPLE_CLASS_ID = 'alg';
 /** The score typed into the predictor on slide 2. */
 const SAMPLE_EXPECTED_SCORE = 95;
 
-const LOCK_ICON = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">'
-  + '<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-
 /** The three slides. The art is marked up so js/views/intro-motion.js can play it in. */
 const SLIDES = [
   {
     lead: 'Your real grade, ',
     accent: 'one tap.',
-    sub: 'Read only from your school\'s gradebook. Your password stays on your phone.',
     art: classWithLockArt,
   },
   {
     lead: 'Nothing behind ',
     accent: 'a paywall.',
-    sub: 'What if and grade alerts. All free.',
     art: predictorArt,
   },
   {
     lead: 'Missing work, ',
     accent: 'first.',
-    sub: 'Every missing and absent item, straight from your school\'s gradebook.',
     art: missingAndAbsentArt,
   },
 ];
@@ -52,8 +46,7 @@ export function introView() {
   const slides = SLIDES.map((slide, i) =>
     `<section class="intro-slide" aria-hidden="${i !== current}">`
     + `<div class="intro-art" inert><div class="intro-art-inner">${slide.art()}</div></div>`
-    + `<div class="intro-text"><div class="hd big">${slide.lead}<i>${slide.accent}</i></div>`
-    + `<div class="intro-sub">${slide.sub}</div></div>`
+    + `<div class="intro-text"><div class="hd big">${slide.lead}<i>${slide.accent}</i></div></div>`
     + `</section>`).join('');
 
   const dots = SLIDES.map((_, i) => `<span class="${i === current ? 'on' : ''}"></span>`).join('');
@@ -70,10 +63,9 @@ export function introView() {
 // ---- Slide art: the real pieces, rendered from sample data -------------------------------
 // With no motion (reduced motion, or a re-render on the same slide) these draw the end state.
 
-/** Slide 1: the class row from the Grades tab ("1 absent", not "1 ABS"), plus a small lock line. */
+/** Slide 1: the class row from the Grades tab ("1 absent", not "1 ABS"). */
 function classWithLockArt() {
-  return `<div class="card">${classRow(findClass(SAMPLE_CLASS_ID))}</div>`.replace(/(\d+) ABS</g, '$1 absent<')
-    + `<div class="lockline">${LOCK_ICON}Saved only on this phone</div>`;
+  return `<div class="card">${classRow(findClass(SAMPLE_CLASS_ID))}</div>`.replace(/(\d+) ABS</g, '$1 absent<');
 }
 
 /** Slide 2: What if with 95 typed into the next test. Hooks: the typed score and two counting numbers. */

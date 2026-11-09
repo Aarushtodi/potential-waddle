@@ -37,7 +37,6 @@ const RING = 68.49; // circumference of the drawn ring (r 10.9)
 const ENTRANCES = [
   { scrubEnd: 1500, parts: [
     { sel: '.intro-art .card', delay: 250, dur: 1000, y: 14 },
-    { sel: '.lockline', delay: 900, dur: 600 },
     { sel: '.intro-text i', delay: 1300, dur: 600, pop: true },
   ] },
   { scrubEnd: 400, parts: [

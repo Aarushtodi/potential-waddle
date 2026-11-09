@@ -115,7 +115,7 @@ export function missingPageView() {
   if (!items.length) return `<div class="sec">${heading('', 'Nothing ', 'missing', { big: 1 })}</div>`;
   return `<div class="sec">${heading('Missing and absent work counts as 0 in your grade', 'Missing ', 'work')}`
     + `<div class="card">${zeroItems().concat(items.filter(isDone)).map(zeroRow).join('')}</div>`
-    + `<div class="foot">To see a score you expect, type it in What if.</div></div>`;
+    + `</div>`;
 }
 
 // ---- To-dos --------------------------------------------------------------------------------
@@ -270,7 +270,7 @@ function classStrip() {
 function gpaRow() {
   if (real.on) return '';
   return `<div class="sec"><div class="card"><div class="row more" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
-    + `<div class="grow t" style="font-size:15.5px">GPA</div><div class="s">Calculator, an estimate</div>${CHEVRON}</div></div></div>`;
+    + `<div class="grow t" style="font-size:15.5px">GPA</div>${CHEVRON}</div></div></div>`;
 }
 
 // ---- Top bar --------------------------------------------------------------------------------

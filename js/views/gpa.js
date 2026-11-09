@@ -14,7 +14,7 @@ import {
 } from '../grade-math.js';
 import { CLASSES, SAMPLE_GPA_HISTORY } from '../sample-data.js';
 import { state, SEMESTER_SPLIT, findClass, orderedClasses, routeKey } from '../state.js';
-import { actionAttrs, heading, navRow, segmented, splitExplanation } from './components.js';
+import { actionAttrs, heading, navRow, segmented } from './components.js';
 
 const BIG_TITLE = 'style="font-size:15px"';
 
@@ -71,7 +71,6 @@ export function gpaView() {
     + `<div class="gpa-hero"><span class="gpa-n" data-gpa-count="${gpa.weighted.toFixed(2)}">${gpa.weighted.toFixed(2)}</span>`
     + ` <i>this semester</i></div>`
     + (rows ? `<div class="card">${rows}</div>` : '')
-    + `<div class="foot">Estimate. Your school sets the real GPA. Advisory doesn't count.</div>`
     + `<div class="foot gpa-unw">${gpa.unweighted.toFixed(2)} unweighted</div></div>`
     + `<div class="sec"><div class="card gpa-links">`
     + navRow('GPA what if', '', 'openPage', 'gpaWhatIf')
@@ -152,7 +151,7 @@ function needResult(course) {
     if (course.q1 == null) return '<div class="s">Needs a Quarter 1 grade.</div>';
     const need = finalExamNeeded(SEMESTER_SPLIT, course.q1, average, target);
     return resultBlock(need, 'on the final',
-      `For a ${target} semester, from Q1 ${course.q1} and Q2 ${oneDecimal(average)}. ${splitExplanation()}`, target);
+      `For a ${target} semester, from Q1 ${course.q1} and Q2 ${oneDecimal(average)}. Each quarter ${SEMESTER_SPLIT.quarterPercent} percent, exam ${SEMESTER_SPLIT.examPercent} percent.`, target);
   }
   // Next blank test in the gradebook. (A null due date compares as 0 here, so it still counts.)
   const nextTest = course.rows.find(row =>
@@ -221,7 +220,5 @@ export function gpaGoalView() {
     + `<input class="f" type="number" step="0.01" inputmode="decimal" aria-label="GPA goal" value="${escapeHtml(state.gpaGoal)}" data-input="gpaGoal">`
     + `</div></div></div>`
     + `<div class="sec" data-live><div class="lab" style="margin-bottom:6px">Grades needed each semester</div>`
-    + `<div class="card">${semesterRows}</div>`
-    + `<div class="foot">Sample assumes ${n} graded classes a semester, ${history.honorsPerSemester} of them with honors weight, `
-    + `and the same pace every semester.</div></div>`;
+    + `<div class="card">${semesterRows}</div></div>`;
 }

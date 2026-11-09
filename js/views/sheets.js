@@ -39,8 +39,7 @@ const SHEETS = {
         + SAMPLE_DISTRICTS.map(name =>
           `<div class="row" role="button" tabindex="0" ${actionAttrs('pickDistrict', name)}><div class="t">${name}</div></div>`).join('')
         + `</div><div style="height:12px"></div>`
-        + `<button class="pill" style="width:100%;padding:13px" ${actionAttrs('pickDistrict', '')}>My district isn't listed</button>`
-        + `<div class="foot">Sample district names, all made up.</div>`,
+        + `<button class="pill" style="width:100%;padding:13px" ${actionAttrs('pickDistrict', '')}>My district isn't listed</button>`,
     };
   },
 
@@ -71,7 +70,7 @@ const SHEETS = {
           + `<div class="t" style="margin-bottom:8px">${test.name}, ${test.teacher}</div>`
           + segmented('pickTestDay', state.testDatePicks[test.key] || 'off', [['off', 'Off'], ['A', 'A day'], ['B', 'B day']], test.key)
           + `</div>`).join('')
-        + `</div><div class="foot">Dates come from Test Date Radar and are unofficial. Confirm with your teacher.</div>`,
+        + `</div>`,
     };
   },
 
@@ -91,7 +90,7 @@ const SHEETS = {
       + `${item.detail ? `<div class="s">${escapeHtml(item.detail)}</div>` : ''}</div></div>`;
     if (item.due != null) {
       body += `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Your due date</div>`
-        + (row ? `<div class="s">Teacher's date ${shortDate(row.due)}${overridden ? '. Your copy only.' : ''}</div>` : '')
+        + (row ? `<div class="s">Teacher's date ${shortDate(row.due)}</div>` : '')
         + `</div><input class="f" type="date" aria-label="Your due date" value="${isoDate(item.due)}" `
         + `data-change="dueDate" data-x="${escapeHtml(item.id)}"></div>`;
     }
@@ -129,7 +128,7 @@ const SHEETS = {
         + periods.map(([key, name]) =>
           `<div class="row" role="button" tabindex="0" ${actionAttrs('setPeriod', key)}><div class="grow t">${name}</div>`
           + `${state.period === key ? '<span class="t">✓</span>' : ''}</div>`).join('')
-        + `</div><div class="foot">Opens on the current quarter.</div>`,
+        + `</div>`,
     };
   },
 
@@ -148,8 +147,7 @@ const SHEETS = {
         + `<div class="pad" style="border-top:1px solid var(--rule);font-size:15px;line-height:1.4">`
         + `Hi ${escapeHtml(course.teacher)},<br><br>I had a question about ${about}`
         + `${row ? ` (${scoreText(row)}, ${course.name})` : ''}. Could you take a look when you get a chance?`
-        + `<br><br>Thank you,<br>Sample Student</div></div>`
-        + `<div class="foot">A draft preview. Nothing gets sent from here.</div>`,
+        + `<br><br>Thank you,<br>Sample Student</div></div>`,
     };
   },
 
@@ -161,7 +159,7 @@ const SHEETS = {
         title: 'Add a class',
         left: cancelButton(),
         body: `<div class="card"><div class="pad"><div class="t">You've used all ${TYPED_CLASS_LIMIT}</div>`
-          + `<div class="s">Typed in classes stop at ${TYPED_CLASS_LIMIT}. Classes from your gradebook have no limit.</div></div></div>`,
+          + `<div class="s">Typed in classes stop at ${TYPED_CLASS_LIMIT}.</div></div></div>`,
       };
     }
     return {
@@ -176,7 +174,7 @@ const SHEETS = {
         + `<div class="pad" style="border-top:1px solid var(--rule)">`
         + segmented('pickClassLevel', form.classLevel || 'DC', [['DC', 'Dual credit'], ['AP', 'Self study AP'], ['R', 'Regular']])
         + `</div></div>`
-        + `<div class="foot">${used} of ${TYPED_CLASS_LIMIT} typed in classes used. Classes from your gradebook have no limit.</div>`,
+        + `<div class="foot">${used} of ${TYPED_CLASS_LIMIT} typed in classes used.</div>`,
     };
   },
 };
