@@ -26,12 +26,28 @@ export function render() {
   if (newMain) newMain.scrollTop = state.scrollPositions[ui.lastRouteKey] || 0;
   slideIntroTrack();
   collapseHeader();
-  // Bell tape: keep where the student scrolled, otherwise start at the current period.
+  placeTape();
+}
+
+/**
+ * Bell tape. Opening it (from the tab bar, the Home now line, or a new A/B day) plays the
+ * entrance and scrolls so the now line sits about a third of the way down. Any other redraw
+ * keeps where the student scrolled.
+ */
+function placeTape() {
   const tape = qs('#tape');
-  if (tape) {
-    const current = tape.querySelector('.cur');
-    tape.scrollTop = state.tapeScrollTop ?? (current ? current.offsetTop - 8 : 0);
+  const day = tape ? state.bellDay : null;
+  const opening = tape && day !== ui.lastTapeDay;
+  ui.lastTapeDay = day;
+  if (!tape) return;
+  if (opening) state.tapeScrollTop = null;
+  if (state.tapeScrollTop != null) {
+    tape.scrollTop = state.tapeScrollTop;
+    return;
   }
+  const now = tape.querySelector('.nowl');
+  tape.scrollTop = now ? now.offsetTop - tape.clientHeight / 3 : 0;
+  if (opening && !reducedMotion.matches) tape.classList.add('enter');
 }
 
 /** Scroll distance over which Home's big title collapses into the slim bar. */
@@ -78,11 +94,20 @@ export function refreshLive() {
   const scratch = document.createElement('div');
   scratch.innerHTML = view();
   const fresh = scratch.querySelectorAll('[data-live]');
-  if (fresh.length !== nodes.length) {
+  const keys = qsa('[data-live-key]').map(node => node.dataset.liveKey).join();
+  const freshKeys = [...scratch.querySelectorAll('[data-live-key]')].map(node => node.dataset.liveKey).join();
+  const styled = qsa('[data-live-style]');
+  const freshStyled = scratch.querySelectorAll('[data-live-style]');
+  if (fresh.length !== nodes.length || keys !== freshKeys || styled.length !== freshStyled.length) {
     render();
     return;
   }
   nodes.forEach((node, i) => {
     if (node.innerHTML !== fresh[i].innerHTML) node.innerHTML = fresh[i].innerHTML;
+  });
+  // Moving parts (the bell tape's fill and now line): copy only the style, keep the node.
+  styled.forEach((node, i) => {
+    const style = freshStyled[i].getAttribute('style');
+    if (node.getAttribute('style') !== style) node.setAttribute('style', style);
   });
 }

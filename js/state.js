@@ -91,15 +91,13 @@ export const state = {
   },
 
   // Bell
-  bellLook: 'big', // 'big' | 'dial' | 'tape'
   bellDay: 'A',
-  bellSelected: null, // period index the student tapped, null = the current one
-  tapeScrollTop: null,
+  tapeScrollTop: null, // where the student scrolled the tape; null = scroll to now on the next draw
   openedAt: Date.now(), // drives the sample clock
 };
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */
-export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null };
+export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null, lastTapeDay: null };
 
 // ---- Classes ------------------------------------------------------------------------------
 

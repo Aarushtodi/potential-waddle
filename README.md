@@ -41,7 +41,7 @@ js/views/grades.js      Grades tab: class list, one class (with grade graph), on
 js/views/what-if.js     What if sheet and its 8 tools (the only place the app predicts)
 js/views/gpa.js         GPA page, What do I need, GPA what if, GPA goal
 js/views/calendar.js    Calendar tab
-js/views/bell.js        Bell tab, three looks: big number, dial, tape
+js/views/bell.js        Bell tab: the day as a tape, now line on the A day, A/B day toggle
 js/views/settings.js    Settings and the Widgets preview
 js/views/sheets.js      Other bottom sheets: district, add to-do, test dates, task, period, email, add class
 js/views/changes.js     What changed and Alerts pages
