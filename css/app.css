@@ -2232,3 +2232,78 @@ html.vt-leave-intro::view-transition-new(root) {
   font-size: 15.5px;
   font-weight: 600;
 }
+
+/* ---- What if menu options (11/9, OPTIONS BUILD, ?whatif=2|3) ----
+   Look 2 folds the less used tools under More; look 3 has one "If I get __ on __" line and the
+   tools as chips. Ink and paper only, no red: nothing on this menu needs attention. */
+
+.wi-more .chev {
+  display: inline-block;
+  transition: transform .18s ease;
+}
+
+.wi-more.open .chev {
+  transform: rotate(90deg);
+}
+
+.wi-line .pad {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wi-line .pad.wi-on {
+  padding-top: 0;
+}
+
+.wi-w {
+  font: 700 17px var(--sans);
+  white-space: nowrap;
+}
+
+.wi-line input.f {
+  width: 64px;
+  flex: none;
+  text-align: center;
+}
+
+.wi-pickwrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.wi-pickwrap::after {
+  content: "▾";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--sec);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+select.f.wi-pick {
+  width: 100%;
+  font: 700 16px var(--sans);
+  color: var(--ink);
+  background: var(--paper);
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 26px 8px 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  text-overflow: ellipsis;
+}
+
+.chips.wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+  gap: 8px;
+}
+
+.chips.wrap .chip {
+  font-size: 14px;
+  padding: 8px 13px;
+}

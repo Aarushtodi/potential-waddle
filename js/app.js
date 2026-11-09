@@ -57,6 +57,9 @@ document.addEventListener('change', event => {
   if (change === 'dueDate' && event.target.value) {
     changeDueDate(x, event.target.value);
     render();
+  } else if (change === 'whatIfPick') {
+    actions.whatIfPick(event.target.value, x);
+    render();
   }
 });
 

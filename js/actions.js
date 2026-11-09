@@ -18,6 +18,7 @@ import { render } from './render.js';
 import { alertText } from './views/changes.js';
 import { bannerData } from './views/banner.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
+import { WHAT_IF_LOOK } from './views/what-if.js';
 import { THEMES, saveTheme, applyTheme, crossfade } from './theme.js';
 import { leaveIntro } from './views/intro-motion.js';
 import { real, reloadRealData } from './real-data.js';
@@ -322,6 +323,12 @@ export const actions = {
     state.sheet.tool = tool || null;
     if (tool === 'need') state.needCalc.classId = state.sheet.classId;
   },
+  toggleWhatIfMore() {
+    state.whatIfMore = !state.whatIfMore;
+  },
+  whatIfPick(rowId, classId) {
+    state.whatIfPick[classId] = rowId;
+  },
   resetWhatIf(classId) {
     delete state.whatIf[classId];
   },
@@ -374,7 +381,8 @@ export const actions = {
     const saved = state.savedScenarios[classId] || (state.savedScenarios[classId] = []);
     const scenario = JSON.parse(JSON.stringify(whatIfFor(classId)));
     saved.push({ name: 'Scenario ' + (saved.length + 1), scenario, average: whatIfAverage(course, scenario) });
-    state.sheet.tool = 'scenarios';
+    // What if look 1 keeps the saved list inside Stack scores, so saving lands there.
+    state.sheet.tool = WHAT_IF_LOOK === '1' ? 'stack' : 'scenarios';
   },
   deleteScenario(classId, index) {
     state.savedScenarios[classId].splice(+index, 1);
