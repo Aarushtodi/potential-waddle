@@ -8,6 +8,7 @@ import { state, ui, sheetScrollKey, sheetAnimKey, routeKey } from './state.js';
 import { view } from './views/shell.js';
 import { afterRender as introMotion } from './views/intro-motion.js';
 import { afterGpaRender } from './views/gpa.js';
+import { afterDoneRender } from './views/done-motion.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -31,6 +32,7 @@ export function render() {
   collapseHeader();
   placeTape();
   afterGpaRender(); // GPA hero count up, see js/views/gpa.js
+  afterDoneRender(); // to-do ticked: ring pop, bars, count and heading roll, see js/views/done-motion.js
 }
 
 /**

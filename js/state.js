@@ -101,7 +101,7 @@ export const state = {
 };
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */
-export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null, lastTapeDay: null };
+export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null, lastTapeDay: null, doneFx: null, doneHoldTimer: 0 };
 
 // ---- Classes ------------------------------------------------------------------------------
 

@@ -34,7 +34,7 @@ export function calendarView() {
   const openCount = dayItems.filter(item => !state.doneIds[item.id]).length;
   let head;
   if (!dayItems.length) head = heading(longDate(selected), 'Nothing ', 'due');
-  else if (!openCount) head = heading(longDate(selected), 'All ', 'done');
+  else if (!openCount) head = selected === 0 ? heading(longDate(selected), 'All done ', 'today') : heading(longDate(selected), 'All ', 'done');
   else {
     head = heading(longDate(selected), selected === 0 ? countWord(openCount) + ' left ' : countWord(openCount) + ' ',
       selected === 0 ? 'today' : 'due', { urgent: selected <= 0 });
