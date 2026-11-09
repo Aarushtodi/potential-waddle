@@ -1,0 +1,19 @@
+/* Shared motion tokens for Grade App (council slave #5, 11/9, from car-motion.md).
+   Copy byte for byte to css/motion.css in BOTH goals-1109 and anim-1109. Do not edit per branch. */
+:root {
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-press: 150ms;
+  --t-enter: 420ms;
+  --t-stage: 780ms;
+  --t-hold: 140ms;
+  --t-step: 45ms;
+  --press-scale: 0.97;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
+    animation: none !important;
+  }
+  .cover-plate { display: none !important; }
+}
