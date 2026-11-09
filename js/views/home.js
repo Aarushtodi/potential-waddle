@@ -17,6 +17,7 @@
  * "costs you" number. Hide scores (Settings) swaps every number for a word.
  */
 import { escapeHtml, shortDate, oneDecimal, countWord, WEEKDAYS, dateAt } from '../format.js';
+import { real, realProblem, realUpdatedText } from '../real-data.js';
 import { countsAsZero } from '../grade-math.js';
 import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
@@ -279,6 +280,12 @@ function gradeTiles() {
  */
 function updatedLine() {
   let text;
+  if (real.on && !state.loading) {
+    const problem = realProblem();
+    return `<div class="upd" data-live role="button" tabindex="0" ${actionAttrs('refreshFromHome')}>`
+      + `Real HAC grades, Q2. ${realUpdatedText()}. Reload</div>`
+      + (problem ? `<div class="upd" style="color:var(--red, #d33)">${escapeHtml(problem)}</div>` : '');
+  }
   if (state.loading) text = `<span class="spin"></span>${state.lastUpdated ? 'Loading' : 'Last grades, loading'}`;
   else if (state.firstOpen) {
     const graded = visibleClasses().filter(course => periodAverage(course) != null).length;

@@ -9,7 +9,7 @@
  */
 import { offsetFromIso, isoDate } from './format.js';
 import { classAverage, isScored } from './grade-math.js';
-import { QUEUED_SCORES, PACED_PROJECT_ROW_ID } from './sample-data.js';
+import { CLASSES, QUEUED_SCORES, PACED_PROJECT_ROW_ID } from './sample-data.js';
 import {
   state, ui, TYPED_CLASS_LIMIT, findClass, findRow, effectiveDue,
   whatIfFor, whatIfAverage, blankRowsLeft, gradeChangeEntry,
@@ -20,6 +20,7 @@ import { bannerData } from './views/banner.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 import { THEMES, saveTheme, applyTheme, crossfade } from './theme.js';
 import { leaveIntro } from './views/intro-motion.js';
+import { real, reloadRealData } from './real-data.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
 
@@ -35,6 +36,18 @@ export function startRefresh(applyScores) {
   if (state.loading) return;
   state.loading = true;
   render();
+  if (real.on) {
+    // One real HAC read through local/real_server.py. The server holds the 1 minute limit and
+    // the stop after a rejected login; a failed read keeps every grade on screen.
+    reloadRealData().then(status => {
+      state.loading = false;
+      if (real.pulledAt) state.lastUpdated = real.pulledAt * 1000;
+      state.nextUpdateAllowedAt = Date.now() + UPDATE_COOLDOWN_MS;
+      if (status.kind === 'ok' && !status.refused) state.classOrder = keepOrder(state.classOrder);
+      render();
+    });
+    return;
+  }
   setTimeout(() => {
     state.loading = false;
     state.lastUpdated = Date.now();
@@ -44,6 +57,12 @@ export function startRefresh(applyScores) {
     }
     render();
   }, REFRESH_MS);
+}
+
+/** After a real reload: keep the student's order, add any new class at the end. */
+function keepOrder(order) {
+  const ids = CLASSES.map(course => course.id);
+  return order.filter(id => ids.includes(id)).concat(ids.filter(id => !order.includes(id)));
 }
 
 function applyNextQueuedScore() {

@@ -119,6 +119,8 @@ export function rowsForPeriod(course) {
 /** Average for the marking period on screen. Typed in classes only have the grade they typed. */
 export function periodAverage(course) {
   if (course.typed) return state.period === 'Q2' ? course.grade : null;
+  // Real data: HAC's printed average, never our own math.
+  if (course.real) return state.period === 'Q2' ? course.hacAverage : null;
   return classAverage(rowsForPeriod(course));
 }
 

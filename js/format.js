@@ -105,6 +105,6 @@ export function clockTime(minutes) {
 /** Score column text: "88 / 100", "ABS, 0", "Missing, 0" or "No score". */
 export function scoreText(row) {
   if (isScored(row)) return row.score + ' / ' + row.total;
-  if (row.mark) return row.mark + ', 0';
+  if (row.mark) return row.mark === 'ABS' || row.mark === 'INC' ? row.mark + ', 0' : row.mark;
   return row.missing ? 'Missing, 0' : 'No score';
 }

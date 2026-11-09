@@ -1,2 +1,5 @@
 .vercel
 .env*
+real-data.json
+real-status.json
+__pycache__/

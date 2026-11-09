@@ -13,6 +13,7 @@ import { render, refreshLive, collapseHeader } from './render.js';
 import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 import { applyTheme } from './theme.js';
+import { real, loadRealData } from './real-data.js';
 
 const LONG_PRESS_MS = 520;
 const PULL_TO_REFRESH_PX = 80;
@@ -145,6 +146,19 @@ setInterval(() => {
 }, 1000);
 
 applyTheme(state.theme);
+// Real HAC data (local/real_server.py on the student's Mac only). Signed in already, so the
+// intro and sign in are skipped, and sample to-dos and alerts are cleared so nothing fake
+// sits next to real grades.
+if (await loadRealData()) {
+  Object.assign(state, {
+    screen: 'app', tab: 'home', firstOpen: false,
+    classOrder: CLASSES.map(course => course.id),
+    todos: [], testDatePicks: {}, gradeChanges: [], projectPace: [],
+    lastUpdated: real.pulledAt ? real.pulledAt * 1000 : null,
+  });
+  if (CLASSES[0]) state.needCalc.classId = CLASSES[0].id;
+}
+
 render();
 
 // Handle for the Playwright checks in dev/shots.js. The app itself never reads it.

@@ -1,2 +1,5 @@
 dev/
 *.bak*
+local/
+real-data.json
+real-status.json

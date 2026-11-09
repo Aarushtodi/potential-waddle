@@ -16,6 +16,18 @@
 /** Sample weights, the same for every class in the preview. The real app reads them per class. */
 export const CATEGORY_WEIGHTS = { Test: 0.6, Lab: 0.25, HW: 0.15 };
 
+/**
+ * Category weights for one class. Real HAC rows carry their class's weight (catWeight);
+ * sample rows use CATEGORY_WEIGHTS.
+ * @param {object[]} rows
+ * @returns {Object<string, number>}
+ */
+export function categoryWeights(rows) {
+  const own = {};
+  for (const row of rows) if (row.catWeight != null) own[row.category] = row.catWeight;
+  return Object.keys(own).length ? own : CATEGORY_WEIGHTS;
+}
+
 /** @param {object} row @returns {boolean} true when the teacher entered a number. */
 export const isScored = row => typeof row.score === 'number';
 
@@ -36,15 +48,18 @@ export const countsAsZero = row =>
  */
 export function classAverage(rows) {
   const counted = rows.map(row => (countsAsZero(row) ? Object.assign({}, row, { score: 0 }) : row));
+  const weights = categoryWeights(rows);
   let weightedSum = 0;
   let weightUsed = 0;
-  for (const category in CATEGORY_WEIGHTS) {
+  for (const category in weights) {
     const scored = counted.filter(row => row.category === category && isScored(row));
     if (!scored.length) continue;
-    const earned = scored.reduce((sum, row) => sum + row.score, 0);
-    const possible = scored.reduce((sum, row) => sum + row.total, 0);
-    weightedSum += CATEGORY_WEIGHTS[category] * (earned / possible * 100);
-    weightUsed += CATEGORY_WEIGHTS[category];
+    // HAC rows can carry their own weight (a test counted twice); sample rows count once.
+    const earned = scored.reduce((sum, row) => sum + row.score * (row.weight ?? 1), 0);
+    const possible = scored.reduce((sum, row) => sum + row.total * (row.weight ?? 1), 0);
+    if (!possible) continue;
+    weightedSum += weights[category] * (earned / possible * 100);
+    weightUsed += weights[category];
   }
   return weightUsed ? weightedSum / weightUsed : null;
 }
