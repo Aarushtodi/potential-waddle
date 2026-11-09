@@ -2,8 +2,8 @@
  * Goals: right after sign in, before Home (a screen time app style setup).
  *
  *   1 What do you want?          multi pick: Raise my GPA, Never miss an assignment, Ace finals,
- *                                Keep an A in a class. Each tile carries one real number.
- *   2 Which classes stay As?     multi pick of classes, only when Keep an A is picked
+ *                                Get an A in a class. Each tile carries one real number.
+ *   2 Which classes need an A?   multi pick of every graded class (high to low), only with Get an A
  *   3 Tell me when a class drops under   single pick 90 / 85 / 80, moves on by itself
  *   Your plan                    built from the picks with real grades, under a cover plate that
  *                                lifts once (js/views/goals-motion.js). Start opens Home, which
@@ -13,16 +13,18 @@
  * Three looks share this markup; css/goals.css styles .look-a / .look-b / .look-c.
  */
 import { escapeHtml, oneDecimal, shortDate } from '../format.js';
-import { state, SEMESTER_SPLIT, goalSteps, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
+import { real } from '../real-data.js';
+import { state, SEMESTER_SPLIT, goalSteps, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs } from './components.js';
 import { currentGpa, closestToNextLetter } from './gpa.js';
+import { zeroItems, zeroCountText } from './home.js';
 import { planPlateDue } from './goals-motion.js';
 
 export const GOALS = [
   { key: 'gpa', label: 'Raise my GPA' },
   { key: 'missing', label: 'Never miss an assignment' },
   { key: 'finals', label: 'Ace finals' },
-  { key: 'keepA', label: 'Keep an A in a class' },
+  { key: 'keepA', label: 'Get an A in a class' },
 ];
 export const GOAL_ALERT_LINES = [90, 85, 80];
 
@@ -36,18 +38,27 @@ const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true
 
 // ---- Real numbers ---------------------------------------------------------------------------
 
-const gradedClasses = () => visibleClasses().filter(course => periodAverage(course) != null);
+/** Every graded class, highest average first. */
+const gradedClasses = () => visibleClasses().filter(course => periodAverage(course) != null)
+  .sort((a, b) => periodAverage(b) - periodAverage(a));
 const aClasses = () => gradedClasses().filter(course => periodAverage(course) >= A_LINE);
-const gpaText = () => currentGpa().toFixed(2);
+/** The GPA, or '' when there is none to show: nothing graded, or real HAC data (the app hides it there). */
+function gpaText() {
+  if (real.on || !gradedClasses().length) return '';
+  const gpa = currentGpa();
+  return Number.isFinite(gpa) ? gpa.toFixed(2) : '';
+}
 const finalsText = () => (SEMESTER_SPLIT ? SEMESTER_SPLIT.examPercent + '%' : '');
 
 /** The one real number on each goal tile. */
 function goalNumber(key) {
   if (key === 'gpa') return gpaText();
-  if (key === 'missing') return missingWork().length + ' missing';
+  if (key === 'missing') return zeroItems().filter(item => !item.kind).length + ' missing';
   if (key === 'finals') return finalsText();
   const n = aClasses().length;
-  return n === 1 ? '1 A' : n + ' As';
+  if (n) return n === 1 ? '1 A' : n + ' As';
+  const best = gradedClasses()[0];
+  return best ? 'best ' + oneDecimal(periodAverage(best)) : '';
 }
 
 // ---- Pieces ---------------------------------------------------------------------------------
@@ -81,6 +92,9 @@ function topBar(index, total, canGoBack) {
     + progressBar(index, total) + `</div>`;
 }
 
+/** How many graded classes sit under an alert line right now. */
+const underCount = line => gradedClasses().filter(course => periodAverage(course) < line).length;
+
 // ---- Questions ------------------------------------------------------------------------------
 
 function questionBody(step) {
@@ -92,7 +106,7 @@ function questionBody(step) {
   }
   if (step === 'which') {
     const classes = gradedClasses();
-    return riseTitle('Which classes stay ', 'As?')
+    return riseTitle('Which classes need an ', 'A?')
       + `<div class="g-tiles n${classes.length > 4 ? 'many' : classes.length}" role="group" aria-label="Classes">`
       + classes.map(course => tile(state.goalAClasses.includes(course.id), 'toggleGoalClass', course.id,
         oneDecimal(periodAverage(course)), shortName(course))).join('')
@@ -100,7 +114,8 @@ function questionBody(step) {
   }
   return riseTitle('Tell me when a class drops ', 'under')
     + `<div class="g-tiles n3 single" role="radiogroup" aria-label="Alert line">`
-    + GOAL_ALERT_LINES.map(line => tile(state.goalAlert === line, 'pickGoalAlert', line, String(line), '', true)).join('')
+    + GOAL_ALERT_LINES.map(line => tile(state.goalAlert === line, 'pickGoalAlert', line, String(line),
+      underCount(line) + ' under', true)).join('')
     + `</div>`;
 }
 
@@ -123,38 +138,42 @@ function questionView() {
 
 // ---- Your plan ------------------------------------------------------------------------------
 
-/** A number that rolls into place as the plate lifts. Screen readers get the plain value. */
-const odo = text => `<span class="g-odo" data-odo="${escapeHtml(text)}">${escapeHtml(text)}</span>`;
 
 function planBlock(key) {
   if (key === 'gpa') {
-    const close = closestToNextLetter();
-    return `<div class="card g-plan"><div class="g-plan-k">GPA</div><div class="g-plan-n">${odo(gpaText())}</div>`
+    const close = gradedClasses().length ? closestToNextLetter() : null;
+    const gpa = gpaText();
+    if (!gpa && !close) return '';
+    return `<div class="card g-plan"><div class="g-plan-k">GPA</div>${gpa ? `<div class="g-plan-n">${gpa}</div>` : ''}`
       + (close ? `<div class="g-plan-l">${escapeHtml(shortName(close.course))} ${escapeHtml(close.text)}</div>` : '')
       + `</div>`;
   }
   if (key === 'missing') {
-    const missing = missingWork();
-    return `<div class="card g-plan"><div class="g-plan-k">Missing</div><div class="g-plan-n${missing.length ? ' u' : ''}">${odo(String(missing.length))}</div>`
-      + missing.map(({ course, row }) => `<div class="g-plan-row"><span class="grow">${escapeHtml(row.title)}</span>`
-        + `<span class="g-plan-s">${escapeHtml(shortName(course))}, ${escapeHtml(shortDate(row.due))}</span></div>`).join('')
+    // Same source as Home's missing card: missing first, then absent and incomplete (count as 0).
+    const items = zeroItems();
+    const missing = items.some(item => !item.kind);
+    return `<div class="card g-plan"><div class="g-plan-k">Missing</div>`
+      + `<div class="g-plan-c${missing ? ' u' : ''}">${items.length ? zeroCountText(items) : 'Nothing missing'}</div>`
+      + items.map(item => `<div class="g-plan-row"><span class="grow">${escapeHtml(item.title)}</span>`
+        + `<span class="g-plan-s">${escapeHtml(shortName(item.course))}, `
+        + `${item.kind ? 'counts as 0' : escapeHtml(shortDate(item.due))}</span></div>`).join('')
       + `</div>`;
   }
   if (key === 'finals') {
     if (!SEMESTER_SPLIT) return '';
-    return `<div class="card g-plan"><div class="g-plan-k">Finals</div><div class="g-plan-n">${odo(finalsText())}</div>`
+    return `<div class="card g-plan"><div class="g-plan-k">Finals</div><div class="g-plan-n">${finalsText()}</div>`
       + `<div class="g-plan-l">of the semester grade</div></div>`;
   }
   const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
   if (!classes.length) return '';
-  return `<div class="card g-plan"><div class="g-plan-k">Keep As</div>`
+  return `<div class="card g-plan"><div class="g-plan-k">A goals</div>`
     + classes.map(course => {
       const average = periodAverage(course);
       const gap = average - A_LINE;
       const note = gap >= 0 ? `${oneDecimal(gap)} above` : `${oneDecimal(-gap)} to go`;
       return `<div class="g-plan-row"><span class="grow">${escapeHtml(shortName(course))}</span>`
-        + `<span class="g-plan-g">${odo(oneDecimal(average))}</span>`
-        + `<span class="g-plan-s${gap < 0 ? ' u' : ''}">${note}</span></div>`;
+        + `<span class="g-plan-g">${oneDecimal(average)}</span>`
+        + `<span class="g-plan-s${average < state.alertUnder ? ' u' : ''}">${note}</span></div>`;
     }).join('')
     + `</div>`;
 }

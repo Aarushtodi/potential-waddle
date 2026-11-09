@@ -101,7 +101,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: var(--ink);
+  background: var(--card);
   transform-origin: right;
   animation: g-wipe var(--t-enter) var(--ease) both;
   pointer-events: none;
@@ -361,6 +361,19 @@
   color: var(--urgent);
 }
 
+.g-plan-c {
+  font: 500 24px/1.2 var(--sans);
+  margin: 4px 0 8px;
+}
+
+.g-plan-c .u {
+  color: var(--urgent);
+}
+
+.g-plan-c .g {
+  color: var(--sec);
+}
+
 .g-plan-l {
   font-size: 15.5px;
 }
@@ -407,26 +420,22 @@
   border-top: 1px solid var(--rule);
 }
 
-/* Odometer: each digit column clips a strip of 0 to 9 twice (goals-motion.js). */
-.g-odo {
-  display: inline-flex;
+/* Plate colors: ink plate in light, card plate in dark (no full cream screen at night). */
+.scr.goals {
+  --plate-bg: var(--ink);
+  --plate-fg: var(--paper);
 }
 
-.odo-col {
-  display: inline-block;
-  height: 1.05em;
-  overflow: hidden;
+:root[data-theme=dark] .scr.goals {
+  --plate-bg: var(--card);
+  --plate-fg: var(--ink);
 }
 
-.odo-strip {
-  display: flex;
-  flex-direction: column;
-  transition: transform calc(var(--t-stage) - var(--k) * var(--t-step)) var(--ease);
-}
-
-.odo-strip > span {
-  height: 1.05em;
-  line-height: 1.05;
+@media(prefers-color-scheme:dark) {
+  :root:not([data-theme=light]) .scr.goals {
+    --plate-bg: var(--card);
+    --plate-fg: var(--ink);
+  }
 }
 
 /* Cover plate over Your plan: the picks tick off, then it lifts once. Hidden in reduced motion. */
@@ -434,8 +443,8 @@
   position: absolute;
   inset: 0;
   z-index: 5;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--plate-bg);
+  color: var(--plate-fg);
   display: flex;
   align-items: center;
   padding: 0 28px;
@@ -464,10 +473,10 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 2px solid var(--paper);
+  border: 2px solid var(--plate-fg);
   display: grid;
   place-items: center;
-  color: var(--ink);
+  color: var(--plate-bg);
   transition: background var(--t-press) var(--ease);
 }
 
@@ -477,7 +486,7 @@
 }
 
 .gplate-row.on .gplate-tick {
-  background: var(--paper);
+  background: var(--plate-fg);
 }
 
 .gplate-row.on .gplate-tick svg {

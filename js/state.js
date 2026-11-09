@@ -115,8 +115,14 @@ function goalsLookParam() {
   return ['a', 'b', 'c'].includes(look) ? look : 'a';
 }
 
-/** The Goals questions in order. "Which classes stay As?" only when Keep an A is picked. */
-export const goalSteps = () => ['what', ...(state.goals.includes('keepA') ? ['which'] : []), 'alert'];
+/**
+ * The Goals questions in order. "Which classes need an A?" only when Get an A is picked and at
+ * least one class has a grade (nothing to pick otherwise).
+ */
+export const goalSteps = () => {
+  const anyGraded = visibleClasses().some(course => periodAverage(course) != null);
+  return ['what', ...(state.goals.includes('keepA') && anyGraded ? ['which'] : []), 'alert'];
+};
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */
 export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null, lastTapeDay: null, doneFx: null, doneHoldTimer: 0 };

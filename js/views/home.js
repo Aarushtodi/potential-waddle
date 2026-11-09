@@ -69,7 +69,7 @@ export function absentItems() {
 }
 
 /** Open missing and absent items: most points first, then the oldest. */
-function zeroItems() {
+export function zeroItems() {
   return missingItems().concat(absentItems()).filter(item => !isDone(item))
     .sort((a, b) => b.points - a.points || (a.dueSort ?? a.due) - (b.dueSort ?? b.due));
 }
@@ -81,7 +81,7 @@ export function zeroRow(item) {
 }
 
 /** "2 missing, 1 absent": missing in red, the rest gray. */
-function zeroCountText(items) {
+export function zeroCountText(items) {
   const missing = items.filter(item => !item.kind).length;
   const parts = missing ? [`<span class="u">${missing} missing</span>`] : [];
   for (const kind of ['absent', 'incomplete']) {
@@ -403,16 +403,21 @@ export function homeView() {
 
 /** Raise my GPA: the GPA and the class closest to the next letter. Opens the GPA page. */
 function goalGpaCard() {
-  if (real.on || state.hideScores) return gpaRow();
-  const close = closestToNextLetter();
+  if (state.hideScores) return gpaRow();
+  const graded = visibleClasses().some(course => periodAverage(course) != null);
+  const close = graded ? closestToNextLetter() : null;
+  const gpa = graded ? currentGpa() : NaN;
+  // Real HAC data: no GPA number (the app hides it there), only the closest class line.
+  const showGpa = !real.on && Number.isFinite(gpa);
+  if (!showGpa && !close) return gpaRow();
   return `<div class="sec"><div class="card glead" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
     + `<div class="glead-k">GPA</div>`
-    + `<div class="glead-r"><span class="glead-g">${currentGpa().toFixed(2)}</span></div>`
+    + (showGpa ? `<div class="glead-r"><span class="glead-g">${gpa.toFixed(2)}</span></div>` : '')
     + (close ? `<div class="glead-d">${escapeHtml(shortName(close.course))} ${escapeHtml(close.text)}</div>` : '')
     + `</div></div>`;
 }
 
-/** Keep an A: the picked classes and their grades, red only under the alert line. Each opens its class. */
+/** Get an A: the picked classes and their grades, red only under the alert line. Each opens its class. */
 function keepACard() {
   const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
   if (!classes.length) return '';
@@ -423,5 +428,5 @@ function keepACard() {
       + (state.hideScores ? CHEVRON : `<span class="glist-g${average < state.alertUnder ? ' u' : ''}">${oneDecimal(average)}</span>`)
       + `</div>`;
   }).join('');
-  return `<div class="sec"><div class="lab" style="margin:0 0 6px">Keep As</div><div class="card quiet">${rows}</div></div>`;
+  return `<div class="sec"><div class="lab" style="margin:0 0 6px">A goals</div><div class="card quiet">${rows}</div></div>`;
 }

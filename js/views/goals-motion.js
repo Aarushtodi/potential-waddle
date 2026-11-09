@@ -7,9 +7,10 @@
  *   question opens   wipe plate scaleX 1 -> 0 (origin right), title words rise one at a time
  *   progress bar     rule draw from the last step's width to this one's
  *   tile tapped      pop: scale from --press-scale back to 1
- *   Your plan        cover plate (once a session): the picks tick off, it lifts translateY(-101%),
- *                    the plan numbers roll like an odometer as it goes, then it is removed.
- *                    Any tap skips. The whole moment stays under PLATE_CAP_MS.
+ *   Your plan        cover plate (once a session): the picks tick off, it lifts translateY(-101%)
+ *                    off the plan, which is already drawn at its real numbers, then it is removed.
+ *                    Any tap skips, and that tap's click is swallowed so it never lands on Start.
+ *                    The whole moment stays under PLATE_CAP_MS.
  */
 import { qs, qsa } from '../format.js';
 
@@ -78,37 +79,12 @@ function pop(key) {
   if (tile) tile.classList.add('pop');
 }
 
-// ---- Your plan: cover plate and odometer ----------------------------------------------------
-
-/** Each digit becomes a strip of 0 to 9 twice; the real value stays for screen readers. */
-function prepOdometer(node) {
-  const text = node.dataset.odo;
-  const digits = [...text].filter(ch => /\d/.test(ch)).length;
-  let fromRight = digits;
-  node.innerHTML = `<span class="vh">${node.textContent}</span><span aria-hidden="true">`
-    + [...text].map(ch => {
-      if (!/\d/.test(ch)) return `<span class="odo-ch">${ch}</span>`;
-      fromRight--;
-      const strip = '0123456789'.repeat(2).split('').map(d => `<span>${d}</span>`).join('');
-      return `<span class="odo-col"><span class="odo-strip" data-d="${ch}" style="--k:${fromRight}">${strip}</span></span>`;
-    }).join('')
-    + `</span>`;
-}
-
-/** Roll every strip to its digit in the second run, so each column turns over once. */
-const rollOdometers = () => qsa('.odo-strip').forEach(strip => {
-  strip.style.transform = `translateY(${-(10 + +strip.dataset.d) * 5}%)`;
-});
-
-const settleOdometers = () => qsa('.g-odo').forEach(node => {
-  node.textContent = node.dataset.odo;
-});
+// ---- Your plan: cover plate ------------------------------------------------------------------
 
 function runPlate() {
   plateShown = true;
   const plate = qs('.gplate');
   const rows = qsa('.gplate-row');
-  qsa('.g-odo').forEach(prepOdometer);
 
   const hold = token('--t-hold');
   const tick = token('--t-press');
@@ -122,19 +98,25 @@ function runPlate() {
     done = true;
     plateTimers.forEach(clearTimeout);
     plateTimers = [];
-    document.removeEventListener('pointerdown', finish, true);
+    document.removeEventListener('pointerdown', skip, true);
     document.removeEventListener('keydown', finish, true);
     plate.remove();
-    settleOdometers();
   };
-  plateTimers.push(setTimeout(() => {
-    plate.classList.add('lift');
-    rollOdometers();
-  }, liftAt));
+  // A skip tap ends the plate; the click that follows the same tap must not press Start under it.
+  const skip = () => {
+    const swallow = event => {
+      event.stopPropagation();
+      event.preventDefault();
+    };
+    document.addEventListener('click', swallow, { capture: true, once: true });
+    setTimeout(() => document.removeEventListener('click', swallow, true), 600);
+    finish();
+  };
+  plateTimers.push(setTimeout(() => plate.classList.add('lift'), liftAt));
   plate.addEventListener('transitionend', event => {
     if (event.target === plate) finish();
   });
   plateTimers.push(setTimeout(finish, PLATE_CAP_MS)); // never longer than the cap, even if transitionend is lost
-  document.addEventListener('pointerdown', finish, true);
+  document.addEventListener('pointerdown', skip, true);
   document.addEventListener('keydown', finish, true);
 }
