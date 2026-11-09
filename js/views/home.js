@@ -19,7 +19,7 @@
 import { escapeHtml, shortDate, oneDecimal, signed, countWord, WEEKDAYS, dateAt } from '../format.js';
 import { real, realProblem, realUpdatedText } from '../real-data.js';
 import { countsAsZero } from '../grade-math.js';
-import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
+import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass, SEMESTER_SPLIT } from '../state.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
 import { alertBadge } from './alerts.js';
 import { currentGpa, closestToNextLetter } from './gpa.js';
@@ -386,13 +386,14 @@ export function homeView() {
   // Goals picked: their sections first, in pick order, then the rest of Home. A plain reorder.
   const sections = {
     gpaGoal: () => goalGpaCard(),
+    finals: () => finalsCard(),
     keepA: () => keepACard(),
     zero: () => lead,
     classes: () => classStrip(),
     todos: () => todoSection(shownAbove),
     gpaRow: () => gpaRow(),
   };
-  const GOAL_SECTIONS = { gpa: ['gpaGoal'], keepA: ['keepA'], finals: ['classes'], missing: ['zero', 'todos'] };
+  const GOAL_SECTIONS = { gpa: ['gpaGoal'], keepA: ['keepA'], finals: ['finals'], missing: ['zero', 'todos'] };
   const order = state.goals.flatMap(goal => GOAL_SECTIONS[goal] || []);
   const rest = ['zero', 'classes', 'todos', state.goals.includes('gpa') ? null : 'gpaRow'];
   for (const key of rest) if (key && !order.includes(key)) order.push(key);
@@ -415,6 +416,32 @@ function goalGpaCard() {
     + (showGpa ? `<div class="glead-r"><span class="glead-g">${gpa.toFixed(2)}</span></div>` : '')
     + (close ? `<div class="glead-d">${escapeHtml(shortName(close.course))} ${escapeHtml(close.text)}</div>` : '')
     + `</div></div>`;
+}
+
+/**
+ * The next tests before finals, soonest first: { title, course, due }. Test dates the student
+ * opted into (Test Date Radar) count too. Goals' plan shows the same rows.
+ */
+export function finalsTests(limit = 3) {
+  // Tests only: the long project (big) has its own pace line on Home.
+  const tests = homeTodos().filter(item => item.category === 'Test' && !item.big && item.due != null && item.due >= 0 && !isDone(item));
+  return sortByDue(tests).slice(0, limit).map(item => ({
+    title: item.title,
+    course: item.source === 'testDate' ? item.title.replace(/ (Test|Quiz)$/, '') : shortClassName(String(item.detail)),
+    due: item.due,
+  }));
+}
+
+/** Ace finals: how much the final exam counts, then the next tests. */
+function finalsCard() {
+  if (!SEMESTER_SPLIT) return '';
+  const rows = finalsTests().map(item => `<div class="row glist-row small">`
+    + `<div class="grow t">${escapeHtml(item.title)}</div>`
+    + `<span class="glist-s">${escapeHtml(item.course)}, ${escapeHtml(shortDate(item.due))}</span></div>`).join('');
+  return `<div class="sec"><div class="card glead"><div class="glead-k">Finals</div>`
+    + `<div class="glead-r"><span class="glead-g">${SEMESTER_SPLIT.examPercent}%</span></div></div>`
+    + (rows ? `<div class="card quiet" style="margin-top:8px">${rows}</div>` : '')
+    + `</div>`;
 }
 
 /** Get an A: the picked classes and their grades, red only under the alert line. Each opens its class. */

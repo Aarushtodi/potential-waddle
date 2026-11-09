@@ -4,11 +4,11 @@
  * plain layout: full size, full opacity. Nothing runs without the root .motion class (reduced
  * motion off), so with reduced motion every screen simply appears.
  *
- *   question opens   wipe plate scaleX 1 -> 0 (origin right), title words rise one at a time
+ *   question opens   the whole screen body slides in 24px and fades up as one (no mask through text)
  *   progress bar     rule draw from the last step's width to this one's
  *   tile tapped      pop: scale from --press-scale back to 1
- *   Your plan        cover plate (once a session): the picks tick off, it lifts translateY(-101%)
- *                    off the plan, which is already drawn at its real numbers, then it is removed.
+ *   Your plan        cover plate (once a session): the picks tick off, then it fades out over the
+ *                    plan, which is already drawn at its real numbers, then it is removed.
  *                    Any tap skips, and that tap's click is swallowed so it never lands on Start.
  *                    The whole moment stays under PLATE_CAP_MS.
  */
@@ -67,11 +67,9 @@ function drawBar(bar, from, to) {
   bar.style.transform = `scaleX(${to})`;
 }
 
-/** Wipe plate and word rise are CSS animations on .enter; the plate leaves the DOM when done. */
+/** The screen slide in is a CSS animation on .enter. */
 function openQuestion(screen) {
   screen.classList.add('enter');
-  const wipe = screen.querySelector('.g-wipe');
-  if (wipe) wipe.addEventListener('animationend', () => wipe.remove(), { once: true });
 }
 
 function pop(key) {

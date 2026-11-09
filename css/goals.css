@@ -1,7 +1,7 @@
 /* ---- Goals (after sign in, before Home), js/views/goals.js + js/views/goals-motion.js ----
    Council rules: headings weight 500, no subtitles, no gradients or glass, tiles 44px+, picked =
    fill or border (never a dim), text always 100% opacity. Motion only under html.motion, only the
-   tokens in css/motion.css. Three looks share the markup: .look-a .look-b .look-c. */
+   tokens in css/motion.css. Two looks share the markup: .look-a (lead) and .look-b. */
 
 .vh {
   position: absolute;
@@ -69,50 +69,15 @@
   font-weight: 500;
 }
 
-.g-w {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: top;
-  padding-bottom: .08em; /* room for descenders inside the clip */
+/* Question opens: the whole body slides in and fades up as one. No clip or plate crosses text. */
+.motion .scr.goals.enter .g-body {
+  animation: g-in var(--t-enter) var(--ease) both;
 }
 
-.g-w > span {
-  display: inline-block;
-}
-
-.motion .scr.goals.enter .g-w > span {
-  animation: g-rise var(--t-enter) var(--ease) both;
-  animation-delay: calc(var(--i) * var(--t-step));
-}
-
-@keyframes g-rise {
+@keyframes g-in {
   from {
-    transform: translateY(105%);
-  }
-}
-
-/* Wipe plate: covers the screen under the top bar as a question opens, then leaves. */
-.g-wipe {
-  display: none;
-}
-
-.motion .scr.goals.enter .g-wipe {
-  display: block;
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: var(--card);
-  transform-origin: right;
-  animation: g-wipe var(--t-enter) var(--ease) both;
-  pointer-events: none;
-}
-
-@keyframes g-wipe {
-  from {
-    transform: scaleX(1);
-  }
-  to {
-    transform: scaleX(0);
+    opacity: 0;
+    transform: translateX(24px);
   }
 }
 
@@ -206,8 +171,14 @@
   align-items: center;
 }
 
-.look-a .g-tiles.single .g-num {
-  font-size: 34px;
+.look-a .g-tiles.single .g-tile {
+  padding: 12px 8px;
+}
+
+/* Look A: the label is as big as the number. */
+.look-a .g-num,
+.look-a .g-lab {
+  font: 500 22px/1.12 var(--sans);
 }
 
 .look-a .g-tile.on {
@@ -276,63 +247,6 @@
 
 .look-b .g-tile.on .g-check svg {
   visibility: visible;
-}
-
-/* ---- Look C: big words, no cards, picked = ink pill ---- */
-
-.look-c .g-tiles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 6px;
-}
-
-.look-c .g-tile {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 10px;
-  background: transparent;
-  border-radius: 99px;
-  padding: 6px 12px;
-  margin-left: -8px; /* the pill sits 8px in from the screen edge, the words line up near the title */
-  min-height: 52px;
-  align-content: center;
-}
-
-.look-c .g-tiles.single .g-tile + .g-tile {
-  margin-left: 0;
-}
-
-.look-c .g-tiles:not(.single) {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-
-.look-c .g-lab {
-  order: 1;
-  font-size: 28px;
-  line-height: 1.15;
-}
-
-.look-c .g-num {
-  order: 2;
-  white-space: nowrap;
-  font-size: 17px;
-  color: var(--sec);
-}
-
-.look-c .g-tiles.single .g-num {
-  font-size: 34px;
-  color: var(--ink);
-}
-
-.look-c .g-tile.on {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.look-c .g-tile.on .g-num {
-  color: var(--paper);
 }
 
 /* ---- Your plan ---- */
@@ -411,15 +325,6 @@
   padding: 8px 2px 4px;
 }
 
-/* Look B plan: flat rows. Look C plan: no cards, rules between blocks. */
-.look-c .g-plan {
-  background: transparent;
-  border-radius: 0;
-  padding: 14px 0;
-  margin: 0;
-  border-top: 1px solid var(--rule);
-}
-
 /* Plate colors: ink plate in light, card plate in dark (no full cream screen at night). */
 .scr.goals {
   --plate-bg: var(--ink);
@@ -438,7 +343,8 @@
   }
 }
 
-/* Cover plate over Your plan: the picks tick off, then it lifts once. Hidden in reduced motion. */
+/* Cover plate over Your plan: the picks tick off, then it fades out once (no edge crosses the
+   plan's text). Hidden in reduced motion. */
 .gplate {
   position: absolute;
   inset: 0;
@@ -448,11 +354,17 @@
   display: flex;
   align-items: center;
   padding: 0 28px;
-  transition: transform var(--t-stage) var(--ease);
+  transition: opacity var(--t-enter) var(--ease) var(--t-press);
 }
 
-.gplate.lift {
-  transform: translateY(-101%);
+/* The rows go first, so plate text never sits over plan text; then the plate itself fades. */
+.gplate-in {
+  transition: opacity var(--t-press) var(--ease);
+}
+
+.gplate.lift,
+.gplate.lift .gplate-in {
+  opacity: 0;
 }
 
 .gplate-in {
@@ -496,4 +408,16 @@
 /* Home, Keep As card: a picked class under the A line. */
 .glist-g.u {
   color: var(--urgent);
+}
+
+/* Plan: a class under the alert line. */
+.g-plan-g.u {
+  color: var(--urgent);
+}
+
+/* Home, Finals card: the course and date of each next test. */
+.glist-s {
+  font: 500 13.5px var(--sans);
+  color: var(--sec);
+  white-space: nowrap;
 }

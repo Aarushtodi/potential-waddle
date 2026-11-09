@@ -36,7 +36,7 @@ export const state = {
   goalAlert: null, // the alert line picked on the last question (also sets alertUnder)
   goalStep: 0, // index into goalSteps()
   goalStage: 'ask', // 'ask' (the questions) | 'plan' (Your plan)
-  goalsLook: goalsLookParam(), // preview only: ?goals=a|b|c picks one of the 3 looks
+  goalsLook: goalsLookParam(), // preview only: ?goals=a|b picks one of the 2 looks
 
   // Navigation. Each tab keeps its own stack of pushed pages: [pageName, id?].
   tab: 'home', // 'home' | 'grades' | 'calendar' | 'bell'
@@ -109,10 +109,10 @@ export const state = {
   openedAt: Date.now(), // drives the sample clock
 };
 
-/** Preview only: which of the 3 Goals looks to show, from ?goals=a|b|c. */
+/** Preview only: which of the 2 Goals looks to show, from ?goals=a|b (a leads). */
 function goalsLookParam() {
   const look = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('goals');
-  return ['a', 'b', 'c'].includes(look) ? look : 'a';
+  return look === 'b' ? 'b' : 'a';
 }
 
 /**

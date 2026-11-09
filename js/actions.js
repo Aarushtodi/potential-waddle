@@ -152,6 +152,8 @@ export const actions = {
     state.sheet = null;
   },
   signIn() {
+    // Picks kept from an earlier sign in: straight to Home, no second Goals setup.
+    if (state.goals.length) return actions.goalsStart();
     // Goals come next, so the plan is built from the real grades just read.
     state.screen = 'goals';
     state.goalStage = 'ask';

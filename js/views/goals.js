@@ -10,14 +10,14 @@
  *                                then leads with the picked goals (js/views/home.js).
  *
  * No subtitles: every line under a heading is real data. Picked tiles get a fill, never a dim.
- * Three looks share this markup; css/goals.css styles .look-a / .look-b / .look-c.
+ * Two looks share this markup; css/goals.css styles .look-a (lead) and .look-b.
  */
 import { escapeHtml, oneDecimal, shortDate } from '../format.js';
 import { real } from '../real-data.js';
 import { state, SEMESTER_SPLIT, goalSteps, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs } from './components.js';
 import { currentGpa, closestToNextLetter } from './gpa.js';
-import { zeroItems, zeroCountText } from './home.js';
+import { zeroItems, zeroCountText, finalsTests } from './home.js';
 import { planPlateDue } from './goals-motion.js';
 
 export const GOALS = [
@@ -63,14 +63,9 @@ function goalNumber(key) {
 
 // ---- Pieces ---------------------------------------------------------------------------------
 
-/** Each word in its own clip, so goals-motion.js can raise them one at a time. Last word italic. */
+/** A question title, last words italic. No per word clips: the whole screen moves as one. */
 function riseTitle(lead, accent) {
-  const words = lead.split(' ').filter(Boolean).map(w => [w, false]).concat(accent.split(' ').map(w => [w, true]));
-  return `<h1 class="g-q" aria-label="${escapeHtml(lead + accent)}">`
-    + words.map(([word, italic], i) =>
-      `<span class="g-w" aria-hidden="true"><span style="--i:${i}">${italic ? `<i>${escapeHtml(word)}</i>` : escapeHtml(word)}</span></span>`)
-      .join(' ')
-    + `</h1>`;
+  return `<h1 class="g-q">${escapeHtml(lead)}<i>${escapeHtml(accent)}</i></h1>`;
 }
 
 function tile(on, action, x, number, label, single) {
@@ -86,7 +81,15 @@ function progressBar(index, total) {
     + `<i style="transform:scaleX(${((index + 1) / total).toFixed(4)})"></i></div>`;
 }
 
-function topBar(index, total, canGoBack) {
+/**
+ * Fixed slots, so the bar only ever grows: 1 what, 2 which, 3 alert, 4 plan. When "Which classes"
+ * is not asked, the bar jumps from slot 1 to slot 3.
+ */
+const BAR_SLOTS = ['what', 'which', 'alert', 'plan'];
+
+function topBar(step, canGoBack) {
+  const index = BAR_SLOTS.indexOf(step);
+  const total = BAR_SLOTS.length;
   return `<div class="g-top">`
     + `<button class="pill round g-back${canGoBack ? '' : ' hide'}" aria-label="Back" ${actionAttrs('goalsBack')}>‹</button>`
     + progressBar(index, total) + `</div>`;
@@ -130,10 +133,10 @@ function questionView() {
       + `${actionAttrs('goalsNext')}>Continue</button></div>`
     : `<div class="intro-foot g-foot-empty"></div>`;
   return `<div class="scr goals look-${state.goalsLook}" data-goal-screen="${step}">`
-    + topBar(index, steps.length + 1, index > 0)
+    + topBar(step, index > 0)
     + `<div class="g-body">${questionBody(step)}</div>`
     + foot
-    + `<div class="g-wipe" aria-hidden="true"></div></div>`;
+    + `</div>`;
 }
 
 // ---- Your plan ------------------------------------------------------------------------------
@@ -141,7 +144,9 @@ function questionView() {
 
 function planBlock(key) {
   if (key === 'gpa') {
-    const close = gradedClasses().length ? closestToNextLetter() : null;
+    let close = gradedClasses().length ? closestToNextLetter() : null;
+    // The A goals card already says how far that class is from an A: don't say it twice.
+    if (close && state.goals.includes('keepA') && state.goalAClasses.includes(close.course.id)) close = null;
     const gpa = gpaText();
     if (!gpa && !close) return '';
     return `<div class="card g-plan"><div class="g-plan-k">GPA</div>${gpa ? `<div class="g-plan-n">${gpa}</div>` : ''}`
@@ -162,7 +167,9 @@ function planBlock(key) {
   if (key === 'finals') {
     if (!SEMESTER_SPLIT) return '';
     return `<div class="card g-plan"><div class="g-plan-k">Finals</div><div class="g-plan-n">${finalsText()}</div>`
-      + `<div class="g-plan-l">of the semester grade</div></div>`;
+      + finalsTests().map(item => `<div class="g-plan-row"><span class="grow">${escapeHtml(item.title)}</span>`
+        + `<span class="g-plan-s">${escapeHtml(item.course)}, ${escapeHtml(shortDate(item.due))}</span></div>`).join('')
+      + `</div>`;
   }
   const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
   if (!classes.length) return '';
@@ -188,14 +195,25 @@ function planPlate() {
     + `</div></div>`;
 }
 
+/** The alert line as a card, with the real classes under it right now. */
+function alertBlock() {
+  const line = state.alertUnder;
+  const under = gradedClasses().filter(course => periodAverage(course) < line).reverse();
+  return `<div class="card g-plan"><div class="g-plan-k">Alert under ${line}</div>`
+    + (under.length
+      ? under.map(course => `<div class="g-plan-row"><span class="grow">${escapeHtml(shortName(course))}</span>`
+        + `<span class="g-plan-g u">${oneDecimal(periodAverage(course))}</span></div>`).join('')
+      : `<div class="g-plan-c">Nothing under ${line}</div>`)
+    + `</div>`;
+}
+
 function planView() {
-  const total = goalSteps().length + 1;
   return `<div class="scr goals plan look-${state.goalsLook}" data-goal-screen="plan">`
-    + topBar(total - 1, total, true)
+    + topBar('plan', true)
     + `<div class="g-body g-planbody">`
     + riseTitle('Your ', 'plan')
     + state.goals.map(planBlock).join('')
-    + `<div class="g-plan-alert">Alert under ${state.alertUnder}</div>`
+    + alertBlock()
     + `</div>`
     + `<div class="intro-foot"><button class="btn" ${actionAttrs('goalsStart')}>Start</button></div>`
     + (planPlateDue() ? planPlate() : '')
