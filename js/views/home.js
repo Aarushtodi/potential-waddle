@@ -258,84 +258,45 @@ function todoSection(shownAbove) {
 
 // ---- Grades ---------------------------------------------------------------------------------
 
-/** The grades block. The live look is the old chips; ?grades=tiles|list|chips|lead are preview options. */
+/**
+ * The grades block, "Lowest leads" (his pick 11/9): the lowest class is one big card, the rest sit under
+ * it in a short list. Red goes on one grade only, the lowest, and only when it is under the retest line.
+ * Hide scores: names only, in one list. The Latest line sits under the block.
+ */
 function classStrip() {
   const classes = visibleClasses().filter(course => periodAverage(course) != null);
-  const look = GRADES_LOOK === 'old' ? gradeOldChips : GRADES_LOOK === 'list' ? gradeList : GRADES_LOOK === 'chips' ? gradeChips : GRADES_LOOK === 'lead' ? gradeLead : gradeTileGrid;
-  return `<div class="sec grades-sec">${look(classes)}${latestLine()}</div>`;
+  return `<div class="sec grades-sec">${classes.length ? (state.hideScores ? namesList(classes) : leadAndList(classes)) : ''}${latestLine()}</div>`;
 }
-
-// Preview only: ?grades=old|tiles|list|chips|lead picks the look of the grades block on Home.
-const GRADES_LOOK = new URLSearchParams(location.search).get('grades') || 'old';
 
 /** Change in a class average from its newest grade change, or null. */
 function lastDelta(course) {
   const change = state.gradeChanges.find(entry => entry.classId === course.id);
   return change && Math.abs(change.after - change.before) >= 0.05 ? change.after - change.before : null;
 }
-/** Red goes on one grade only: the lowest class, and only when it is under the retest line. */
-const underLine = course => {
-  const graded = visibleClasses().filter(other => periodAverage(other) != null);
-  const lowest = graded.reduce((low, other) => (periodAverage(other) < periodAverage(low) ? other : low), course);
-  return course === lowest && periodAverage(course) < state.retestLine;
-};
+
 const openClass = course => actionAttrs('openPage', 'class', course.id);
 
-/** The old Home row: small outline chips in one line that scrolls sideways and runs off the right edge. */
-function gradeOldChips(classes) {
-  const chips = classes.map(course =>
-    `<button class="chip cls" ${openClass(course)}>${escapeHtml(shortName(course))}`
-    + (state.hideScores ? '' : ` <b>${oneDecimal(periodAverage(course))}</b>`) + `</button>`).join('');
-  return `<div class="chips strip-cls">${chips}</div>`;
-}
-
-function gradeTileGrid(classes) {
-  const tiles = classes.map(course =>
-    `<button class="gtile" ${openClass(course)}>`
-    + `<span class="gtile-n">${escapeHtml(shortName(course))}</span>`
-    + (state.hideScores ? '' : `<span class="gtile-g">${oneDecimal(periodAverage(course))}</span>`)
-    + `</button>`).join('');
-  return `<div class="gtiles${state.hideScores ? ' hide' : ''}">${tiles}</div>`;
-}
-
-/** One card, one row per class, the grade big on the right, the last change small beside it. */
-function gradeList(classes) {
-  const rows = classes.map(course => {
-    const delta = lastDelta(course);
-    return `<div class="row glist-row" role="button" tabindex="0" ${openClass(course)}>`
-      + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
-      + (state.hideScores ? '' : (delta != null ? `<span class="glist-d${delta < 0 ? ' dn' : ''}">${signed(delta)}</span>` : '')
-        + `<span class="glist-g${underLine(course) ? ' u' : ''}">${oneDecimal(periodAverage(course))}</span>`)
-      + `</div>`;
-  }).join('');
+function namesList(classes) {
+  const rows = classes.map(course => `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
+    + `<div class="grow t">${escapeHtml(shortName(course))}</div>${CHEVRON}</div>`).join('');
   return `<div class="card quiet">${rows}</div>`;
 }
 
-/** Chips that wrap onto as many lines as they need, so none is cut off at the edge. */
-function gradeChips(classes) {
-  const chips = classes.map(course =>
-    `<button class="gchip${underLine(course) && !state.hideScores ? ' u' : ''}" ${openClass(course)}>`
-    + `${escapeHtml(shortName(course))}`
-    + (state.hideScores ? '' : `<b>${oneDecimal(periodAverage(course))}</b>`) + `</button>`).join('');
-  return `<div class="gchips">${chips}</div>`;
-}
-
-/** One class leads: the lowest average, big, with what to look at. The rest sit in a short list under it. */
-function gradeLead(classes) {
-  if (state.hideScores || !classes.length) return gradeTileGrid(classes);
+function leadAndList(classes) {
   const lead = classes.reduce((low, course) => (periodAverage(course) < periodAverage(low) ? course : low));
   const rest = classes.filter(course => course !== lead);
   const delta = lastDelta(lead);
-  const below = periodAverage(lead) < state.alertUnder;
+  const red = periodAverage(lead) < state.retestLine;
   const rows = rest.map(course => `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
     + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
-    + `<span class="glist-g${underLine(course) ? ' u' : ''}">${oneDecimal(periodAverage(course))}</span></div>`).join('');
+    + `<span class="glist-g">${oneDecimal(periodAverage(course))}</span></div>`).join('');
   return `<div class="card glead" role="button" tabindex="0" ${openClass(lead)}>`
-    + `<div class="glead-k">${below ? `Lowest, under your ${state.alertUnder}` : 'Lowest'}</div>`
+    + `<div class="glead-k">${periodAverage(lead) < state.alertUnder ? `Lowest, under your ${state.alertUnder}` : 'Lowest'}</div>`
     + `<div class="glead-r"><span class="glead-n">${escapeHtml(shortName(lead))}</span>`
-    + `<span class="glead-g${underLine(lead) ? ' u' : ''}">${oneDecimal(periodAverage(lead))}</span></div>`
+    + `<span class="glead-g${red ? ' u' : ''}">${oneDecimal(periodAverage(lead))}</span></div>`
     + (delta != null ? `<div class="glead-d">${signed(delta)} since the last grade</div>` : '')
-    + `</div><div class="card quiet" style="margin-top:8px">${rows}</div>`;
+    + (rows ? `</div><div class="card quiet" style="margin-top:8px">${rows}` : '')
+    + `</div>`;
 }
 
 /** The Grades tab's GPA row, repeated at the bottom of Home. Opens the GPA page. */
