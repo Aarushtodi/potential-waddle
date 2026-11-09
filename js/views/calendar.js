@@ -1,8 +1,10 @@
 /**
  * Calendar tab: a month grid with a dot on days that have open to-dos, and the selected day's list
- * with its progress bars. The Test dates button sits in this tab's top bar.
+ * with its progress bars. On today it also lists today's periods (moved here from Home's bell line).
+ * The Test dates button sits in this tab's top bar.
  */
-import { SAMPLE_TODAY, MONTHS_LONG, offsetOf, longDate, countWord } from '../format.js';
+import { SAMPLE_TODAY, MONTHS_LONG, offsetOf, longDate, countWord, clockTime, escapeHtml } from '../format.js';
+import { periodsFor, currentPeriod } from '../schedule.js';
 import { state, todoItems, sortByDue } from '../state.js';
 import { actionAttrs, heading, statusStrip, todoRow, progressBars } from './components.js';
 
@@ -51,5 +53,35 @@ export function calendarView() {
     + (Object.values(state.testDatePicks).some(Boolean)
       ? `<div class="foot">Test dates are unofficial, confirm with your teacher.</div>`
       : '')
-    + `</div>`;
+    + `</div>`
+    + (selected === 0 ? periodsSection() : '');
+}
+
+/**
+ * Today's periods: past ones dimmed, the one on now bold with the minutes left, the next one
+ * marked Next. The "on now" row is live (refreshLive), and tapping a row opens the Bell tab.
+ */
+function periodsSection() {
+  const now = currentPeriod();
+  const periods = periodsFor('A');
+  const rows = periods.map((period, index) => {
+    let cls = 'per';
+    let right = '';
+    if (!now || index < now.index) cls += ' past';
+    else if (index === now.index && !now.passing) {
+      cls += ' on';
+      right = `${now.minutesLeft} min left`;
+    } else if (index === now.index || index === now.index + 1 && !now.passing) {
+      cls += ' nxt';
+      right = 'Next';
+    }
+    return `<div class="row ${cls}" role="button" tabindex="0" ${actionAttrs('openBell')}>`
+      + `<div class="per-t">${clockTime(period.start)}</div>`
+      + `<div class="grow"><div class="t">${escapeHtml(period.name)}</div><div class="s">${escapeHtml(period.room)}</div></div>`
+      + (right ? `<div class="per-r">${right}</div>` : '')
+      + `</div>`;
+  }).join('');
+  const lead = now ? 'Classes ' : 'School is ';
+  const accent = now ? 'today' : 'out';
+  return `<div class="sec">${heading('A day', lead, accent)}<div class="card" data-live>${rows}</div></div>`;
 }

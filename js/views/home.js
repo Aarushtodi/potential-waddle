@@ -16,7 +16,6 @@
 import { escapeHtml, shortDate, oneDecimal, countWord, WEEKDAYS, dateAt } from '../format.js';
 import { countsAsZero } from '../grade-math.js';
 import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
-import { currentPeriod } from '../schedule.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
 
 /** Rows shown per to-do group before "N more". */
@@ -220,17 +219,6 @@ function classStrip() {
   return `<div class="chips strip-cls">${chips}</div>`;
 }
 
-/** The current period as one gray line. Tap opens the Bell tab. */
-function nowLine() {
-  const now = currentPeriod();
-  if (!now) return `<div class="nowg">School is out. Sample school day, A day</div>`;
-  const course = findClass(now.period.id);
-  const name = course ? shortName(course) : now.period.name;
-  const next = now.next ? `. Next: ${escapeHtml(now.next.room)}` : '. Last class';
-  return `<div class="nowg" role="button" tabindex="0" ${actionAttrs('openBell')}>`
-    + `<span class="grow" data-live>${escapeHtml(name)}, ${now.minutesLeft} min left${next}</span>${CHEVRON}</div>`;
-}
-
 // ---- Top bar --------------------------------------------------------------------------------
 
 /** "Updated N min ago" under the title. Tapping it refreshes too (pull to refresh needs touch). */
@@ -294,6 +282,6 @@ export function homeView() {
   if (items.length) html += zeroCard(items);
   else if (!state.firstOpen) html += allClearSection();
   return html
-    + `<div class="sec" style="margin-bottom:14px">${classStrip()}${nowLine()}</div>`
+    + `<div class="sec" style="margin-bottom:14px">${classStrip()}</div>`
     + todoSection(items);
 }
