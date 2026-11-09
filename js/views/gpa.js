@@ -1,14 +1,18 @@
 /**
  * GPA page and its tools: What do I need, GPA what if, Long term goal (Missing work is in home.js).
  * All of these are estimates; the school computes the real GPA.
+ *
+ * The GPA page: the weighted number as the hero, then the counted classes sorted by how close
+ * each average sits to a letter line. The 2 closest (within NEAR points) get their distance in
+ * the pop color; that is the only emphasis, no header and no judgment words.
  */
 import { escapeHtml, oneDecimal } from '../format.js';
 import {
   isScored, classAverage, scoreNeededOnNext, finalExamNeeded,
-  letterGrade, weightBonus, computeGpa, gpaGoalPlan,
+  letterGrade, computeGpa, gpaGoalPlan,
 } from '../grade-math.js';
 import { CLASSES, SAMPLE_GPA_HISTORY } from '../sample-data.js';
-import { state, SEMESTER_SPLIT, findClass, orderedClasses } from '../state.js';
+import { state, SEMESTER_SPLIT, findClass, orderedClasses, routeKey } from '../state.js';
 import { actionAttrs, heading, navRow, segmented, splitExplanation } from './components.js';
 
 const BIG_TITLE = 'style="font-size:15px"';
@@ -20,25 +24,90 @@ const gpaClasses = () => orderedClasses().filter(
 const gpaAverage = course => (course.typed ? course.grade : classAverage(course.rows));
 const gradebookLetter = course => letterGrade(gpaAverage(course));
 
+// ---- GPA page -----------------------------------------------------------------------------
+
+/** Letter lines: the floor of each letter, and the cutoff of the letter above it. */
+const FLOOR = { A: 90, B: 80, C: 70, D: 60 };
+const NEXT_UP = { B: 90, C: 80, D: 70, F: 60 };
+const LETTER_BELOW = { A: 'B', B: 'C', C: 'D', D: 'F' };
+const LETTER_ABOVE = { B: 'A', C: 'B', D: 'C', F: 'D' };
+/** How many classes can stand out, and how close (points) counts as close to a line. */
+const CLOSE_COUNT = 2;
+const NEAR = 2.0;
+
+const article = letter => (letter === 'A' || letter === 'F' ? 'an ' : 'a ') + letter;
+const tenth = n => (Math.round(n * 10) / 10).toFixed(1);
+const isHonors = course => course.level === 'H' || course.level === 'AP' || course.level === 'DC';
+
+/**
+ * Distance from a class average to the nearest letter line: down to its own letter's floor
+ * (F has none) or up to the next cutoff (A has none), whichever is smaller.
+ */
+function lineDistance(course) {
+  const average = gpaAverage(course);
+  const letter = letterGrade(average);
+  const down = FLOOR[letter] == null ? Infinity : average - FLOOR[letter];
+  const up = NEXT_UP[letter] == null ? Infinity : NEXT_UP[letter] - average;
+  return down <= up
+    ? { course, letter, points: down, text: `${tenth(down)} above ${article(LETTER_BELOW[letter])}` }
+    : { course, letter, points: up, text: `${tenth(up)} to ${article(LETTER_ABOVE[letter])}` };
+}
+
+function classRow(item, close) {
+  const { course } = item;
+  const name = escapeHtml(course.name.replace(/ Honors$/, ''))
+    + (isHonors(course) ? ' <span class="gpa-h" aria-label="honors">H</span>' : '');
+  return `<div class="row gpa-row"><div class="grow t">${name}</div>`
+    + `<div class="s${close ? ' gpa-close' : ''}">${item.text}</div>`
+    + `<div class="avg gpa-let">${item.letter}</div></div>`;
+}
+
 export function gpaView() {
   const gpa = computeGpa(gpaClasses(), gradebookLetter);
-  const classRows = orderedClasses().map(course => {
-    const average = course.typed ? course.grade : classAverage(course.rows);
-    const weight = course.level === 'A' ? 'Left out of GPA'
-      : weightBonus(course.level) ? 'Honors weight, adds 1' : 'Regular weight';
-    return `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>${escapeHtml(course.name)}</div>`
-      + `<div class="s">${weight}</div></div><div class="avg">${average == null ? '' : letterGrade(average)}</div></div>`;
-  }).join('');
+  const ranked = gpaClasses().map(lineDistance).sort((a, b) => a.points - b.points);
+  const rows = ranked.map((item, i) => classRow(item, i < CLOSE_COUNT && item.points <= NEAR)).join('');
   return `<div class="sec">`
-    + heading('Estimate, your school decides the real one', gpa.weighted.toFixed(2) + ' ', 'weighted', { big: 1 })
-    + `<div class="s" style="padding:0 0 10px;font-size:15px">${gpa.unweighted.toFixed(2)} unweighted</div>`
-    + `<div class="card">${classRows}</div></div>`
-    + `<div class="sec"><div class="card">`
-    + navRow('What do I need', 'Target grade to the score you need', 'openPage', 'need')
-    + navRow('GPA what if', 'Change a class, see what a B does', 'openPage', 'gpaWhatIf')
-    + navRow('Missing work', 'Missing and absent, each counts as 0', 'openPage', 'missingEffect')
-    + navRow('Long term GPA goal', 'Pick a GPA by graduation, see grades needed', 'openPage', 'gpaGoal')
+    + `<div class="gpa-hero"><span class="gpa-n" data-gpa-count="${gpa.weighted.toFixed(2)}">${gpa.weighted.toFixed(2)}</span>`
+    + `<i>this semester</i></div>`
+    + (rows ? `<div class="card">${rows}</div>` : '')
+    + `<div class="foot">Estimate. Your school sets the real GPA. Advisory doesn't count.</div>`
+    + `<div class="foot gpa-unw">${gpa.unweighted.toFixed(2)} unweighted</div></div>`
+    + `<div class="sec"><div class="card gpa-links">`
+    + navRow('What do I need', '', 'openPage', 'need')
+    + navRow('GPA what if', '', 'openPage', 'gpaWhatIf')
+    + navRow('By graduation', '', 'openPage', 'gpaGoal')
     + `</div></div>`;
+}
+
+/**
+ * Count up: the hero number runs from 0 to its value once when the GPA page opens (not on a
+ * Back from a page above it, not on later redraws). Reduced motion: it just shows the value.
+ * Called by render.js after every full redraw.
+ */
+const COUNT_MS = 900;
+const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+const counter = { route: null, raf: 0 };
+
+export function afterGpaRender() {
+  const node = document.querySelector('[data-gpa-count]');
+  const route = routeKey();
+  const before = counter.route || '';
+  counter.route = route;
+  const opened = node && route !== before && !before.startsWith(route + '/');
+  if (!opened || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  cancelAnimationFrame(counter.raf);
+  const to = +node.dataset.gpaCount;
+  const start = performance.now();
+  node.textContent = (0).toFixed(2);
+  const frame = now => {
+    const k = Math.min(1, (now - start) / COUNT_MS);
+    // Look the node up each frame: a full redraw mid count replaces it.
+    const current = document.querySelector('[data-gpa-count]');
+    if (!current) return;
+    current.textContent = k < 1 ? (to * easeOutQuart(k)).toFixed(2) : current.dataset.gpaCount;
+    if (k < 1) counter.raf = requestAnimationFrame(frame);
+  };
+  counter.raf = requestAnimationFrame(frame);
 }
 
 // ---- What do I need -----------------------------------------------------------------------
