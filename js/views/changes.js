@@ -1,10 +1,10 @@
 /**
- * What changed and Alerts pages. Both read the same grade change log (state.gradeChanges).
+ * What changed page and the alert text. Reads the grade change log (state.gradeChanges). The Alerts page is views/alerts.js.
  * In the real app the phone checks HAC in the background and adds to this log.
  */
 import { escapeHtml, oneDecimal, signed } from '../format.js';
 import { state, findClass } from '../state.js';
-import { actionAttrs, heading } from './components.js';
+import { heading } from './components.js';
 
 const BIG_TITLE = 'style="font-size:15px"';
 
@@ -29,17 +29,4 @@ export function changesView() {
   }).join('');
   return `<div class="sec">${heading('Since you last looked', 'What ', 'changed', { big: 1 })}`
     + `<div class="card">${rows}</div></div>`;
-}
-
-export function alertsView() {
-  const rows = state.gradeChanges.map(change => {
-    const course = findClass(change.classId);
-    const muted = state.mutedClasses[change.classId] ? ' (muted)' : '';
-    return `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>${escapeHtml(course.name)}${muted}</div>`
-      + `<div class="s">${alertText(change)}</div><div class="s">${change.when}</div></div></div>`;
-  }).join('');
-  return `<div class="sec">${heading('Grade changes', 'Recent ', 'alerts', { big: 1 })}`
-    + `<div class="card">${rows}</div>`
-    + `<div class="foot">Your phone does the checking, so an alert can arrive late. Change the rules in Settings.</div></div>`
-    + `<button class="btn ghost" ${actionAttrs('showSampleAlert')}>Show me one</button>`;
 }

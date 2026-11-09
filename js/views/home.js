@@ -21,6 +21,7 @@ import { real, realProblem, realUpdatedText } from '../real-data.js';
 import { countsAsZero } from '../grade-math.js';
 import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
+import { alertBadge } from './alerts.js';
 
 /** Rows shown per to-do group before "N more". */
 const GROUP_LIMIT = 3;
@@ -322,7 +323,7 @@ function latestLine() {
  * does the rest with opacity and transform only.
  */
 export function homeNav() {
-  const alertCount = state.gradeChanges.length;
+  const alertCount = alertBadge();
   return `<div class="nav cbar"><div class="cbar-title" aria-hidden="true">Home</div><div class="cbar-buttons">`
     + `<button class="pill round badge-wrap" aria-label="Alerts, ${alertCount}" ${actionAttrs('openPage', 'alerts')}>`
     + `${ALERTS_ICON}${alertCount ? `<span class="badge">${alertCount}</span>` : ''}</button>`

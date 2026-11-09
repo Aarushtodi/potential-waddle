@@ -177,7 +177,8 @@ export const actions = {
     currentStack().push(id != null ? [name, id] : [name]);
   },
   back() {
-    currentStack().pop();
+    const top = currentStack().pop();
+    if (top && top[0] === 'alerts') state.alertsUnread = 0;
   },
   openBell() {
     state.tab = 'bell';
@@ -420,6 +421,9 @@ export const actions = {
   },
 
   // Settings
+  toggleAlertRule(rule) {
+    state.alertRules[rule] = !state.alertRules[rule];
+  },
   toggleMute(classId) {
     state.mutedClasses[classId] = !state.mutedClasses[classId];
   },

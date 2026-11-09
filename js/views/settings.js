@@ -32,10 +32,19 @@ export function settingsView() {
       : '')
     + `</div>${toggle(state.faceIdOn, 'toggleFaceId')}</div>`;
 
+  const ruleToggle = (key, title, hint) => `<div class="row"><div class="grow"><div class="t">${title}</div>`
+    + `<div class="s">${hint}</div></div>${toggle(state.alertRules[key], 'toggleAlertRule', key)}</div>`;
   return `<div class="sec"><div class="lab" style="margin-bottom:6px">Alert rules</div><div class="card">`
-    + `<div class="row"><div class="grow"><div class="t">Alert me under</div>`
-    + `<div class="s">When a class average drops below this</div></div>`
-    + `<input class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder"></div>`
+    + ruleToggle('newGrade', 'New grades', 'A score appears that was blank before')
+    + ruleToggle('zero', 'Zero or missing', 'Marked missing, absent or incomplete')
+    + ruleToggle('changed', 'Score changed', 'A teacher edits a score you already had')
+    + `<div class="row"><div class="grow"><div class="t">Average under my number</div>`
+    + `<div class="s">Once when it drops below, again only after it climbs back</div></div>`
+    + `<input class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder">`
+    + toggle(state.alertRules.under, 'toggleAlertRule', 'under') + `</div>`
+    + `<div class="row"><div class="grow"><div class="t">Can't read your gradebook</div>`
+    + `<div class="s">Always on, so a quiet phone never looks like good news</div></div></div>`
+    + `<div class="row" role="button" tabindex="0" ${actionAttrs('showSampleAlert')}><div class="grow"><div class="t">Send a test alert</div></div></div>`
     + muteRows + `</div></div>`
     + `<div class="sec"><div class="card">`
     + navRow('Widgets', 'Next due, test countdown, last grade change', 'openPage', 'widgets')

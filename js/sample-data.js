@@ -176,6 +176,17 @@ export const SEEN_CHANGES = [
   ['alg', 'Unit 3 Test'],
 ];
 
+/** Alerts that are not a new grade: a teacher changed a score. Sample only (the real app compares two pulls). */
+export const ALERT_EXTRAS = [
+  { kind: 'changed', classId: 'cs', title: 'Loops Project', from: 96, to: 98, total: 100, day: -4 },
+];
+
+/** Things that needed the student and no longer do. Sample only. */
+export const ALERT_CLEARED = [
+  { classId: 'span', text: 'Back above your line', day: -4 },
+  { classId: 'chem', text: 'Worksheet 8 turned in', day: -6 },
+];
+
 /** Scores that "arrive" one per Update tap, to show the refresh and the alert banner. */
 export const QUEUED_SCORES = [
   { classId: 'chem', title: 'Reactions Test', score: 78 },
