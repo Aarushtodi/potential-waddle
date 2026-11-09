@@ -137,16 +137,27 @@
 .odo-col {
   position: relative;
   display: inline-block;
-  clip-path: inset(0);
+}
+
+/* WebKit ignores clip-path on these inline boxes, so an absolute window with overflow hidden clips.
+   The column itself never clips, so its baseline stays on the hidden real digit. */
+.odo-win {
+  position: absolute;
+  top: calc(-1 * var(--odo-bleed));
+  bottom: calc(-1 * var(--odo-bleed));
+  left: 0;
+  right: 0;
+  overflow: hidden;
 }
 
 .odo-ph {
+  display: block;
   visibility: hidden;
 }
 
 .odo-s {
   position: absolute;
-  top: 0;
+  top: var(--odo-bleed);
   left: 0;
   right: 0;
   display: flex;
@@ -156,7 +167,10 @@
 
 .odo-s b {
   display: block;
-  font: inherit;
+  font: inherit; /* first: the font shorthand would reset line-height */
+  height: var(--odo-h);
+  line-height: var(--odo-h);
+  margin-bottom: var(--odo-gap);
 }
 
 .odo-s.go {

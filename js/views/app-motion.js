@@ -177,13 +177,15 @@ function roll(el, from) {
     const strip = document.createElement('span');
     strip.className = 'odo-s';
     strip.innerHTML = '0123456789'.repeat(2).split('').map(d => `<b>${d}</b>`).join('');
-    strip.style.transform = `translateY(${-start * 5}%)`;
     const shorter = digits - 1 - column; // left columns land first
     strip.style.transitionDuration = `calc(var(--t-stage) - ${shorter} * var(--t-step))`;
     column += 1;
-    col.append(ph, strip);
+    const win = document.createElement('span'); // the clip window: one line plus a little bleed
+    win.className = 'odo-win';
+    win.append(strip);
+    col.append(ph, win);
     odo.append(col);
-    strips.push([strip, stop]);
+    strips.push([strip, stop, start]);
   });
   const real = document.createElement('span');
   real.className = 'vh';
@@ -193,6 +195,17 @@ function roll(el, from) {
   spot.append(odo, real);
   el.replaceChild(spot, node);
   if (trailing) spot.after(trailing);
+  // Space the strip digits by the measured line plus a gap, so a big glyph that spills past its
+  // line box never shows in the next column window (the window is the line plus half the gap).
+  // Each digit cell is one line tall with the same line height, so its glyph sits exactly where the
+  // plain number will. The window reaches a little past the line so tall glyphs aren't cut.
+  const lineHeight = odo.querySelector('.odo-col').getBoundingClientRect().height;
+  const gap = Math.round(lineHeight * 0.6);
+  const step = lineHeight + gap;
+  odo.style.setProperty('--odo-h', lineHeight + 'px');
+  odo.style.setProperty('--odo-gap', gap + 'px');
+  odo.style.setProperty('--odo-bleed', Math.round(lineHeight * 0.08) + 'px'); // digits sit inside the line box
+  for (const [strip, , start] of strips) strip.style.transform = `translateY(${-start * step}px)`;
   let timer = 0;
   const finish = () => {
     clearTimeout(timer);
@@ -206,7 +219,7 @@ function roll(el, from) {
   requestAnimationFrame(() => requestAnimationFrame(() => {
     for (const [strip, stop] of strips) {
       strip.classList.add('go');
-      strip.style.transform = `translateY(${-stop * 5}%)`;
+      strip.style.transform = `translateY(${-stop * step}px)`;
     }
   }));
 }
