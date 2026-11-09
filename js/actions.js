@@ -12,7 +12,7 @@ import { classAverage, isScored } from './grade-math.js';
 import { CLASSES, QUEUED_SCORES, PACED_PROJECT_ROW_ID } from './sample-data.js';
 import {
   state, ui, TYPED_CLASS_LIMIT, findClass, findRow, effectiveDue,
-  whatIfFor, whatIfAverage, blankRowsLeft, gradeChangeEntry,
+  whatIfFor, whatIfAverage, blankRowsLeft, gradeChangeEntry, goalSteps,
 } from './state.js';
 import { render } from './render.js';
 import { alertText } from './views/changes.js';
@@ -21,6 +21,7 @@ import { INTRO_SLIDE_COUNT } from './views/intro.js';
 import { beforeToggle } from './views/done-motion.js';
 import { THEMES, saveTheme, applyTheme, crossfade } from './theme.js';
 import { leaveIntro } from './views/intro-motion.js';
+import { goalPicked } from './views/goals-motion.js';
 import { real, reloadRealData } from './real-data.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
@@ -28,6 +29,9 @@ import { real, reloadRealData } from './real-data.js';
 const REFRESH_MS = 1300;
 const UPDATE_COOLDOWN_MS = 6e4;
 const BANNER_MS = 6000;
+/** The last Goals question is a single pick: it moves on this long after the pop. */
+const GOAL_AUTO_ADVANCE_MS = 280;
+let goalAdvanceTimer = 0;
 
 /**
  * Show the loading state, then "finish" loading. With applyScores, one queued sample score
@@ -148,6 +152,49 @@ export const actions = {
     state.sheet = null;
   },
   signIn() {
+    // Goals come next, so the plan is built from the real grades just read.
+    state.screen = 'goals';
+    state.goalStage = 'ask';
+    state.goalStep = 0;
+  },
+
+  // Goals (js/views/goals.js)
+  toggleGoal(key) {
+    const list = state.goals;
+    state.goals = list.includes(key) ? list.filter(k => k !== key) : list.concat(key);
+    goalPicked(key);
+  },
+  toggleGoalClass(id) {
+    const list = state.goalAClasses;
+    state.goalAClasses = list.includes(id) ? list.filter(k => k !== id) : list.concat(id);
+    goalPicked(id);
+  },
+  pickGoalAlert(line) {
+    state.goalAlert = +line;
+    state.alertUnder = +line;
+    goalPicked(line);
+    // Single pick: show the pop, then move on by itself.
+    clearTimeout(goalAdvanceTimer);
+    goalAdvanceTimer = setTimeout(() => {
+      actions.goalsNext();
+      render();
+    }, GOAL_AUTO_ADVANCE_MS);
+  },
+  goalsNext() {
+    const step = goalSteps()[state.goalStep];
+    if (step === 'what' && !state.goals.length) return false;
+    if (step === 'which' && !state.goalAClasses.length) return false;
+    if (state.goalStep < goalSteps().length - 1) state.goalStep++;
+    else state.goalStage = 'plan';
+  },
+  goalsBack() {
+    clearTimeout(goalAdvanceTimer);
+    if (state.goalStage === 'plan') state.goalStage = 'ask';
+    else if (state.goalStep > 0) state.goalStep--;
+    else return false;
+  },
+  goalsStart() {
+    // What sign in did before Goals: Home, with the first gradebook update.
     state.screen = 'app';
     state.tab = 'home';
     state.firstOpen = true;

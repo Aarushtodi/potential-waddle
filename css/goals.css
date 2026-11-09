@@ -1,0 +1,490 @@
+/* ---- Goals (after sign in, before Home), js/views/goals.js + js/views/goals-motion.js ----
+   Council rules: headings weight 500, no subtitles, no gradients or glass, tiles 44px+, picked =
+   fill or border (never a dim), text always 100% opacity. Motion only under html.motion, only the
+   tokens in css/motion.css. Three looks share the markup: .look-a .look-b .look-c. */
+
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.scr.goals {
+  overflow: hidden;
+}
+
+.g-top {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px 6px;
+  background: var(--paper);
+  flex: none;
+}
+
+.g-back.hide {
+  visibility: hidden;
+}
+
+.g-bar {
+  flex: 1;
+  height: 2px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.g-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform-origin: left;
+}
+
+.motion .g-bar i {
+  transition: transform var(--t-enter) var(--ease);
+}
+
+.g-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 26px 16px 16px;
+}
+
+/* Question title: weight 500, last words italic serif like the rest of the app. */
+.g-q {
+  font: 500 34px/1.12 var(--sans);
+  margin: 0 0 24px;
+  letter-spacing: -.2px;
+}
+
+.g-q i {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.g-w {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: .08em; /* room for descenders inside the clip */
+}
+
+.g-w > span {
+  display: inline-block;
+}
+
+.motion .scr.goals.enter .g-w > span {
+  animation: g-rise var(--t-enter) var(--ease) both;
+  animation-delay: calc(var(--i) * var(--t-step));
+}
+
+@keyframes g-rise {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+/* Wipe plate: covers the screen under the top bar as a question opens, then leaves. */
+.g-wipe {
+  display: none;
+}
+
+.motion .scr.goals.enter .g-wipe {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--ink);
+  transform-origin: right;
+  animation: g-wipe var(--t-enter) var(--ease) both;
+  pointer-events: none;
+}
+
+@keyframes g-wipe {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* ---- Tiles, shared ---- */
+
+.g-tiles {
+  display: grid;
+  gap: 10px;
+}
+
+.g-tile {
+  position: relative;
+  min-height: 44px;
+  border: 2px solid transparent;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.g-num {
+  display: block;
+  font: 500 28px/1.05 var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.g-lab {
+  display: block;
+  font: 500 16px/1.25 var(--sans);
+}
+
+.g-check {
+  display: none;
+}
+
+.motion .g-tile {
+  transition: transform var(--t-press) var(--ease);
+}
+
+.motion .g-tile:active {
+  transform: scale(var(--press-scale));
+}
+
+.motion .g-tile.pop {
+  animation: g-pop var(--t-enter) var(--ease) both;
+}
+
+@keyframes g-pop {
+  from {
+    transform: scale(var(--press-scale));
+  }
+}
+
+.g-foot-empty {
+  min-height: 52px;
+}
+
+/* Continue before a pick: the quiet button, same ink text, not dimmed. */
+.g-next[aria-disabled=true] {
+  cursor: default;
+}
+
+/* ---- Look A: square tiles, number top, label bottom ---- */
+
+.look-a .g-tiles {
+  grid-template-columns: 1fr 1fr;
+}
+
+.look-a .g-tiles.n3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.look-a .g-tile {
+  aspect-ratio: 1;
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.look-a .g-tiles.nmany .g-tile {
+  aspect-ratio: auto;
+  min-height: 112px;
+}
+
+.look-a .g-tiles.single .g-tile {
+  justify-content: center;
+  align-items: center;
+}
+
+.look-a .g-tiles.single .g-num {
+  font-size: 34px;
+}
+
+.look-a .g-tile.on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ---- Look B: full width tall rows, number right, round check ---- */
+
+.look-b .g-tiles {
+  grid-template-columns: 1fr;
+}
+
+.look-b .g-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 76px;
+  padding: 12px 16px 12px 18px;
+  border-radius: 22px;
+}
+
+.look-b .g-lab {
+  order: 1;
+  flex: 1;
+  font-size: 18px;
+}
+
+.look-b .g-num {
+  order: 2;
+  font-size: 22px;
+  text-align: right;
+}
+
+.look-b .g-tiles.single .g-num {
+  order: 1;
+  flex: 1;
+  text-align: left;
+  font-size: 28px;
+}
+
+.look-b .g-check {
+  order: 3;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--ring);
+  display: grid;
+  place-items: center;
+  color: var(--paper);
+}
+
+.look-b .g-check svg {
+  visibility: hidden;
+}
+
+.look-b .g-tile.on {
+  border-color: var(--ink);
+}
+
+.look-b .g-tile.on .g-check {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.look-b .g-tile.on .g-check svg {
+  visibility: visible;
+}
+
+/* ---- Look C: big words, no cards, picked = ink pill ---- */
+
+.look-c .g-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 6px;
+}
+
+.look-c .g-tile {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  background: transparent;
+  border-radius: 99px;
+  padding: 6px 12px;
+  margin-left: -8px; /* the pill sits 8px in from the screen edge, the words line up near the title */
+  min-height: 52px;
+  align-content: center;
+}
+
+.look-c .g-tiles.single .g-tile + .g-tile {
+  margin-left: 0;
+}
+
+.look-c .g-tiles:not(.single) {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+
+.look-c .g-lab {
+  order: 1;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.look-c .g-num {
+  order: 2;
+  white-space: nowrap;
+  font-size: 17px;
+  color: var(--sec);
+}
+
+.look-c .g-tiles.single .g-num {
+  font-size: 34px;
+  color: var(--ink);
+}
+
+.look-c .g-tile.on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.look-c .g-tile.on .g-num {
+  color: var(--paper);
+}
+
+/* ---- Your plan ---- */
+
+.g-planbody .g-q {
+  margin-bottom: 18px;
+}
+
+.g-plan {
+  border-radius: 22px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+}
+
+.g-plan-k {
+  font: 500 15px var(--sans);
+}
+
+.g-plan-n {
+  font: 500 44px/1.05 var(--sans);
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 6px;
+}
+
+.g-plan-n.u {
+  color: var(--urgent);
+}
+
+.g-plan-l {
+  font-size: 15.5px;
+}
+
+.g-plan-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 16px;
+}
+
+.g-plan-k + .g-plan-row {
+  margin-top: 8px;
+}
+
+.g-plan-g {
+  font: 500 20px var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.g-plan-s {
+  font-size: 14.5px;
+  color: var(--sec);
+  white-space: nowrap;
+}
+
+.g-plan-s.u {
+  color: var(--urgent);
+}
+
+.g-plan-alert {
+  font: 500 17px var(--sans);
+  padding: 8px 2px 4px;
+}
+
+/* Look B plan: flat rows. Look C plan: no cards, rules between blocks. */
+.look-c .g-plan {
+  background: transparent;
+  border-radius: 0;
+  padding: 14px 0;
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+
+/* Odometer: each digit column clips a strip of 0 to 9 twice (goals-motion.js). */
+.g-odo {
+  display: inline-flex;
+}
+
+.odo-col {
+  display: inline-block;
+  height: 1.05em;
+  overflow: hidden;
+}
+
+.odo-strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform calc(var(--t-stage) - var(--k) * var(--t-step)) var(--ease);
+}
+
+.odo-strip > span {
+  height: 1.05em;
+  line-height: 1.05;
+}
+
+/* Cover plate over Your plan: the picks tick off, then it lifts once. Hidden in reduced motion. */
+.gplate {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  transition: transform var(--t-stage) var(--ease);
+}
+
+.gplate.lift {
+  transform: translateY(-101%);
+}
+
+.gplate-in {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gplate-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font: 500 22px/1.2 var(--sans);
+}
+
+.gplate-tick {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  transition: background var(--t-press) var(--ease);
+}
+
+.gplate-tick svg {
+  transform: scale(0);
+  transition: transform var(--t-press) var(--ease);
+}
+
+.gplate-row.on .gplate-tick {
+  background: var(--paper);
+}
+
+.gplate-row.on .gplate-tick svg {
+  transform: none;
+}
+
+/* Home, Keep As card: a picked class under the A line. */
+.glist-g.u {
+  color: var(--urgent);
+}

@@ -19,7 +19,7 @@ import { actionAttrs, heading, navRow, segmented } from './components.js';
 const BIG_TITLE = 'style="font-size:15px"';
 
 /** Advisory and classes with nothing graded yet are left out. */
-const gpaClasses = () => orderedClasses().filter(
+export const gpaClasses = () => orderedClasses().filter(
   course => course.level !== 'A' && (course.typed || classAverage(course.rows) != null),
 );
 const gpaAverage = course => (course.typed ? course.grade : classAverage(course.rows));
@@ -44,7 +44,7 @@ const isHonors = course => course.level === 'H' || course.level === 'AP' || cour
  * Distance from a class average to the nearest letter line: down to its own letter's floor
  * (F has none) or up to the next cutoff (A has none), whichever is smaller.
  */
-function lineDistance(course) {
+export function lineDistance(course) {
   const average = gpaAverage(course);
   const letter = letterGrade(average);
   const down = FLOOR[letter] == null ? Infinity : average - FLOOR[letter];
@@ -52,6 +52,19 @@ function lineDistance(course) {
   return down <= up
     ? { course, letter, points: down, text: `${tenth(down)} above ${article(LETTER_BELOW[letter])}` }
     : { course, letter, points: up, text: `${tenth(up)} to ${article(LETTER_ABOVE[letter])}` };
+}
+
+/** Weighted GPA from the gradebook letters, the number the GPA page leads with. */
+export const currentGpa = () => computeGpa(gpaClasses(), gradebookLetter).weighted;
+
+/**
+ * The class closest to the next letter up ("Spanish 1.6 to an A"), for Goals and Home.
+ * All As: the class closest to dropping a letter instead.
+ */
+export function closestToNextLetter() {
+  const lines = gpaClasses().map(lineDistance);
+  const up = lines.filter(line => / to /.test(line.text)).sort((a, b) => a.points - b.points);
+  return up[0] || lines.sort((a, b) => a.points - b.points)[0] || null;
 }
 
 function classRow(item, close) {

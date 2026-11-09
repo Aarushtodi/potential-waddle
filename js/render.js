@@ -9,6 +9,7 @@ import { view } from './views/shell.js';
 import { afterRender as introMotion } from './views/intro-motion.js';
 import { afterGpaRender, afterNeedRender } from './views/gpa.js';
 import { afterDoneRender } from './views/done-motion.js';
+import { afterGoalsRender } from './views/goals-motion.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -34,6 +35,7 @@ export function render() {
   afterGpaRender(); // GPA hero count up, see js/views/gpa.js
   afterNeedRender(); // Target page: picked class chip in view, see js/views/gpa.js
   afterDoneRender(); // to-do ticked: ring pop, bars, count and heading roll, see js/views/done-motion.js
+  afterGoalsRender(); // Goals: word rise, wipe, progress draw, tile pop, plan cover plate, see js/views/goals-motion.js
 }
 
 /**

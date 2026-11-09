@@ -8,6 +8,7 @@ import { actionAttrs } from './components.js';
 import { introView } from './intro.js';
 import { signInView } from './signin.js';
 import { themePickView } from './theme-pick.js';
+import { goalsView } from './goals.js';
 import { homeNav, homeView, missingPageView } from './home.js';
 import { gradesView, classView, assignmentView } from './grades.js';
 import { gpaView, needView, gpaWhatIfView, gpaGoalView } from './gpa.js';
@@ -81,6 +82,7 @@ export function view() {
   if (state.screen === 'intro') return introView();
   if (state.screen === 'theme') return themePickView();
   if (state.screen === 'signin') return signInView();
+  if (state.screen === 'goals') return goalsView();
 
   const stack = state.pageStacks[state.tab];
   const top = stack[stack.length - 1];

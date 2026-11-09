@@ -22,6 +22,7 @@ import { countsAsZero } from '../grade-math.js';
 import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
 import { alertBadge } from './alerts.js';
+import { currentGpa, closestToNextLetter } from './gpa.js';
 
 /** Rows shown per to-do group before "N more". */
 const GROUP_LIMIT = 3;
@@ -372,13 +373,55 @@ function homeTitleBlock() {
 
 export function homeView() {
   const items = zeroItems();
-  let html = homeTitleBlock();
+  let lead = '';
   let shownAbove = items;
-  if (items.length) html += zeroCard(items);
+  if (items.length) lead = zeroCard(items);
   else if (!state.firstOpen) {
-    const lead = allClearSection();
-    html += lead.html;
-    shownAbove = lead.shown;
+    const allClear = allClearSection();
+    lead = allClear.html;
+    shownAbove = allClear.shown;
   }
-  return html + classStrip() + todoSection(shownAbove) + gpaRow();
+  if (!state.goals.length) return homeTitleBlock() + lead + classStrip() + todoSection(shownAbove) + gpaRow();
+
+  // Goals picked: their sections first, in pick order, then the rest of Home. A plain reorder.
+  const sections = {
+    gpaGoal: () => goalGpaCard(),
+    keepA: () => keepACard(),
+    zero: () => lead,
+    classes: () => classStrip(),
+    todos: () => todoSection(shownAbove),
+    gpaRow: () => gpaRow(),
+  };
+  const GOAL_SECTIONS = { gpa: ['gpaGoal'], keepA: ['keepA'], finals: ['classes'], missing: ['zero', 'todos'] };
+  const order = state.goals.flatMap(goal => GOAL_SECTIONS[goal] || []);
+  const rest = ['zero', 'classes', 'todos', state.goals.includes('gpa') ? null : 'gpaRow'];
+  for (const key of rest) if (key && !order.includes(key)) order.push(key);
+  return homeTitleBlock() + order.map(key => sections[key]()).join('');
+}
+
+// ---- Goals sections (picked on the Goals screens) -----------------------------------------------
+
+/** Raise my GPA: the GPA and the class closest to the next letter. Opens the GPA page. */
+function goalGpaCard() {
+  if (real.on || state.hideScores) return gpaRow();
+  const close = closestToNextLetter();
+  return `<div class="sec"><div class="card glead" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
+    + `<div class="glead-k">GPA</div>`
+    + `<div class="glead-r"><span class="glead-g">${currentGpa().toFixed(2)}</span></div>`
+    + (close ? `<div class="glead-d">${escapeHtml(shortName(close.course))} ${escapeHtml(close.text)}</div>` : '')
+    + `</div></div>`;
+}
+
+/** Keep an A: the picked classes and their grades, red only under the alert line. Each opens its class. */
+function keepACard() {
+  const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
+  if (!classes.length) return '';
+  const rows = classes.map(course => {
+    const average = periodAverage(course);
+    return `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
+      + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
+      + (state.hideScores ? CHEVRON : `<span class="glist-g${average < state.alertUnder ? ' u' : ''}">${oneDecimal(average)}</span>`)
+      + `</div>`;
+  }).join('');
+  return `<div class="sec"><div class="lab" style="margin:0 0 6px">Keep As</div><div class="card quiet">${rows}</div></div>`;
 }

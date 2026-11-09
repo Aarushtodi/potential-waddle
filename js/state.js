@@ -23,12 +23,20 @@ export const SEMESTER_SPLIT = solveSemesterSplit(PAST_REPORT_CARD);
 
 export const state = {
   // Intro slides, Pick a look, then sign in
-  screen: 'intro', // 'intro' | 'theme' | 'signin' | 'app'
+  screen: 'intro', // 'intro' | 'theme' | 'signin' | 'goals' | 'app'
   introSlide: 0,
   introReturnTo: 'theme', // where Skip and Get started go: 'theme' on first open, 'app' from Settings
   theme: loadTheme(), // 'system' (Match my phone) | 'light' | 'dark', saved on the phone
   district: null,
   districtNotListed: false,
+
+  // Goals, right after sign in so the plan uses real grades (see js/views/goals.js)
+  goals: [], // picked goal keys in pick order: 'gpa' | 'missing' | 'finals' | 'keepA'
+  goalAClasses: [], // class ids picked on "Which classes stay As?"
+  goalAlert: null, // the alert line picked on the last question (also sets alertUnder)
+  goalStep: 0, // index into goalSteps()
+  goalStage: 'ask', // 'ask' (the questions) | 'plan' (Your plan)
+  goalsLook: goalsLookParam(), // preview only: ?goals=a|b|c picks one of the 3 looks
 
   // Navigation. Each tab keeps its own stack of pushed pages: [pageName, id?].
   tab: 'home', // 'home' | 'grades' | 'calendar' | 'bell'
@@ -100,6 +108,15 @@ export const state = {
   tapeScrollTop: null, // where the student scrolled the tape; null = scroll to now on the next draw
   openedAt: Date.now(), // drives the sample clock
 };
+
+/** Preview only: which of the 3 Goals looks to show, from ?goals=a|b|c. */
+function goalsLookParam() {
+  const look = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('goals');
+  return ['a', 'b', 'c'].includes(look) ? look : 'a';
+}
+
+/** The Goals questions in order. "Which classes stay As?" only when Keep an A is picked. */
+export const goalSteps = () => ['what', ...(state.goals.includes('keepA') ? ['which'] : []), 'alert'];
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */
 export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null, lastTapeDay: null, doneFx: null, doneHoldTimer: 0 };
