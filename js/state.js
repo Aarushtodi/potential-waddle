@@ -13,6 +13,7 @@ import {
 } from './sample-data.js';
 import { classAverage, averageEffect, isScored, countsAsZero, applyWhatIf, solveSemesterSplit } from './grade-math.js';
 import { scoreText, relativeDay } from './format.js';
+import { loadTheme } from './theme.js';
 
 /** Students can type in classes HAC does not have (dual credit, self study AP), up to this many. */
 export const TYPED_CLASS_LIMIT = 8;
@@ -21,10 +22,11 @@ export const TYPED_CLASS_LIMIT = 8;
 export const SEMESTER_SPLIT = solveSemesterSplit(PAST_REPORT_CARD);
 
 export const state = {
-  // Intro slides, then sign in
-  screen: 'intro', // 'intro' | 'signin' | 'app'
+  // Intro slides, Pick a look, then sign in
+  screen: 'intro', // 'intro' | 'theme' | 'signin' | 'app'
   introSlide: 0,
-  introReturnTo: 'signin', // where Skip and Get started go: 'signin' on first open, 'app' from Settings
+  introReturnTo: 'theme', // where Skip and Get started go: 'theme' on first open, 'app' from Settings
+  theme: loadTheme(), // 'system' (Match my phone) | 'light' | 'dark', saved on the phone
   district: null,
   districtNotListed: false,
 
