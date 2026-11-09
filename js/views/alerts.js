@@ -38,6 +38,7 @@ export function needsYou() {
         const word = isMissing(row) ? 'missing' : row.mark === 'INC' ? 'incomplete' : 'absent';
         items.push({
           kind: 'zero', classId: course.id, urgent: isMissing(row), title: row.title,
+          rest: `${word[0].toUpperCase() + word.slice(1)}, counts as zero.`,
           line: `${shortName(course)}. ${word[0].toUpperCase() + word.slice(1)}, counts as zero.`,
           step: 'Open', action: actionAttrs('openPage', 'assignment', row.id),
         });
@@ -45,7 +46,8 @@ export function needsYou() {
       if (rules.newGrade && isUnderRetestLine(row)) {
         items.push({
           kind: 'retest', classId: course.id, title: row.title,
-          line: `${shortName(course)}. ${numbers(`${row.score}, `)}under your ${state.retestLine} line.`,
+          rest: `${numbers(`${row.score}. `)}Your retest line is ${state.retestLine}.`,
+          line: `${shortName(course)}. ${numbers(`${row.score}. `)}Your retest line is ${state.retestLine}.`,
           step: 'Retest', action: actionAttrs('openPage', 'assignment', row.id),
         });
       }
@@ -54,6 +56,7 @@ export function needsYou() {
     if (rules.under && average != null && average < state.alertUnder) {
       items.push({
         kind: 'under', classId: course.id, title: `${shortName(course)} is under your ${state.alertUnder}`,
+        rest: numbers(`Now ${oneDecimal(average)}.`) || 'Below the number you set.',
         line: numbers(`Now ${oneDecimal(average)}.`) || 'Below the number you set.',
         step: 'See the class', action: actionAttrs('openPage', 'class', course.id),
       });
@@ -85,8 +88,7 @@ function needsYouFolded() {
   else if (unders.length) {
     out.push({
       kind: 'under', title: `${unders.length} classes under your ${state.alertUnder}`,
-      line: unders.map(item => shortName(findClass(item.classId))
-        + numbers(' ' + oneDecimal(periodAverage(findClass(item.classId))))).join(', ') + '.',
+      line: unders.map(item => shortName(findClass(item.classId))).join(', ') + '.',
       step: 'Grades', action: actionAttrs('switchTab', 'grades'),
     });
   }
@@ -105,8 +107,8 @@ function events() {
     const crossed = change.before >= state.alertUnder && change.after < state.alertUnder;
     list.push({
       kind: crossed ? 'under' : 'newGrade', classId: course.id, day: change.day, when: change.when,
-      title: change.title, line: `${shortName(course)}. ${numbers(change.scoreText.replace(/ \/ 100$/, '') + '. ')}`
-        + (crossed ? `Average now under your ${state.alertUnder}.` : numbers(`Average ${oneDecimal(change.before)} to ${oneDecimal(change.after)}.`) || 'Average moved.'),
+      title: change.title, line: `${shortName(course)}. ${numbers(change.scoreText.replace(/ \/ 100$/, ''))}`
+        + (crossed ? ` Average now under your ${state.alertUnder}.` : ''),
       delta: change.after - change.before, down: change.after < change.before,
     });
   }
@@ -114,7 +116,7 @@ function events() {
     for (const row of course.rows) {
       if (!countsAsZero(row)) continue;
       list.push({
-        kind: 'zero', classId: course.id, day: row.due, when: relativeDay(row.due), title: row.title,
+        kind: 'zero', classId: course.id, rowId: row.id, day: row.due, when: relativeDay(row.due), title: row.title,
         line: `${shortName(course)}. ${isMissing(row) ? 'Marked missing' : row.mark === 'INC' ? 'Marked incomplete' : 'Marked absent'}, counts as zero.`,
         delta: null, down: true,
       });
@@ -172,7 +174,7 @@ function needsView() {
     + `<div class="grow"><div class="t">${escapeHtml(shortName(findClass(entry.classId)))}</div>`
     + `<div class="s">${entry.text}, ${relativeDay(entry.day).toLowerCase()}</div></div></div>`).join('');
   return `<div class="sec">${hacBanner()}`
-    + heading(checkedText(), items.length ? 'Needs ' : 'All ', items.length ? 'you' : 'clear', { big: 1, urgent: !!items.length })
+    + heading(checkedText(), items.length ? 'Needs ' : 'All ', items.length ? 'you' : 'clear', { big: 1 })
     + body + `</div>`
     + `<div class="sec"><div class="lab" style="margin:0 0 6px">Cleared this week</div><div class="card quiet">${cleared}</div></div>`
     + `<div class="card al-foot">${navRow('What changed', 'Every new grade, newest first', 'openPage', 'changes')}`
@@ -193,8 +195,9 @@ function inboxView() {
     const fresh = index < state.alertsUnread;
     const delta = item.delta != null && !state.hideScores
       ? `<div class="al-delta${item.down ? ' u' : ''}">${signed(item.delta)}</div>` : '';
-    html += `<div class="row al-in${fresh ? ' new' : ''}" role="button" tabindex="0" ${actionAttrs('openPage', 'class', item.classId)}>`
-      + `<b class="al-new${fresh ? ' on' : ''}"></b>`
+    const hot = item.kind === 'under' || item.kind === 'zero';
+    html += `<div class="row al-in${fresh ? ' new' : ''}" role="button" tabindex="0" ${item.rowId ? actionAttrs('openPage', 'assignment', item.rowId) : actionAttrs('openPage', 'class', item.classId)}>`
+      + `<b class="al-new${fresh ? ' on' : ''}${hot ? ' u' : ''}"></b>`
       + `<div class="grow"><div class="al-tag${item.kind === 'under' || item.kind === 'zero' ? ' u' : ''}">${TAGS[item.kind]}</div>`
       + `<div class="t">${escapeHtml(item.title)}</div><div class="s">${escapeHtml(item.line)}</div></div>${delta}</div>`;
   });
@@ -210,7 +213,7 @@ function inboxView() {
 function classView() {
   const open = needsYou().filter(item => item.kind !== 'under');
   const history = events();
-  const rules = [['newGrade', 'New grades'], ['under', 'Average under my number'], ['zero', 'Zero or missing'], ['changed', 'Score changed']];
+  const rules = [['newGrade', 'New grades'], ['under', 'Under my number'], ['zero', 'Zero or missing'], ['changed', 'Score changed']];
   const ruleRows = rules.map(([key, label]) => `<div class="row"><div class="grow t" style="font-size:15.5px">${label}</div>`
     + (key === 'under' ? `<input class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder">` : '')
     + `${toggle(state.alertRules[key], 'toggleAlertRule', key)}</div>`).join('');
@@ -229,14 +232,14 @@ function classView() {
       + `<div class="s${isUnder || mine.length ? ' al-red' : ''}">${status}${state.mutedClasses[course.id] ? ', muted' : ''}</div></div>`
       + `${average != null && !state.hideScores ? `<div class="al-avg">${oneDecimal(average)}</div>` : ''}${CHEVRON}</div>`
       + mine.map(item => `<div class="row al-sub"><div class="grow"><div class="t">${escapeHtml(item.title)}</div>`
-        + `<div class="s">${escapeHtml(item.line)}</div></div><button class="pill" ${item.action}>${item.step}</button></div>`).join('')
-      + recent.map(item => `<div class="row al-sub quiet"><div class="grow"><div class="s">${TAGS[item.kind]}: ${escapeHtml(item.title)}, ${item.when}</div></div></div>`).join('')
+        + `<div class="s">${escapeHtml(item.rest)}</div></div><button class="pill" ${item.action}>${item.step}</button></div>`).join('')
+      + recent.map(item => `<div class="row al-sub quiet"><div class="grow"><div class="s">${TAGS[item.kind]}: ${escapeHtml(item.title)}</div></div></div>`).join('')
       + `</div>`);
   }
   return `<div class="sec">${hacBanner()}${heading(checkedText(), 'By ', 'class', { big: 1 })}`
-    + `<div class="lab" style="margin:0 0 6px">Alert me when</div><div class="card" style="margin-bottom:18px">${ruleRows}</div>`
     + cards.join('')
     + (quiet.length ? `<div class="foot al-quiet">Quiet: ${quiet.join(', ')}.</div>` : '') + `</div>`
+    + `<div class="sec"><div class="lab" style="margin:0 0 6px">Alert me when</div><div class="card">${ruleRows}</div></div>`
     + `<div class="card al-foot">${navRow('Muted classes', 'Turn a class off in Settings', 'openPage', 'settings')}</div>`;
 }
 
