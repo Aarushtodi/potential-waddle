@@ -108,8 +108,12 @@ function runPlate() {
       event.stopPropagation();
       event.preventDefault();
     };
+    // WebKit fires no click when the tapped plate is gone by pointerup, so the swallow also ends
+    // at the next tap or after 600ms; it must never eat a later, real tap.
+    const drop = () => document.removeEventListener('click', swallow, true);
     document.addEventListener('click', swallow, { capture: true, once: true });
-    setTimeout(() => document.removeEventListener('click', swallow, true), 600);
+    document.addEventListener('pointerdown', drop, { capture: true, once: true });
+    setTimeout(drop, 600);
     finish();
   };
   plateTimers.push(setTimeout(() => plate.classList.add('lift'), liftAt));
