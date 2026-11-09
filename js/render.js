@@ -9,6 +9,7 @@ import { view } from './views/shell.js';
 import { afterRender as introMotion } from './views/intro-motion.js';
 import { afterGpaRender, afterNeedRender } from './views/gpa.js';
 import { afterDoneRender } from './views/done-motion.js';
+import { afterMotionRender } from './views/app-motion.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -34,6 +35,7 @@ export function render() {
   afterGpaRender(); // GPA hero count up, see js/views/gpa.js
   afterNeedRender(); // Target page: picked class chip in view, see js/views/gpa.js
   afterDoneRender(); // to-do ticked: ring pop, bars, count and heading roll, see js/views/done-motion.js
+  afterMotionRender(); // taps, sliding pills, page entrances, number rolls, see js/views/app-motion.js
 }
 
 /**
@@ -110,6 +112,7 @@ export function refreshLive() {
     return;
   }
   nodes.forEach((node, i) => {
+    if (node.querySelector('.odo-w')) return; // a number is rolling; it lands on the real value itself
     if (node.innerHTML !== fresh[i].innerHTML) node.innerHTML = fresh[i].innerHTML;
   });
   // Moving parts (the bell tape's fill and now line): copy only the style, keep the node.

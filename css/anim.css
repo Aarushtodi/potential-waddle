@@ -1,0 +1,204 @@
+/* App wide motion (anim-1109), driven by js/views/app-motion.js. Tokens from motion.css only.
+   Every rule that moves sits under the root .motion class, so reduced motion never sees a start
+   state. Only transform and opacity animate, and every move ends on the plain layout. */
+
+/* ---- 1. Press: tappables shrink a little while held, then ease back --------------------- */
+
+.motion :is(.pill, .btn, .chip, .tab, .dy, .seg button, .tog, .row[role=button]) {
+  transition: transform var(--t-press) var(--ease);
+}
+
+.motion :is(.pill, .btn, .chip, .tab, .dy, .seg button, .tog, .row[role=button]):not([disabled]):active {
+  transform: scale(var(--press-scale));
+}
+
+/* A tap redraws the screen, so the new node eases back from the pressed size. */
+.motion :is(.pill, .btn, .chip, .tab, .dy, .seg button, .tog, .row[role=button]).tapped {
+  animation: press-out var(--t-press) var(--ease);
+}
+
+@keyframes press-out {
+  from {
+    transform: scale(var(--press-scale));
+  }
+}
+
+/* ---- 2. Tap memory: switch knob, sliding picked pill, calendar ------------------------- */
+
+.motion .tog.tapped.on::after {
+  animation: knob-on var(--t-enter) var(--ease);
+}
+
+.motion .tog.tapped:not(.on)::after {
+  animation: knob-off var(--t-enter) var(--ease);
+}
+
+@keyframes knob-on {
+  from {
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes knob-off {
+  from {
+    transform: translateX(20px);
+  }
+}
+
+/* The picked pill slides from the old spot to the tapped one (car row 8). */
+.motion .seg {
+  position: relative;
+}
+
+.motion :is(.seg, .tabs) > button {
+  position: relative;
+  z-index: 1;
+}
+
+.ind {
+  position: absolute;
+  z-index: 0;
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.ind.in {
+  transition: transform var(--t-enter) var(--ease);
+}
+
+.tabs > .ind {
+  background: var(--paper);
+  border-radius: 24px;
+}
+
+.seg > .ind {
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.14);
+}
+
+.tabs.sliding .tab.on,
+.seg.sliding button.on {
+  background: none;
+  box-shadow: none;
+}
+
+.motion .dy.sel.tapped span {
+  animation: day-pick var(--t-enter) var(--ease);
+}
+
+@keyframes day-pick {
+  from {
+    transform: scale(.6);
+  }
+}
+
+.motion .calg.mo-next {
+  animation: month-next var(--t-enter) var(--ease) both;
+}
+
+.motion .calg.mo-prev {
+  animation: month-prev var(--t-enter) var(--ease) both;
+}
+
+@keyframes month-next {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes month-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+/* ---- 3. Entrances: Target, Settings, Calendar (once a session), What if --------------- */
+
+.motion .pg-in > * {
+  animation: piece-rise var(--t-enter) var(--ease) calc(var(--i, 0) * var(--t-step)) both;
+}
+
+@keyframes piece-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+}
+
+.motion .sheet.anim {
+  animation: up var(--t-enter) var(--ease);
+}
+
+/* ---- 4. Odometer: each digit is a 0 to 9 strip, left digits land first (car row 5) ----- */
+
+.odo-col {
+  position: relative;
+  display: inline-block;
+  clip-path: inset(0);
+}
+
+.odo-ph {
+  visibility: hidden;
+}
+
+.odo-s {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.odo-s b {
+  display: block;
+  font: inherit;
+}
+
+.odo-s.go {
+  transition-property: transform;
+  transition-timing-function: var(--ease);
+  transition-delay: var(--t-hold);
+}
+
+.odo-w .vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- 5. Nothing keeps moving ----------------------------------------------------------- */
+
+/* Face ID glyph: 2 pulses, then still. */
+.lk svg {
+  animation-iteration-count: 4;
+}
+
+/* Bell now dot: one ring only when the current period changes. */
+.nowl i::after {
+  animation: none;
+  opacity: 0;
+}
+
+.motion .nowl.ping i::after {
+  animation: nowpulse var(--t-stage) var(--ease) 1;
+}
+
+/* Spinner: waits ~185ms before it shows, so a quick load never flashes it. */
+.motion .spin {
+  animation: spin-wait calc(var(--t-hold) + var(--t-step)) step-end, sp .8s linear infinite;
+}
+
+@keyframes spin-wait {
+  from,
+  to {
+    opacity: 0;
+  }
+}

@@ -13,7 +13,11 @@ import { render, refreshLive, collapseHeader } from './render.js';
 import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 import { applyTheme } from './theme.js';
+import { noteTap } from './views/app-motion.js';
 import { real, loadRealData } from './real-data.js';
+
+// Motion runs only when reduced motion is off (council motion.css rule).
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');
 
 const LONG_PRESS_MS = 520;
 const PULL_TO_REFRESH_PX = 80;
@@ -29,6 +33,7 @@ document.addEventListener('click', event => {
   }
   const element = event.target.closest('[data-action]');
   if (!element) return;
+  noteTap(element); // before the handler: motion needs the old DOM, see js/views/app-motion.js
   const { action, x, y } = element.dataset;
   const handler = actions[action];
   const result = handler ? handler(x, y, element, event) : undefined;
