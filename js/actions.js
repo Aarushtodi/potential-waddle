@@ -124,8 +124,22 @@ export const actions = {
   },
 
   // Appearance (Pick a look screen and Settings): applies right away with a crossfade.
-  pickTheme(theme) {
+  pickTheme(theme, _y, element) {
     if (!THEMES.includes(theme) || theme === state.theme) return false;
+    const root = document.documentElement;
+    if (root.classList.contains('motion') && element && element.closest('.seg')) {
+      // Settings picker: the pill slides first (js/views/app-motion.js), then only the colors
+      // crossfade, so the old and new pickers line up and no label shows twice.
+      state.theme = theme;
+      saveTheme(theme);
+      render();
+      const wait = parseFloat(getComputedStyle(root).getPropertyValue('--t-enter')) || 0;
+      setTimeout(() => crossfade(() => {
+        applyTheme(state.theme);
+        render();
+      }), wait);
+      return false;
+    }
     crossfade(() => {
       state.theme = theme;
       saveTheme(theme);

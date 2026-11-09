@@ -66,15 +66,23 @@
   transition: transform var(--t-enter) var(--ease);
 }
 
-.tabs > .ind {
-  background: var(--paper);
-  border-radius: 24px;
+.ind i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left center;
 }
 
-.seg > .ind {
+.ind.in i {
+  transition: transform var(--t-enter) var(--ease);
+}
+
+.tabs > .ind i {
+  background: var(--paper);
+}
+
+.seg > .ind i {
   background: var(--card);
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.14);
 }
 
 .tabs.sliding .tab.on,
@@ -139,15 +147,25 @@
   display: inline-block;
 }
 
-/* WebKit ignores clip-path on these inline boxes, so an absolute window with overflow hidden clips.
-   The column itself never clips, so its baseline stays on the hidden real digit. */
+/* The window is exactly one line, clipped top and bottom only (overflow clip, not hidden, so the
+   sides stay open). WebKit ignores clip-path on inline boxes, hence a window. The column itself
+   never clips, so its baseline stays on the hidden real digit. */
 .odo-win {
   position: absolute;
-  top: calc(-1 * var(--odo-bleed));
-  bottom: calc(-1 * var(--odo-bleed));
-  left: 0;
-  right: 0;
-  overflow: hidden;
+  inset: 0;
+  overflow-x: visible;
+  overflow-y: clip;
+}
+
+/* Same width digits, at rest and while rolling, so nothing shifts when the roll swaps back to text. */
+:is(.big-res, .hd.big, .glead-g, .glist-g),
+.odo-w {
+  font-variant-numeric: tabular-nums;
+}
+
+.odo-w {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .odo-ph {
@@ -157,7 +175,8 @@
 
 .odo-s {
   position: absolute;
-  top: var(--odo-bleed);
+  top: 0;
+  transition-property: none; /* the inline duration alone would animate placing the start digit */
   left: 0;
   right: 0;
   display: flex;
@@ -190,9 +209,9 @@
 
 /* ---- 5. Nothing keeps moving ----------------------------------------------------------- */
 
-/* Face ID glyph: 2 pulses, then still. */
+/* Face ID glyph: still. No pulse at all (pulsing badges are on his slop list). */
 .lk svg {
-  animation-iteration-count: 4;
+  animation: none;
 }
 
 /* Bell now dot: one ring only when the current period changes. */

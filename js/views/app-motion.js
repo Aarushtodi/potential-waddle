@@ -23,6 +23,15 @@ let tap = null;
 let last = { tab: '', depth: 0, sheet: '' };
 let lastCur = null;
 
+/** localStorage: what he has seen stays known across launches. */
+function stored(key, value) {
+  try {
+    if (value === undefined) return localStorage.getItem(key);
+    localStorage.setItem(key, value);
+  } catch { /* private mode: no rolls, nothing to compare with */ }
+  return null;
+}
+
 function session(key, value) {
   try {
     if (value === undefined) return sessionStorage.getItem(key);
@@ -56,32 +65,54 @@ function tappedElement() {
   return document.querySelector(selector);
 }
 
-/** Car row 8: the picked pill slides from the old spot to the tapped one. */
+/**
+ * Car row 8: the picked pill slides from the old spot to the tapped one. It is 3 parts (left cap,
+ * middle, right cap) so the round ends never stretch: the caps only move, the middle scales.
+ */
 function slideIndicator(element) {
   const group = element.closest('.seg, .tabs');
   if (!group || !tap.from || !element.classList.contains('on')) return;
   const box = group.getBoundingClientRect();
   const rect = element.getBoundingClientRect();
+  const width = rect.width;
+  const radius = Math.min(parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0, rect.height / 2, width / 2);
+  const shift = tap.from.left - (rect.left - box.left);
+  const middle = Math.max(width - 2 * radius, 1);
   const ind = document.createElement('span');
   ind.className = 'ind';
   ind.setAttribute('aria-hidden', 'true');
   // Absolute boxes start inside the border, so take the group's border off.
   Object.assign(ind.style, {
     left: rect.left - box.left - group.clientLeft + 'px', top: rect.top - box.top - group.clientTop + 'px',
-    width: rect.width + 'px', height: rect.height + 'px',
-    transform: `translateX(${tap.from.left - (rect.left - box.left)}px) scaleX(${tap.from.width / rect.width})`,
+    width: width + 'px', height: rect.height + 'px', transform: `translateX(${shift}px)`,
   });
+  const part = (name, style, transform) => {
+    const el = document.createElement('i');
+    el.className = name;
+    Object.assign(el.style, style, { transform });
+    ind.append(el);
+    return el;
+  };
+  // The middle overlaps each cap by half a pixel so no seam shows while it scales.
+  const parts = [
+    part('ind-l', { left: 0, width: radius + 'px', borderRadius: `${radius}px 0 0 ${radius}px` }, ''),
+    part('ind-m', { left: radius - 0.5 + 'px', width: middle + 1 + 'px' },
+      `scaleX(${Math.max(tap.from.width - 2 * radius, 1) / middle})`),
+    part('ind-r', { left: width - radius + 'px', width: radius + 'px', borderRadius: `0 ${radius}px ${radius}px 0` },
+      `translateX(${tap.from.width - width}px)`),
+  ];
   group.classList.add('sliding');
   group.prepend(ind);
   const done = () => {
     ind.remove();
     group.classList.remove('sliding');
   };
-  ind.addEventListener('transitionend', done, { once: true });
+  ind.addEventListener('transitionend', event => { if (event.target === ind) done(); });
   setTimeout(done, CLEANUP_MS);
   requestAnimationFrame(() => requestAnimationFrame(() => {
     ind.classList.add('in');
     ind.style.transform = '';
+    parts.forEach(el => { el.style.transform = ''; });
   }));
 }
 
@@ -102,9 +133,11 @@ function pageEntrance() {
   last = { ...now, sheet: last.sheet };
   if (!forward || state.screen !== 'app') return;
   const page = top ? top[0] : null;
-  if (page === 'need' || page === 'settings') return stagger(document.getElementById('main'));
-  if (!top && state.tab === 'calendar' && !session('pg:cal')) {
-    session('pg:cal', '1');
+  if (page === 'need') return stagger(document.getElementById('main'));
+  // Settings and the Calendar tab rise in once a session; after that they open settled.
+  const once = page === 'settings' ? 'pg:settings' : !top && state.tab === 'calendar' ? 'pg:cal' : '';
+  if (once && !session(once)) {
+    session(once, '1');
     stagger(document.getElementById('main'));
   }
 }
@@ -144,6 +177,16 @@ function leadingText(el) {
 
 const finishers = new Set();
 
+/** `from` rewritten to the shape of `to`, lined up on the decimal point ('9.5' for '10.25' is '09.50'). */
+function alignTo(from, to) {
+  if (!from || !/^[\d.]+$/.test(from)) return null;
+  const [toInt, toFrac = ''] = to.split('.');
+  const [fromInt, fromFrac = ''] = from.split('.');
+  const int = fromInt.padStart(toInt.length, '0').slice(-toInt.length);
+  const frac = fromFrac.padEnd(toFrac.length, '0').slice(0, toFrac.length);
+  return to.includes('.') ? int + '.' + frac : int;
+}
+
 /** Roll the leading number of `el` from `from` (or zeros) to its current text. */
 function roll(el, from) {
   const node = el.firstChild;
@@ -152,8 +195,8 @@ function roll(el, from) {
   const to = full.trim();
   if (!/^[\d.]+$/.test(to)) return;
   const trailing = full.slice(full.indexOf(to) + to.length);
-  const sameShape = from && from.length === to.length && from.indexOf('.') === to.indexOf('.');
   if (from === to) return;
+  const old = alignTo(from, to); // the old number in the new one's shape, digit for digit
   const digits = [...to].filter(ch => ch !== '.').length;
   const odo = document.createElement('span');
   odo.className = 'odo';
@@ -166,9 +209,10 @@ function roll(el, from) {
       return;
     }
     const end = +ch;
-    const start = sameShape && /\d/.test(from[i]) ? +from[i] : 0;
-    // Roll forward through the strip: land on the second 0 to 9 run unless it only moves up.
-    const stop = sameShape && start < end ? end : end + 10;
+    const start = old ? +old[i] : 0;
+    // Roll forward through the strip: a digit that didn't change stays put, one that goes up
+    // lands in the first 0 to 9 run, one that goes down (or opens from 0) runs on into the second.
+    const stop = old && start === end ? end : start < end ? end : end + 10;
     const col = document.createElement('span');
     col.className = 'odo-col';
     const ph = document.createElement('span');
@@ -200,12 +244,12 @@ function roll(el, from) {
   // Each digit cell is one line tall with the same line height, so its glyph sits exactly where the
   // plain number will. The window reaches a little past the line so tall glyphs aren't cut.
   const lineHeight = odo.querySelector('.odo-col').getBoundingClientRect().height;
-  const gap = Math.round(lineHeight * 0.6);
+  const gap = Math.round(lineHeight); // a full line between digits: the window holds one digit at a time
   const step = lineHeight + gap;
   odo.style.setProperty('--odo-h', lineHeight + 'px');
   odo.style.setProperty('--odo-gap', gap + 'px');
-  odo.style.setProperty('--odo-bleed', Math.round(lineHeight * 0.08) + 'px'); // digits sit inside the line box
   for (const [strip, , start] of strips) strip.style.transform = `translateY(${-start * step}px)`;
+  odo.getBoundingClientRect(); // commit the start offsets, or the roll would start from 0
   let timer = 0;
   const finish = () => {
     clearTimeout(timer);
@@ -213,11 +257,12 @@ function roll(el, from) {
     if (spot.isConnected) spot.replaceWith(to);
   };
   finishers.add(finish);
-  const lastStrip = strips[strips.length - 1][0];
+  const lastStrip = strips.filter(([, stop, start]) => stop !== start).pop()[0]; // rightmost moving digit ends last
   lastStrip.addEventListener('transitionend', finish, { once: true });
   timer = setTimeout(finish, ODO_TIMEOUT_MS);
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    for (const [strip, stop] of strips) {
+    for (const [strip, stop, start] of strips) {
+      if (stop === start) continue; // this digit didn't change: it stays put
       strip.classList.add('go');
       strip.style.transform = `translateY(${-stop * step}px)`;
     }
@@ -252,7 +297,7 @@ function homeGrades(animate) {
   const nodes = document.querySelectorAll('#main .glead-g, #main .glist-g');
   if (!nodes.length) return;
   let seen = {};
-  try { seen = JSON.parse(session('odo:seen') || '{}'); } catch { seen = {}; }
+  try { seen = JSON.parse(stored('odo:seen') || '{}'); } catch { seen = {}; }
   nodes.forEach(el => {
     const owner = el.closest('[data-action=openPage]');
     const id = owner && owner.dataset.y;
@@ -261,7 +306,7 @@ function homeGrades(animate) {
     if (animate && seen[id] && seen[id] !== text) roll(el, seen[id]);
     seen[id] = text;
   });
-  session('odo:seen', JSON.stringify(seen));
+  stored('odo:seen', JSON.stringify(seen));
 }
 
 // ---- Bell now dot: one pulse when the current period changes -----------------------------
