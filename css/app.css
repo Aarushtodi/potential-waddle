@@ -1868,3 +1868,147 @@ input[type=date].f {
   background: var(--bar);
   border-radius: 0 0 22px 22px;
 }
+
+/* ---- Intro slides as pages you can half swipe, see js/views/intro-motion.js ---- */
+
+/* The pop color: each slide's accent word (one tap, a paywall, first) ends in it; intro-motion.js fades it in. */
+.intro .intro-text .hd i {
+  color: var(--urgent);
+}
+
+.lockline {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  color: var(--sec);
+  margin-top: 10px;
+}
+
+/* motion.js moves the track, the parallax and every entrance itself (inline transform, opacity
+   and the ring's stroke, once per frame), so there are no CSS transitions or keyframes here.
+   Without motion.js running (reduced motion) everything shows its end state. */
+.m8 .intro-track {
+  transition: none;
+  will-change: transform;
+  gap: 24px; /* GUTTER in motion.js */
+}
+
+/* Safety clip on the page box. The parallax stays inside the page's padding, so it never cuts a card. */
+.m8 .intro-slide {
+  overflow: hidden;
+}
+
+.m8 .intro-art,
+.m8 .intro-art .card,
+.m8 .intro-art .row,
+.m8 .lockline,
+.m8 .intro-art-inner {
+  will-change: transform, opacity;
+}
+
+/* Slide 2: the box lights up like a focused field while 95 is typed. */
+.m8 input.f {
+  transition: box-shadow .3s ease-out;
+}
+
+.m8 input.f.typing {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* Slide 3: the red ring as an SVG circle so it can draw itself. */
+.mark b.draw {
+  border-color: transparent;
+  position: relative;
+}
+
+.mark b.draw .ring {
+  position: absolute;
+  inset: -2.2px;
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+}
+
+.mark b.draw circle {
+  fill: none;
+  stroke: var(--urgent);
+  stroke-width: 2.2;
+  stroke-dasharray: 68.49;
+  stroke-dashoffset: 0;
+}
+
+
+/* A number that counts or types, held at its final width (see predictorMotionArt). */
+.hold {
+  display: inline-grid;
+}
+
+.hold > * {
+  grid-area: 1 / 1;
+}
+
+.hold.end > * {
+  justify-self: end;
+}
+
+.hold .ghost {
+  visibility: hidden;
+}
+
+/* Leaving the intro (js/views/intro-motion.js leaveIntro): the next screen pushes in from the
+   right over the slides, and its pieces rise in one after another. */
+html.vt-leave-intro::view-transition-old(root) {
+  animation: leave-intro-old .55s cubic-bezier(.33,1,.68,1) both;
+}
+
+html.vt-leave-intro::view-transition-new(root) {
+  animation: leave-intro-new .55s cubic-bezier(.33,1,.68,1) both;
+}
+
+@keyframes leave-intro-old {
+  to {
+    transform: translateX(-28%);
+    opacity: 0;
+  }
+}
+
+@keyframes leave-intro-new {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.scr.enter .sec,
+.scr.enter > .scroll > .foot,
+.scr.enter .looks-head,
+.scr.enter .look,
+.scr.enter .btn {
+  animation: screen-piece-in .5s cubic-bezier(.33,1,.68,1) both;
+}
+
+.scr.enter .sec:nth-child(2),
+.scr.enter .look:nth-child(2) {
+  animation-delay: .08s;
+}
+
+.scr.enter .look:nth-child(3),
+.scr.enter > .scroll > .foot,
+.scr.enter .btn {
+  animation-delay: .16s;
+}
+
+@keyframes screen-piece-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0,14px,0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scr.enter * {
+    animation: none !important;
+  }
+}
+

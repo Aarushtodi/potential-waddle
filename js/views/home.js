@@ -35,7 +35,7 @@ const weekday = offset => WEEKDAYS[dateAt(offset).getDay()].slice(0, 3);
 // ---- Missing and absent work ---------------------------------------------------------------
 
 /** Missing work as to-do items. */
-function missingItems() {
+export function missingItems() {
   return missingWork().map(({ course, row }) => ({
     id: row.id, title: row.title, due: row.due, source: 'missing', points: row.total,
     detail: course.name + ', missing, was due ' + shortDate(row.due).replace(/ /g, ' '),
@@ -47,7 +47,7 @@ function missingItems() {
  * ABS and INC rows: HAC counts them as 0 but they are not marked missing. Shown as a gray fact.
  * due stays empty so the tick ring is gray, never red.
  */
-function absentItems() {
+export function absentItems() {
   const result = [];
   for (const course of visibleClasses()) {
     for (const row of course.rows || []) {
@@ -69,7 +69,7 @@ function zeroItems() {
 }
 
 /** A missing or absent row. Absent rows get class "abs" so the ring is gray like the text. */
-function zeroRow(item) {
+export function zeroRow(item) {
   const html = todoRow(item, false);
   return item.kind ? html.replace('<div class="row', '<div class="row abs') : html;
 }

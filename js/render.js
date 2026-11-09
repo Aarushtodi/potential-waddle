@@ -6,6 +6,7 @@
 import { qs, qsa } from './format.js';
 import { state, ui, sheetScrollKey, sheetAnimKey, routeKey } from './state.js';
 import { view } from './views/shell.js';
+import { afterRender as introMotion } from './views/intro-motion.js';
 
 /** Redraw everything, keeping each screen's scroll position. */
 export function render() {
@@ -25,6 +26,7 @@ export function render() {
   const newMain = qs('#main');
   if (newMain) newMain.scrollTop = state.scrollPositions[ui.lastRouteKey] || 0;
   slideIntroTrack();
+  introMotion(); // slide pager + art motion, see js/views/intro-motion.js
   collapseHeader();
   placeTape();
 }
