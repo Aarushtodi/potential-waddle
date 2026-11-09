@@ -192,20 +192,21 @@
   overflow: hidden;
 }
 
-/* 21 cells (blank, 0 to 9, 0 to 9), each 1/21 of the strip: translate percentages land any digit with no measuring. */
+/* 21 cells (blank, 0 to 9, 0 to 9). The strip is exactly one window tall; each cell sits at n * 115%
+   of it (a small 0.15 line gap between digits), so translate percentages land any digit with no
+   measuring. Keep 115% in step with CELL in app-motion.js. */
 .odo-s {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 2100%;
-  display: flex;
-  flex-direction: column;
+  inset: 0;
   will-change: transform;
 }
 
 .odo-s b {
-  flex: 0 0 calc(100% / 21);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--n) * 115%);
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;

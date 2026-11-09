@@ -16,7 +16,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 reduce.addEventListener('change', () => root.classList.toggle('motion', !reduce.matches));
 const STAGGER_CAP = 5;
 const CLEANUP_MS = 900;
-const CELL = 100 / 21; // one strip cell, in percent of the strip
+const CELL = 115; // one cell plus the 0.15 line gap, in percent of the window (.odo-s b top in anim.css)
 
 /** The tap being handled: what was tapped, where the picked pill sat, and the numbers before. */
 let tap = null;
@@ -203,7 +203,7 @@ function tokenMs(name, fallback) {
  * cell 5%, so a translate of -(index / 20) * 100% lands any digit with no pixel maths. Web
  * Animations with fill both holds the old digit through the hold. The overlay replaces the real
  * number only after every animation reports ready and one frame painted, in a single class flip.
- * With no old value (first open) each digit makes one full turn and lands on itself.
+ * With no old value there is no roll: the real number just shows.
  */
 function roll(el, from) {
   const node = el.firstChild;
@@ -211,12 +211,14 @@ function roll(el, from) {
   const full = node.textContent;
   const to = full.trim();
   if (!/^[\d.]+$/.test(to) || from === to) return;
+  if (!from || !/^[\d.]+$/.test(from)) return; // no old value: no roll, the real number stays still
   // The old number in the new one's shape, digit for digit. A new leading digit starts from a
-  // blank cell; an old number with more digits than the new one can't be shown truthfully in the
-  // new shape, so that rare case takes one full turn instead (no old value to roll from).
+  // blank cell. An old number with more digits than the new one can't be shown truthfully in the
+  // new shape, so that rare case doesn't roll either (the real number just shows).
   const toInt = to.split('.')[0].length;
-  const old = from && /^[\d.]+$/.test(from) && from.split('.')[0].length <= toInt ? alignTo(from, to) : null;
-  const pad = old ? toInt - from.split('.')[0].length : 0;
+  if (from.split('.')[0].length > toInt) return;
+  const old = alignTo(from, to);
+  const pad = toInt - from.split('.')[0].length;
   let k = 0;
   const plan = [...to].map((ch, i) => {
     if (ch === '.') return null;
@@ -224,9 +226,8 @@ function roll(el, from) {
     const blank = k < pad; // leading digit the old number didn't have
     k += 1;
     // 21 cells: 0 is blank, 1 to 10 are 0 to 9, 11 to 20 are 0 to 9 again. Up lands in the first
-    // run, down (or a full turn) runs on into the second.
+    // run, down runs on into the second.
     const first = end + 1;
-    if (!old) return { ch, start: first, stop: first + 10 };
     const start = blank ? 0 : +old[i] + 1;
     const stop = blank ? first : start === first ? start : start < first ? first : first + 10;
     return { ch, start, stop };
@@ -256,6 +257,7 @@ function roll(el, from) {
     strip.className = 'odo-s';
     for (let n = 0; n < 21; n += 1) {
       const cell = document.createElement('b');
+      cell.style.setProperty('--n', String(n));
       cell.textContent = n === 0 ? '' : String((n - 1) % 10);
       strip.append(cell);
     }
