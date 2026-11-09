@@ -321,3 +321,36 @@ function playPredictor(slide) {
   });
   later(countStart + 350, () => input.classList.remove('typing'));
 }
+
+// ---- Leaving the intro ----------------------------------------------------------------------
+//
+// Get started (or Skip) pushes the next screen in from the right, like one more page: the slides
+// drift left and fade while the new screen slides over them (View Transitions, iOS 18+). Without
+// the API, the new screen's pieces rise in one after another instead. Reduced motion: instant.
+
+const ENTER_MS = 900; // longest stagger in .scr.enter, then the class comes off
+
+/** Run update (which changes the screen and redraws) with the leave animation around it. */
+export function leaveIntro(update) {
+  if (reducedMotion()) return update();
+  const root = document.documentElement;
+  if (document.startViewTransition) {
+    root.classList.add('vt-leave-intro');
+    const transition = document.startViewTransition(() => {
+      update();
+      markEnter();
+    });
+    transition.finished.finally(() => root.classList.remove('vt-leave-intro'));
+    return;
+  }
+  update();
+  markEnter();
+}
+
+function markEnter() {
+  const screen = document.querySelector('#app > .scr, #app .scr');
+  if (!screen) return;
+  screen.classList.add('enter');
+  setTimeout(() => screen.classList.remove('enter'), ENTER_MS);
+}
+

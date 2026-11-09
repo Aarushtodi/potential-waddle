@@ -1500,3 +1500,59 @@ input[type=date].f {
 .hold .ghost {
   visibility: hidden;
 }
+
+/* Leaving the intro (js/views/intro-motion.js leaveIntro): the next screen pushes in from the
+   right over the slides, and its pieces rise in one after another. */
+html.vt-leave-intro::view-transition-old(root) {
+  animation: leave-intro-old .55s cubic-bezier(.33,1,.68,1) both;
+}
+
+html.vt-leave-intro::view-transition-new(root) {
+  animation: leave-intro-new .55s cubic-bezier(.33,1,.68,1) both;
+}
+
+@keyframes leave-intro-old {
+  to {
+    transform: translateX(-28%);
+    opacity: 0;
+  }
+}
+
+@keyframes leave-intro-new {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.scr.enter .sec,
+.scr.enter > .scroll > .foot,
+.scr.enter .looks-head,
+.scr.enter .look,
+.scr.enter .btn {
+  animation: screen-piece-in .5s cubic-bezier(.33,1,.68,1) both;
+}
+
+.scr.enter .sec:nth-child(2),
+.scr.enter .look:nth-child(2) {
+  animation-delay: .08s;
+}
+
+.scr.enter .look:nth-child(3),
+.scr.enter > .scroll > .foot,
+.scr.enter .btn {
+  animation-delay: .16s;
+}
+
+@keyframes screen-piece-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0,14px,0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scr.enter * {
+    animation: none !important;
+  }
+}
+

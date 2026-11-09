@@ -17,6 +17,7 @@ import {
 import { render } from './render.js';
 import { alertText } from './views/changes.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
+import { leaveIntro } from './views/intro-motion.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
 
@@ -80,13 +81,18 @@ export const actions = {
   // Intro slides
   nextIntroSlide() {
     if (state.introSlide < INTRO_SLIDE_COUNT - 1) state.introSlide++;
-    else actions.skipIntro();
+    else return actions.skipIntro();
   },
   previousIntroSlide() {
     if (state.introSlide > 0) state.introSlide--;
   },
   skipIntro() {
-    state.screen = state.introReturnTo;
+    // The next screen pushes in from the right, one more page after the slides.
+    leaveIntro(() => {
+      state.screen = state.introReturnTo;
+      render();
+    });
+    return false;
   },
   /** Settings > Show intro again. Leaving it goes back to Settings, not to sign in. */
   showIntro() {
