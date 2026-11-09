@@ -77,6 +77,7 @@ export const state = {
   needCalc: { classId: 'alg', target: 90, kind: 'test' }, // 'test' | 'final'
   gpaWhatIf: {}, // class id -> letter
   finals: { target: 90 },
+  whatIfMore: false, // What if sheet: the More group is open
   gpaGoal: '4.3',
 
   // Settings
@@ -101,7 +102,7 @@ export const state = {
 };
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */
-export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null, lastTapeDay: null };
+export const ui = { lastRouteKey: '', lastSheetKey: '', lastAnimKey: '', lastIntroSlide: null, lastTapeDay: null, doneFx: null, doneHoldTimer: 0 };
 
 // ---- Classes ------------------------------------------------------------------------------
 

@@ -18,6 +18,7 @@ import { render } from './render.js';
 import { alertText } from './views/changes.js';
 import { bannerData } from './views/banner.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
+import { beforeToggle } from './views/done-motion.js';
 import { THEMES, saveTheme, applyTheme, crossfade } from './theme.js';
 import { leaveIntro } from './views/intro-motion.js';
 import { real, reloadRealData } from './real-data.js';
@@ -219,9 +220,13 @@ export const actions = {
   openTask(id) {
     state.sheet = { kind: 'task', id };
   },
-  toggleDone(id) {
-    if (state.doneIds[id]) delete state.doneIds[id];
-    else state.doneIds[id] = 1;
+  /** Ticks or unticks. The done moment (ring pop, bars, count, heading roll) is in done-motion.js. */
+  toggleDone(id, _y, element) {
+    const nowDone = !state.doneIds[id];
+    const held = beforeToggle(id, element, nowDone);
+    if (nowDone) state.doneIds[id] = 1;
+    else delete state.doneIds[id];
+    if (held) return false;
   },
   resetDue(rowId) {
     delete state.dueOverrides[rowId];
@@ -321,6 +326,9 @@ export const actions = {
   openWhatIfTool(tool) {
     state.sheet.tool = tool || null;
     if (tool === 'need') state.needCalc.classId = state.sheet.classId;
+  },
+  toggleWhatIfMore() {
+    state.whatIfMore = !state.whatIfMore;
   },
   resetWhatIf(classId) {
     delete state.whatIf[classId];

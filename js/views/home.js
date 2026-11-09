@@ -16,7 +16,7 @@
  * Home only shows what the gradebook says: points and counts, never a predicted grade or a
  * "costs you" number. Hide scores (Settings) swaps every number for a word.
  */
-import { escapeHtml, shortDate, oneDecimal, countWord, WEEKDAYS, dateAt } from '../format.js';
+import { escapeHtml, shortDate, oneDecimal, signed, countWord, WEEKDAYS, dateAt } from '../format.js';
 import { real, realProblem, realUpdatedText } from '../real-data.js';
 import { countsAsZero } from '../grade-math.js';
 import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
@@ -258,12 +258,45 @@ function todoSection(shownAbove) {
 
 // ---- Grades ---------------------------------------------------------------------------------
 
-/** One chip per class with its average (scrolls sideways). Tap opens the class. The Latest line sits under it. */
+/**
+ * The grades block, "Lowest leads" (his pick 11/9): the lowest class is one big card, the rest sit under
+ * it in a short list. Red goes on one grade only, the lowest, and only when it is under the retest line.
+ * Hide scores: names only, in one list. The Latest line sits under the block.
+ */
 function classStrip() {
-  const chips = visibleClasses().filter(course => periodAverage(course) != null).map(course =>
-    `<button class="chip cls" ${actionAttrs('openPage', 'class', course.id)}>${escapeHtml(shortName(course))}`
-    + (state.hideScores ? '' : ` <b>${oneDecimal(periodAverage(course))}</b>`) + `</button>`).join('');
-  return `<div class="sec grades-sec"><div class="chips strip-cls">${chips}</div>${latestLine()}</div>`;
+  const classes = visibleClasses().filter(course => periodAverage(course) != null);
+  return `<div class="sec grades-sec">${classes.length ? (state.hideScores ? namesList(classes) : leadAndList(classes)) : ''}${latestLine()}</div>`;
+}
+
+/** Change in a class average from its newest grade change, or null. */
+function lastDelta(course) {
+  const change = state.gradeChanges.find(entry => entry.classId === course.id);
+  return change && Math.abs(change.after - change.before) >= 0.05 ? change.after - change.before : null;
+}
+
+const openClass = course => actionAttrs('openPage', 'class', course.id);
+
+function namesList(classes) {
+  const rows = classes.map(course => `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
+    + `<div class="grow t">${escapeHtml(shortName(course))}</div>${CHEVRON}</div>`).join('');
+  return `<div class="card quiet">${rows}</div>`;
+}
+
+function leadAndList(classes) {
+  const lead = classes.reduce((low, course) => (periodAverage(course) < periodAverage(low) ? course : low));
+  const rest = classes.filter(course => course !== lead);
+  const delta = lastDelta(lead);
+  const red = periodAverage(lead) < state.retestLine;
+  const rows = rest.map(course => `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
+    + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
+    + `<span class="glist-g">${oneDecimal(periodAverage(course))}</span></div>`).join('');
+  return `<div class="card glead" role="button" tabindex="0" ${openClass(lead)}>`
+    + `<div class="glead-k">${periodAverage(lead) < state.alertUnder ? `Lowest, under your ${state.alertUnder}` : 'Lowest'}</div>`
+    + `<div class="glead-r"><span class="glead-n">${escapeHtml(shortName(lead))}</span>`
+    + `<span class="glead-g${red ? ' u' : ''}">${oneDecimal(periodAverage(lead))}</span></div>`
+    + (delta != null ? `<div class="glead-d">${signed(delta)} since the last grade</div>` : '')
+    + (rows ? `</div><div class="card quiet" style="margin-top:8px">${rows}` : '')
+    + `</div>`;
 }
 
 /** The Grades tab's GPA row, repeated at the bottom of Home. Opens the GPA page. */

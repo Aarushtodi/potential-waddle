@@ -14,19 +14,19 @@ import { CLASSES, LAST_QUARTER_SAME_POINT } from '../sample-data.js';
 import {
   state, SEMESTER_SPLIT, whatIfFor, whatIfAverage, blankRowsLeft, isUnderRetestLine,
 } from '../state.js';
-import { actionAttrs, navRow, segmented, toggle, sectionLabel, splitExplanation } from './components.js';
+import { actionAttrs, navRow, segmented, toggle, sectionLabel, splitExplanation, CHEVRON } from './components.js';
 import { needView } from './gpa.js';
 
-/** [key, title, subtitle] for each tool on the What if menu. */
+/** [key, title] for each tool on the What if menu. The title also heads the tool's sheet. */
 export const WHAT_IF_TOOLS = [
-  ['need', 'Target', 'The score you need for a grade'],
-  ['stack', 'Stack scores', 'Fake scores, corrections, a fake assignment'],
-  ['retest', 'Retest', 'Type the retest score you expect'],
-  ['cushion', 'Cushion', 'What you can get and keep your grade'],
-  ['semester', 'Semester', 'From Q1, Q2 and the final'],
-  ['drop', 'Drop or curve', 'Drop your lowest test or curve one'],
-  ['scenarios', 'Saved scenarios', 'Save them, see them side by side'],
-  ['lastQuarter', 'Last quarter', 'Each class at this same point'],
+  ['need', 'Target'],
+  ['stack', 'Stack scores'],
+  ['retest', 'Retest'],
+  ['cushion', 'Cushion'],
+  ['semester', 'Semester'],
+  ['drop', 'Drop or curve'],
+  ['scenarios', 'Saved scenarios'],
+  ['lastQuarter', 'Last quarter'],
 ];
 
 const TOOL_VIEWS = {
@@ -45,16 +45,29 @@ const GAP_14 = '<div style="height:14px"></div>';
 const BIG_TITLE = 'style="font-size:15px"';
 const STRONG = 'font-weight:700;color:var(--ink)';
 
+// The menu shows tool names only, no subtitles and no footer line (his call 11/9).
+const toolRow = key => navRow(WHAT_IF_TOOLS.find(tool => tool[0] === key)[1], '', 'openWhatIfTool', key);
+
 /** Sheet body: the tool menu, or one tool. Tools that change the estimate show it on top. */
 export function whatIfSheetBody(course, tool) {
   const showsEstimate = !tool || ['stack', 'drop', 'scenarios'].includes(tool);
   const top = showsEstimate ? `<div class="sec" data-live style="margin-bottom:14px">${estimateHeading(course)}</div>` : '';
   if (tool) return top + TOOL_VIEWS[tool](course);
-  return top
+  return top + whatIfMenu();
+}
+
+// Two short groups up top, the less used tools folded under More. Target is also a pill on the
+// class page; it stays here next to Cushion since the two answer the same kind of question.
+function whatIfMenu() {
+  const open = state.whatIfMore;
+  const more = ['drop', 'semester', 'scenarios', 'lastQuarter'];
+  return sectionLabel('Try scores') + `<div class="card">${toolRow('stack')}${toolRow('retest')}</div>` + GAP_14
+    + sectionLabel('Hit a grade') + `<div class="card">${toolRow('need')}${toolRow('cushion')}</div>` + GAP_14
     + `<div class="card">`
-    + WHAT_IF_TOOLS.map(([key, title, subtitle]) => navRow(title, subtitle, 'openWhatIfTool', key)).join('')
-    + navRow('Long term GPA goal', 'Pick a GPA by graduation', 'openGpaGoal')
-    + `</div><div class="foot">${escapeHtml(course.name)}. Everything here is an estimate and nothing changes your real grades.</div>`;
+    + `<div class="row more wi-more${open ? ' open' : ''}" role="button" tabindex="0" aria-expanded="${open}" ${actionAttrs('toggleWhatIfMore')}>`
+    + `<div class="grow"><div class="t">More</div></div>${CHEVRON}</div>`
+    + (open ? more.map(toolRow).join('') + navRow('Long term GPA goal', '', 'openGpaGoal') : '')
+    + `</div>`;
 }
 
 function estimateHeading(course) {
@@ -132,9 +145,9 @@ function stackScores(course) {
     + `<div class="card"><div class="row"><div class="grow t" ${BIG_TITLE}>Semester grade you want</div>`
     + numberInput('Semester grade you want', escapeHtml(state.finals.target), 'finalsTarget', 'target') + `</div>`
     + `<div class="pad" style="border-top:1px solid var(--rule)" data-live>${finalsResult(course)}</div></div>`
-    + GAP_12
-    + `<button class="btn" ${actionAttrs('saveScenario', course.id)}>Save as a scenario</button>`
-    + `<div style="height:8px"></div>`
+    + GAP_12;
+  html += `<button class="btn" ${actionAttrs('saveScenario', course.id)}>Save as a scenario</button>`;
+  html += `<div style="height:8px"></div>`
     + `<button class="btn ghost" ${actionAttrs('resetWhatIf', course.id)}>Reset</button>`;
   return html;
 }
