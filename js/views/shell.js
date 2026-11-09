@@ -17,6 +17,7 @@ import { paceView } from './pace.js';
 import { calendarView } from './calendar.js';
 import { bellView } from './bell.js';
 import { sheetView } from './sheets.js';
+import { bannerLook, isBannerCompare, compareView, liveBanner } from './banner.js';
 
 const TABS = ['home', 'grades', 'calendar', 'bell'];
 const TAB_LABELS = { home: 'Home', grades: 'Grades', calendar: 'Calendar', bell: 'Bell' };
@@ -76,6 +77,7 @@ function tabRoot(tab) {
 }
 
 export function view() {
+  if (isBannerCompare) return compareView();
   if (state.screen === 'intro') return introView();
   if (state.screen === 'theme') return themePickView();
   if (state.screen === 'signin') return signInView();
@@ -99,7 +101,9 @@ export function view() {
       `<button class="tab${state.tab === tab ? ' on' : ''}" ${actionAttrs('switchTab', tab)}>`
       + `<svg width="24" height="24" viewBox="0 0 24 24">${TAB_ICONS[tab]}</svg>${TAB_LABELS[tab]}</button>`).join('')
     + `</nav>`;
-  const banner = state.banner
+  const banner = state.banner && bannerLook && state.banner.data
+    ? liveBanner(state.banner)
+    : state.banner
     ? `<div class="banner${state.banner.fresh ? ' anim' : ''}" role="status" ${actionAttrs('tapBanner')}>`
       + `<div class="t">${escapeHtml(state.banner.title)}</div><div class="s">${state.banner.body}</div></div>`
     : '';
