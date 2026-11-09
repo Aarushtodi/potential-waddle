@@ -2245,6 +2245,215 @@ html.vt-leave-intro::view-transition-new(root) {
   font-weight: 600;
 }
 
+/* ---- Grades block on Home: Lowest leads ---- */
+.glist-row {
+  min-height: 48px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.glist-g {
+  font: 700 24px/1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  min-width: 64px;
+  text-align: right;
+}
+
+.glead-g.u {
+  color: var(--urgent);
+}
+
+.glist-row.small .glist-g {
+  font-size: 19px;
+}
+
+.glead {
+  padding: 16px 18px 15px;
+}
+
+.glead-k {
+  font: 600 13px var(--sans);
+  color: var(--sec);
+}
+
+.glead-r {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.glead-n {
+  font: 700 22px var(--sans);
+}
+
+.glead-g {
+  font: 800 52px/1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+
+.glead-d {
+  font: 500 13.5px var(--sans);
+  color: var(--sec);
+  margin-top: 4px;
+}
+
+/* ---- Done moment (js/views/done-motion.js): a to-do ticked on Calendar or Home ----
+   Ring fills and pops with one red burst, the row settles, the next bar fills left to right,
+   the count and heading roll. The last one flashes the bars red once. All under 600 ms. */
+.mark b.pop {
+  animation: done-pop 300ms cubic-bezier(.2, .9, .3, 1.3);
+}
+
+.mark b.pop:after {
+  animation: done-check 200ms 90ms ease-out both;
+}
+
+.mark b.pop:before {
+  content: "";
+  position: absolute;
+  inset: -2.2px;
+  border-radius: 50%;
+  border: 2.2px solid var(--urgent);
+  pointer-events: none;
+  animation: done-burst 420ms ease-out both;
+}
+
+.mark b.unpop {
+  animation: done-unpop 200ms ease-out;
+}
+
+@keyframes done-pop {
+  0% { transform: scale(.6); }
+  60% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@keyframes done-check {
+  from { opacity: 0; transform: rotate(42deg) scale(.2); }
+  to { opacity: 1; transform: rotate(42deg) scale(1); }
+}
+
+@keyframes done-burst {
+  from { opacity: .95; transform: scale(1); }
+  to { opacity: 0; transform: scale(2); }
+}
+
+@keyframes done-unpop {
+  from { transform: scale(.75); }
+  to { transform: scale(1); }
+}
+
+.row.settle .t {
+  animation: done-settle 320ms ease-out;
+}
+
+@keyframes done-settle {
+  from { color: var(--ink); text-decoration-color: transparent; }
+  to { color: var(--sec); text-decoration-color: var(--sec); }
+}
+
+.bars span.grow {
+  background: linear-gradient(var(--ink), var(--ink)) no-repeat left / 100% 100%, var(--empty);
+  animation: done-fill 260ms 80ms cubic-bezier(.3, .7, .3, 1) both;
+}
+
+.bars span.shrink {
+  background: linear-gradient(var(--ink), var(--ink)) no-repeat left / 0% 100%, var(--empty);
+  animation: done-empty 220ms ease-in both;
+}
+
+@keyframes done-fill {
+  from { background-size: 0% 100%, auto; }
+  to { background-size: 100% 100%, auto; }
+}
+
+@keyframes done-empty {
+  from { background-size: 100% 100%, auto; }
+  to { background-size: 0% 100%, auto; }
+}
+
+/* The last one: every segment flashes red once, left to right. */
+.bars span.flash {
+  animation: done-flash 220ms ease-out both;
+}
+
+.bars span.grow.flash {
+  animation: done-fill 260ms 80ms cubic-bezier(.3, .7, .3, 1) both, done-flash 220ms 340ms ease-out both;
+}
+
+.bars span.flash0 { animation-delay: 300ms; }
+.bars span.flash1 { animation-delay: 320ms; }
+.bars span.flash2 { animation-delay: 340ms; }
+.bars span.flash3 { animation-delay: 355ms; }
+.bars span.flash4 { animation-delay: 370ms; }
+.bars span.flash5 { animation-delay: 380ms; }
+.bars span.flash6 { animation-delay: 390ms; }
+.bars span.flash7 { animation-delay: 400ms; }
+.bars span.flash8 { animation-delay: 405ms; }
+.bars span.flash9 { animation-delay: 410ms; }
+
+@keyframes done-flash {
+  /* An inset shadow paints over the background, so the red also covers the gradient fill of
+     the segment that just grew (background-color alone sat under it). */
+  0% { box-shadow: inset 0 0 0 40px transparent; }
+  35% { box-shadow: inset 0 0 0 40px var(--urgent); transform: scaleY(1.35); }
+  100% { box-shadow: inset 0 0 0 40px transparent; transform: scaleY(1); }
+}
+
+/* Odometer roll for the changed words ("Three" to "Two", "0" to "1"). */
+.roll {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  height: 1.14em;
+  line-height: 1.14;
+  white-space: pre;
+  transition: width 300ms cubic-bezier(.3, .7, .3, 1);
+}
+
+.roll-t {
+  display: flex;
+  flex-direction: column;
+}
+
+.roll-t > span {
+  height: 1.14em;
+  white-space: pre;
+}
+
+.roll.up .roll-t {
+  animation: done-roll-up 320ms 60ms cubic-bezier(.3, .7, .3, 1) both;
+}
+
+.roll.down .roll-t {
+  animation: done-roll-down 280ms cubic-bezier(.3, .7, .3, 1) both;
+}
+
+@keyframes done-roll-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-1.14em); }
+}
+
+@keyframes done-roll-down {
+  from { transform: translateY(-1.14em); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark b.pop, .mark b.pop:after, .mark b.unpop, .row.settle .t,
+  .bars span.grow, .bars span.shrink, .bars span.flash, .roll, .roll-t {
+    animation: none;
+    transition: none;
+  }
+
+  .mark b.pop:before {
+    display: none;
+  }
+}
+
 /* ---- What if menu: More opens in place, chevron turns down ---- */
 
 .wi-more .chev {
