@@ -2329,9 +2329,11 @@ html.vt-leave-intro::view-transition-new(root) {
 .bars span.flash9 { animation-delay: 410ms; }
 
 @keyframes done-flash {
-  0% { background-color: var(--ink); }
-  35% { background-color: var(--urgent); transform: scaleY(1.35); }
-  100% { background-color: var(--ink); transform: scaleY(1); }
+  /* An inset shadow paints over the background, so the red also covers the gradient fill of
+     the segment that just grew (background-color alone sat under it). */
+  0% { box-shadow: inset 0 0 0 40px transparent; }
+  35% { box-shadow: inset 0 0 0 40px var(--urgent); transform: scaleY(1.35); }
+  100% { box-shadow: inset 0 0 0 40px transparent; transform: scaleY(1); }
 }
 
 /* Odometer roll for the changed words ("Three" to "Two", "0" to "1"). */
