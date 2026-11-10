@@ -214,6 +214,7 @@ function easeFn() {
 }
 
 const SAMPLES = 90;
+const FIRST_FRAME_MS = 20; // a tap roll starts this far in, so frame one is already moving
 
 /**
  * Where column k (0 = ones) of the number sits while the counter reads v: the digit there, plus a
@@ -239,7 +240,7 @@ function columnPosition(v, k) {
  * after every animation reports ready and one frame painted, in a single class flip. No old value,
  * or an old number with more digits: no roll, the real number just shows.
  */
-function roll(el, from) {
+function roll(el, from, holdMs) {
   const node = el.firstChild;
   if (!node || node.nodeType !== 3 || !el.animate) return;
   const full = node.textContent;
@@ -336,7 +337,7 @@ function roll(el, from) {
   if (trailing) spot.after(trailing);
 
   const stage = tokenMs('--t-stage', 780);
-  const hold = tokenMs('--t-hold', 140);
+  const hold = holdMs === undefined ? tokenMs('--t-hold', 140) : holdMs; // a tap rolls at once, the label changed this frame
   const anims = [];
   let timer = 0;
   let done = false;
@@ -358,6 +359,13 @@ function roll(el, from) {
     ));
   });
   anims[0].finished.then(finish, () => {});
+  if (hold === 0) {
+    // A tap: the label is new already, so the first painted frame must be the roll under way,
+    // never the old digits and never the final number sitting there first.
+    anims.forEach(a => { a.currentTime = FIRST_FRAME_MS; });
+    spot.classList.add('on');
+    return;
+  }
   Promise.all(anims.map(a => a.ready)).then(() => requestAnimationFrame(() => {
     if (!done) spot.classList.add('on'); // one flip: overlay shows, real digits go clear
   }), finish);
@@ -374,7 +382,7 @@ function odometers(sheetOpened, pageOpened) {
     const text = leadingText(el);
     const before = tap && tap.numbers ? tap.numbers[key] : undefined;
     if (before && before !== text) {
-      roll(el, before);
+      roll(el, before, 0); // tapped: the label is new already, so no hold on the old number
       continue;
     }
     const opened = key === 'need' ? pageOpened : sheetOpened;
