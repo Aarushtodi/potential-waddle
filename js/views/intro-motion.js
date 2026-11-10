@@ -323,8 +323,9 @@ function playPredictor(slide) {
 
 // ---- Leaving the intro ----------------------------------------------------------------------
 //
-// Get started (or Skip) pushes the next screen in from the right, like one more page: the slides
-// drift left and fade while the new screen slides over them (View Transitions, iOS 18+). Without
+// Sign in, Get started (or Skip) and Pick a look's Continue each push the next screen in from the
+// right, like one more page: the old screen drifts left and fades while the new one slides over
+// it (View Transitions, iOS 18+). Without
 // the API, the new screen's pieces rise in one after another instead. Reduced motion: instant.
 
 const ENTER_MS = 900; // longest stagger in .scr.enter, then the class comes off

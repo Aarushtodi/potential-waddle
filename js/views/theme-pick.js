@@ -1,7 +1,7 @@
 /**
- * Pick a look: shown once after the intro, before sign in (not when the intro is replayed
+ * Pick a look: shown once after the intro, before Goals (not when the intro is replayed
  * from Settings). Three big cards, each with a small picture of Home in that look.
- * Tapping a card applies it right away; Continue goes on to sign in.
+ * Tapping a card applies it right away; Continue goes on to Goals.
  * The same three options live in Settings > Appearance.
  */
 import { state } from '../state.js';

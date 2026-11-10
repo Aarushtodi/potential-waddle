@@ -118,7 +118,7 @@ export const actions = {
     });
     return false;
   },
-  /** Settings > Show intro again. Leaving it goes back to Settings, skipping Pick a look and sign in. */
+  /** Settings > Show intro again. Leaving it goes back to Settings, skipping Pick a look and Goals. */
   showIntro() {
     state.introSlide = 0;
     state.introReturnTo = 'app';
@@ -151,7 +151,15 @@ export const actions = {
     return false;
   },
   finishThemePick() {
-    state.screen = 'signin';
+    // Goals come next, so the plan is built from the real grades sign in just read.
+    // It pushes in from the right, like the step before it.
+    leaveIntro(() => {
+      state.screen = 'goals';
+      state.goalStage = 'ask';
+      state.goalStep = 0;
+      render();
+    });
+    return false;
   },
 
   // Sign in
@@ -167,12 +175,16 @@ export const actions = {
     // A sign in opens like a fresh app: every screen at the top, so on a 2nd sign in Home shows the
     // goal cards first, not where it was scrolled before sign out (cleared before goalsStart renders).
     state.scrollPositions = {};
-    // Picks kept from an earlier sign in: straight to Home, no second Goals setup.
+    // Picks kept from an earlier sign in: straight to Home, no second intro, look or Goals setup.
     if (state.goals.length) return actions.goalsStart();
-    // Goals come next, so the plan is built from the real grades just read.
-    state.screen = 'goals';
-    state.goalStage = 'ask';
-    state.goalStep = 0;
+    // First sign in: the intro slides push in from the right, then Pick a look, then Goals.
+    leaveIntro(() => {
+      state.screen = 'intro';
+      state.introSlide = 0;
+      state.introReturnTo = 'theme';
+      render();
+    });
+    return false;
   },
 
   // Goals (js/views/goals.js)

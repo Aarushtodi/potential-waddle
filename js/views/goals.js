@@ -1,5 +1,5 @@
 /**
- * Goals: right after sign in, before Home (a screen time app style setup).
+ * Goals: after sign in, the intro and Pick a look, before Home (a screen time app style setup).
  *
  *   1 What do you want?          multi pick: Raise my GPA, Never miss assignments, Ace finals,
  *                                Get an A in a class. Each tile carries one real number.

@@ -22,15 +22,15 @@ export const TYPED_CLASS_LIMIT = 8;
 export const SEMESTER_SPLIT = solveSemesterSplit(PAST_REPORT_CARD);
 
 export const state = {
-  // Intro slides, Pick a look, then sign in
-  screen: 'intro', // 'intro' | 'theme' | 'signin' | 'goals' | 'app'
+  // Sign in, then the intro slides, Pick a look and Goals in one run
+  screen: 'signin', // 'signin' | 'intro' | 'theme' | 'goals' | 'app'
   introSlide: 0,
   introReturnTo: 'theme', // where Skip and Get started go: 'theme' on first open, 'app' from Settings
   theme: loadTheme(), // 'system' (Match my phone) | 'light' | 'dark', saved on the phone
   district: null,
   districtNotListed: false,
 
-  // Goals, right after sign in so the plan uses real grades (see js/views/goals.js)
+  // Goals, after Pick a look; sign in came first, so the plan uses real grades (see js/views/goals.js)
   goals: [], // picked goal keys in pick order: 'gpa' | 'missing' | 'finals' | 'keepA'
   goalAClasses: [], // class ids picked on "Which classes stay As?"
   goalStep: 0, // index into goalSteps()
