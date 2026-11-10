@@ -16,13 +16,13 @@
  * Home only shows what the gradebook says: points and counts, never a predicted grade or a
  * "costs you" number. Hide scores (Settings) swaps every number for a word.
  */
+import { homePlanCard } from './plan-b.js';
 import { escapeHtml, shortDate, oneDecimal, signed, countWord, WEEKDAYS, dateAt } from '../format.js';
 import { real, realProblem, realUpdatedText } from '../real-data.js';
 import { countsAsZero } from '../grade-math.js';
-import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass, SEMESTER_SPLIT } from '../state.js';
+import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
 import { alertBadge } from './alerts.js';
-import { currentGpa, closestToNextLetter } from './gpa.js';
 
 /** Rows shown per to-do group before "N more". */
 const GROUP_LIMIT = 3;
@@ -383,40 +383,11 @@ export function homeView() {
   }
   if (!state.goals.length) return homeTitleBlock() + lead + classStrip() + todoSection(shownAbove) + gpaRow();
 
-  // Goals picked: their sections first, in pick order, then the rest of Home. A plain reorder.
-  const sections = {
-    gpaGoal: () => goalGpaCard(),
-    finals: () => finalsCard(),
-    keepA: () => keepACard(),
-    zero: () => lead,
-    classes: () => classStrip(),
-    todos: () => todoSection(shownAbove),
-    gpaRow: () => gpaRow(),
-  };
-  const GOAL_SECTIONS = { gpa: ['gpaGoal'], keepA: ['keepA'], finals: ['finals'], missing: ['zero', 'todos'] };
-  const order = state.goals.flatMap(goal => GOAL_SECTIONS[goal] || []);
-  const rest = ['zero', 'classes', 'todos', state.goals.includes('gpa') ? null : 'gpaRow'];
-  for (const key of rest) if (key && !order.includes(key)) order.push(key);
-  return homeTitleBlock() + order.map(key => sections[key]()).join('');
+  // Goals picked: one Plan card first (it opens the Plan page, js/views/plan-b.js), then Home as usual.
+  return homeTitleBlock() + homePlanCard() + lead + classStrip() + todoSection(shownAbove) + gpaRow();
 }
 
-// ---- Goals sections (picked on the Goals screens) -----------------------------------------------
-
-/** Raise my GPA: the GPA and the class closest to the next letter. Opens the GPA page. */
-function goalGpaCard() {
-  if (state.hideScores) return gpaRow();
-  const graded = visibleClasses().some(course => periodAverage(course) != null);
-  const close = graded ? closestToNextLetter() : null;
-  const gpa = graded ? currentGpa() : NaN;
-  // Real HAC data: no GPA number (the app hides it there), only the closest class line.
-  const showGpa = !real.on && Number.isFinite(gpa);
-  if (!showGpa && !close) return gpaRow();
-  return `<div class="sec"><div class="card glead" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
-    + `<div class="glead-k">GPA</div>`
-    + (showGpa ? `<div class="glead-r"><span class="glead-g">${gpa.toFixed(2)}</span></div>` : '')
-    + (close ? `<div class="glead-d">${escapeHtml(shortName(close.course))} ${escapeHtml(close.text)}</div>` : '')
-    + `</div></div>`;
-}
+// ---- Finals tests (Goals tiles and the Plan) ------------------------------------------------------
 
 /**
  * The next tests before finals, soonest first: { title, course, due }. Test dates the student
@@ -432,28 +403,3 @@ export function finalsTests(limit = 3) {
   }));
 }
 
-/** Ace finals: how much the final exam counts, then the next tests. */
-function finalsCard() {
-  if (!SEMESTER_SPLIT) return '';
-  const rows = finalsTests().map(item => `<div class="row glist-row small">`
-    + `<div class="grow t">${escapeHtml(item.title)}</div>`
-    + `<span class="glist-s">${escapeHtml(item.course)}, ${escapeHtml(shortDate(item.due))}</span></div>`).join('');
-  return `<div class="sec"><div class="card glead"><div class="glead-k">Finals worth</div>`
-    + `<div class="glead-r"><span class="glead-g">${SEMESTER_SPLIT.examPercent}%</span></div></div>`
-    + (rows ? `<div class="card quiet" style="margin-top:8px">${rows}</div>` : '')
-    + `</div>`;
-}
-
-/** Get an A: the picked classes and their grades, red only under the alert line. Each opens its class. */
-function keepACard() {
-  const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
-  if (!classes.length) return '';
-  const rows = classes.map(course => {
-    const average = periodAverage(course);
-    return `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
-      + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
-      + (state.hideScores ? CHEVRON : `<span class="glist-g${average < state.alertUnder ? ' u' : ''}">${oneDecimal(average)}</span>`)
-      + `</div>`;
-  }).join('');
-  return `<div class="sec"><div class="lab" style="margin:0 0 6px">A goals</div><div class="card quiet">${rows}</div></div>`;
-}

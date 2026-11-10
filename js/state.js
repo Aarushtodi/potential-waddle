@@ -38,6 +38,7 @@ export const state = {
   goalStage: 'ask', // 'ask' (the questions) | 'plan' (Current stats)
   planGpa: null, // GPA goal this semester, asked in Goals and edited on the Plan; null = a tenth past now
   planTargets: {}, // class id -> grade they want, set on the Plan (an A, 90, when not set)
+  planDetail: null, // setup only: the goal key whose page is open on the Plan (look B), null = the list
   goalsLook: goalsLookParam(), // preview only: ?goals=a|b picks one of the 2 looks
 
   // Navigation. Each tab keeps its own stack of pushed pages: [pageName, id?].

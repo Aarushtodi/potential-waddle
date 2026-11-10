@@ -494,3 +494,143 @@
   font-size: 15.5px;
   margin: 8px 0 8px;
 }
+
+/* ---- Plan, look B (js/views/plan-b.js): goal list with toggles, one page per goal ---- */
+
+.plan-b-list .plan-row {
+  min-height: 68px;
+  padding: 13px 16px;
+}
+
+.plan-row .t .chev {
+  margin-left: 6px;
+  font-size: 17px;
+}
+
+.plan-row .s {
+  margin-top: 3px;
+  font-size: 14.5px;
+}
+
+.plan-row .s.u {
+  color: var(--urgent);
+}
+
+.plan-row:not(.on) .t {
+  color: var(--sec);
+}
+
+.plan-b-hint {
+  font: 500 13.5px var(--sans);
+  color: var(--sec);
+  margin: 10px 4px 0;
+}
+
+/* Goal pages: the plan.js sections */
+
+.plan-sec .lab {
+  display: none;
+}
+
+.plan-b-page .plan-sec .lab {
+  display: block;
+}
+
+.plan-list {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.plan-list .g-plan-row:first-child,
+.plan-list .plan-a:first-child .g-plan-row {
+  border-top: 0;
+}
+
+.plan-a + .plan-a {
+  border-top: 1px solid var(--rule);
+}
+
+.plan-a .plan-a-top {
+  border-top: 0;
+  align-items: center;
+}
+
+.plan-a-goal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 0 12px;
+}
+
+.plan-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-step .pill.round {
+  background: var(--paper);
+}
+
+.plan-step .pill.round[disabled] {
+  opacity: .35;
+}
+
+.plan-step-n {
+  font: 500 20px var(--sans);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.4ch;
+  text-align: center;
+}
+
+.plan-a-goal .g-plan-s {
+  white-space: normal;
+  text-align: right;
+}
+
+.g-plan-row[role=button] .g-plan-s,
+.plan-a-goal [role=button] {
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+}
+
+.plan-b-empty {
+  font-size: 15.5px;
+  color: var(--sec);
+}
+
+/* Home's one Plan card */
+
+.plan-b-home {
+  padding: 14px 18px 8px;
+}
+
+.plan-b-hk {
+  font: 500 15px var(--sans);
+  margin-bottom: 4px;
+}
+
+.plan-b-hk .chev {
+  margin-left: 6px;
+}
+
+.plan-b-hrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 16px;
+}
+
+.plan-b-hs {
+  font-size: 14.5px;
+  color: var(--sec);
+  text-align: right;
+}
+
+.plan-b-hs.u {
+  color: var(--urgent);
+}

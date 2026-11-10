@@ -226,16 +226,28 @@ export const actions = {
   },
   /** A Plan row opens Target on that class, its grade and the test or the final already set. */
   openPlanTarget(classId, spec) {
+    // Setup has no page stack on screen; Target opens once the app does.
+    if (state.screen === 'goals') return false;
     const [target, kind] = String(spec).split(':');
     state.needCalc = { classId, target: +target, kind: kind === 'final' ? 'final' : 'test' };
     currentStack().push(['need']);
   },
+  /** Plan look B: a goal row opens its page (in setup inside Goals, in the app on the Home stack). */
+  openPlanGoal(key) {
+    if (state.screen === 'goals') state.planDetail = key;
+    else actions.openPage('planGoal', key);
+  },
+  closePlanGoal() {
+    state.planDetail = null;
+  },
   goalsBack() {
-    if (state.goalStage === 'plan') state.goalStage = 'ask';
+    if (state.planDetail) state.planDetail = null;
+    else if (state.goalStage === 'plan') state.goalStage = 'ask';
     else if (state.goalStep > 0) state.goalStep--;
     else return false;
   },
   goalsStart() {
+    state.planDetail = null;
     // What sign in did before Goals: Home, with the first gradebook update.
     state.screen = 'app';
     state.tab = 'home';

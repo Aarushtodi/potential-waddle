@@ -21,6 +21,7 @@ import { currentGpa, closestToNextLetter } from './gpa.js';
 import { zeroItems, zeroCountText, finalsTests } from './home.js';
 import { planPlateDue } from './goals-motion.js';
 import { gpaGoal, gpaGoalText, lettersToGoal, lettersUpText, stepText, need } from './plan-math.js';
+import { planList, planGoalBody } from './plan-b.js';
 
 export const GOALS = [
   { key: 'gpa', label: 'Raise my GPA' },
@@ -204,15 +205,34 @@ function planPlate() {
     + `</div></div>`;
 }
 
+/**
+ * Your plan (look B, js/views/plan-b.js): every goal in a list with a toggle, built from the real
+ * grades. A row opens its goal's page here (state.planDetail); Start lands on Home.
+ */
 function planView() {
+  if (state.planDetail) return planDetailView(state.planDetail);
   return `<div class="scr goals plan look-${state.goalsLook}" data-goal-screen="plan">`
     + topBar('plan', true)
     + `<div class="g-body g-planbody">`
-    + riseTitle('Current ', 'stats')
-    + state.goals.map(planBlock).join('')
+    + riseTitle('Your ', 'plan')
+    + planList()
     + `</div>`
     + `<div class="intro-foot"><button class="btn" ${actionAttrs('goalsStart')}>Start</button></div>`
     + (planPlateDue() ? planPlate() : '')
+    + `</div>`;
+}
+
+/** One goal's page during setup: its section, then Done back to the list. */
+function planDetailView(key) {
+  const name = GOALS.find(goal => goal.key === key).label;
+  const words = name.split(' ');
+  return `<div class="scr goals plan look-${state.goalsLook}" data-goal-screen="plan-${key}">`
+    + topBar('plan', true)
+    + `<div class="g-body g-planbody plan-b-detail">`
+    + riseTitle(words.slice(0, -1).join(' ') + ' ', words[words.length - 1])
+    + planGoalBody(key)
+    + `</div>`
+    + `<div class="intro-foot"><button class="btn" ${actionAttrs('closePlanGoal')}>Done</button></div>`
     + `</div>`;
 }
 
