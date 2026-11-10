@@ -604,3 +604,7 @@
 .plan-list > .g-plan-row:first-child {
   border-top: 0;
 }
+
+.plan-done {
+  color: var(--up);
+}
