@@ -33,7 +33,6 @@ export const state = {
   // Goals, right after sign in so the plan uses real grades (see js/views/goals.js)
   goals: [], // picked goal keys in pick order: 'gpa' | 'missing' | 'finals' | 'keepA'
   goalAClasses: [], // class ids picked on "Which classes stay As?"
-  goalAlert: null, // the alert line picked on the last question (also sets alertUnder)
   goalStep: 0, // index into goalSteps()
   goalStage: 'ask', // 'ask' (the questions) | 'plan' (Your plan)
   goalsLook: goalsLookParam(), // preview only: ?goals=a|b picks one of the 2 looks
@@ -121,7 +120,7 @@ function goalsLookParam() {
  */
 export const goalSteps = () => {
   const anyGraded = visibleClasses().some(course => periodAverage(course) != null);
-  return ['what', ...(state.goals.includes('keepA') && anyGraded ? ['which'] : []), 'alert'];
+  return ['what', ...(state.goals.includes('keepA') && anyGraded ? ['which'] : [])];
 };
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */

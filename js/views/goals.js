@@ -26,7 +26,6 @@ export const GOALS = [
   { key: 'finals', label: 'Ace finals' },
   { key: 'keepA', label: 'Get an\u00a0A in a class' },
 ];
-export const GOAL_ALERT_LINES = [90, 85, 80];
 
 const A_LINE = 90;
 
@@ -82,10 +81,10 @@ function progressBar(index, total) {
 }
 
 /**
- * Fixed slots, so the bar only ever grows: 1 what, 2 which, 3 alert, 4 plan. When "Which classes"
- * is not asked, the bar jumps from slot 1 to slot 3.
+ * Fixed slots, so the bar only ever grows: 1 what, 2 which, 3 plan. When "Which classes" is not
+ * asked, the bar jumps from slot 1 to slot 3.
  */
-const BAR_SLOTS = ['what', 'which', 'alert', 'plan'];
+const BAR_SLOTS = ['what', 'which', 'plan'];
 
 function topBar(step, canGoBack) {
   const index = BAR_SLOTS.indexOf(step);
@@ -94,9 +93,6 @@ function topBar(step, canGoBack) {
     + `<button class="pill round g-back${canGoBack ? '' : ' hide'}" aria-label="Back" ${actionAttrs('goalsBack')}>‹</button>`
     + progressBar(index, total) + `</div>`;
 }
-
-/** How many graded classes sit under an alert line right now. */
-const underCount = line => gradedClasses().filter(course => periodAverage(course) < line).length;
 
 // ---- Questions ------------------------------------------------------------------------------
 
@@ -107,18 +103,11 @@ function questionBody(step) {
       + GOALS.map(goal => tile(state.goals.includes(goal.key), 'toggleGoal', goal.key, goalNumber(goal.key), goal.label)).join('')
       + `</div>`;
   }
-  if (step === 'which') {
-    const classes = gradedClasses();
-    return riseTitle('Which classes need an\u00a0', 'A?')
-      + `<div class="g-tiles n${classes.length > 4 ? 'many' : classes.length}" role="group" aria-label="Classes">`
-      + classes.map(course => tile(state.goalAClasses.includes(course.id), 'toggleGoalClass', course.id,
-        oneDecimal(periodAverage(course)), shortName(course))).join('')
-      + `</div>`;
-  }
-  return riseTitle('Tell me when a class drops ', 'under')
-    + `<div class="g-tiles n3 single" role="radiogroup" aria-label="Alert line">`
-    + GOAL_ALERT_LINES.map(line => tile(state.goalAlert === line, 'pickGoalAlert', line, String(line),
-      underCount(line) + (underCount(line) === 1 ? ' class under' : ' classes under'), true)).join('')
+  const classes = gradedClasses();
+  return riseTitle('Which classes need an\u00a0', 'A?')
+    + `<div class="g-tiles n${classes.length > 4 ? 'many' : classes.length}" role="group" aria-label="Classes">`
+    + classes.map(course => tile(state.goalAClasses.includes(course.id), 'toggleGoalClass', course.id,
+      oneDecimal(periodAverage(course)), shortName(course))).join('')
     + `</div>`;
 }
 
@@ -126,12 +115,9 @@ function questionView() {
   const steps = goalSteps();
   const index = Math.min(state.goalStep, steps.length - 1);
   const step = steps[index];
-  const multi = step !== 'alert';
   const picked = step === 'what' ? state.goals.length : state.goalAClasses.length;
-  const foot = multi
-    ? `<div class="intro-foot"><button class="btn g-next${picked ? '' : ' ghost'}" aria-disabled="${!picked}" `
-      + `${actionAttrs('goalsNext')}>Continue</button></div>`
-    : `<div class="intro-foot g-foot-empty"></div>`;
+  const foot = `<div class="intro-foot"><button class="btn g-next${picked ? '' : ' ghost'}" aria-disabled="${!picked}" `
+    + `${actionAttrs('goalsNext')}>Continue</button></div>`;
   return `<div class="scr goals look-${state.goalsLook}" data-goal-screen="${step}">`
     + topBar(step, index > 0)
     + `<div class="g-body">${questionBody(step)}</div>`
@@ -187,24 +173,11 @@ function planBlock(key) {
 
 /** The cover plate: the picks tick off one by one, then it lifts off the finished plan. */
 function planPlate() {
-  const lines = state.goals.map(key => GOALS.find(goal => goal.key === key).label)
-    .concat(`Alert under ${state.alertUnder}`);
+  const lines = state.goals.map(key => GOALS.find(goal => goal.key === key).label);
   return `<div class="cover-plate gplate" aria-hidden="true"><div class="gplate-in">`
     + lines.map((line, i) => `<div class="gplate-row" style="--i:${i}"><span class="gplate-tick">${CHECK}</span>`
       + `${escapeHtml(line)}</div>`).join('')
     + `</div></div>`;
-}
-
-/** The alert line as a card, with the real classes under it right now. */
-function alertBlock() {
-  const line = state.alertUnder;
-  const under = gradedClasses().filter(course => periodAverage(course) < line).reverse();
-  return `<div class="card g-plan"><div class="g-plan-k">Alert under ${line}</div>`
-    + (under.length
-      ? under.map(course => `<div class="g-plan-row"><span class="grow">${escapeHtml(shortName(course))}</span>`
-        + `<span class="g-plan-g u">${oneDecimal(periodAverage(course))}</span></div>`).join('')
-      : `<div class="g-plan-c">Nothing under ${line}</div>`)
-    + `</div>`;
 }
 
 function planView() {
@@ -213,7 +186,6 @@ function planView() {
     + `<div class="g-body g-planbody">`
     + riseTitle('Your ', 'plan')
     + state.goals.map(planBlock).join('')
-    + alertBlock()
     + `</div>`
     + `<div class="intro-foot"><button class="btn" ${actionAttrs('goalsStart')}>Start</button></div>`
     + (planPlateDue() ? planPlate() : '')

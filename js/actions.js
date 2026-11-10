@@ -30,8 +30,6 @@ const REFRESH_MS = 1300;
 const UPDATE_COOLDOWN_MS = 6e4;
 const BANNER_MS = 6000;
 /** The last Goals question is a single pick: it moves on this long after the pop. */
-const GOAL_AUTO_ADVANCE_MS = 280;
-let goalAdvanceTimer = 0;
 
 /**
  * Show the loading state, then "finish" loading. With applyScores, one queued sample score
@@ -188,17 +186,6 @@ export const actions = {
     state.goalAClasses = list.includes(id) ? list.filter(k => k !== id) : list.concat(id);
     goalPicked(id);
   },
-  pickGoalAlert(line) {
-    state.goalAlert = +line;
-    state.alertUnder = +line;
-    goalPicked(line);
-    // Single pick: show the pop, then move on by itself.
-    clearTimeout(goalAdvanceTimer);
-    goalAdvanceTimer = setTimeout(() => {
-      actions.goalsNext();
-      render();
-    }, GOAL_AUTO_ADVANCE_MS);
-  },
   goalsNext() {
     const step = goalSteps()[state.goalStep];
     if (step === 'what' && !state.goals.length) return false;
@@ -207,7 +194,6 @@ export const actions = {
     else state.goalStage = 'plan';
   },
   goalsBack() {
-    clearTimeout(goalAdvanceTimer);
     if (state.goalStage === 'plan') state.goalStage = 'ask';
     else if (state.goalStep > 0) state.goalStep--;
     else return false;
