@@ -49,13 +49,13 @@ function gpaText() {
 }
 const finalsText = () => (SEMESTER_SPLIT ? SEMESTER_SPLIT.examPercent + '%' : '');
 
-/** The one real number on each goal tile. */
+/** The one real number on each goal tile, with a word so it reads on its own (shown small and red). */
 function goalNumber(key) {
-  if (key === 'gpa') return gpaText();
+  if (key === 'gpa') { const gpa = gpaText(); return gpa ? 'GPA ' + gpa : ''; }
   if (key === 'missing') return zeroItems().filter(item => !item.kind).length + ' missing';
-  if (key === 'finals') return finalsText();
+  if (key === 'finals') { const pct = finalsText(); return pct ? 'Finals ' + pct : ''; }
   const n = aClasses().length;
-  if (n) return n === 1 ? '1 A' : n + ' As';
+  if (n) return (n === 1 ? '1 A' : n + ' As') + ' now';
   const best = gradedClasses()[0];
   return best ? 'best ' + oneDecimal(periodAverage(best)) : '';
 }
@@ -184,7 +184,7 @@ function planView() {
   return `<div class="scr goals plan look-${state.goalsLook}" data-goal-screen="plan">`
     + topBar('plan', true)
     + `<div class="g-body g-planbody">`
-    + riseTitle('Your ', 'plan')
+    + riseTitle('Current ', 'stats')
     + state.goals.map(planBlock).join('')
     + `</div>`
     + `<div class="intro-foot"><button class="btn" ${actionAttrs('goalsStart')}>Start</button></div>`

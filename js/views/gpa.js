@@ -51,19 +51,19 @@ export function lineDistance(course) {
   const up = NEXT_UP[letter] == null ? Infinity : NEXT_UP[letter] - average;
   return down <= up
     ? { course, letter, points: down, text: `${tenth(down)} above ${article(LETTER_BELOW[letter])}` }
-    : { course, letter, points: up, text: `${tenth(up)} to ${article(LETTER_ABOVE[letter])}` };
+    : { course, letter, points: up, text: `${tenth(up)} points from ${article(LETTER_ABOVE[letter])}` };
 }
 
 /** Weighted GPA from the gradebook letters, the number the GPA page leads with. */
 export const currentGpa = () => computeGpa(gpaClasses(), gradebookLetter).weighted;
 
 /**
- * The class closest to the next letter up ("Spanish 1.6 to an A"), for Goals and Home.
+ * The class closest to the next letter up ("Spanish 1.6 points from an A"), for Goals and Home.
  * All As: the class closest to dropping a letter instead.
  */
 export function closestToNextLetter() {
   const lines = gpaClasses().map(lineDistance);
-  const up = lines.filter(line => / to /.test(line.text)).sort((a, b) => a.points - b.points);
+  const up = lines.filter(line => / from /.test(line.text)).sort((a, b) => a.points - b.points);
   return up[0] || lines.sort((a, b) => a.points - b.points)[0] || null;
 }
 

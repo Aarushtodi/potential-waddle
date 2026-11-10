@@ -439,3 +439,25 @@
   color: var(--sec);
   white-space: nowrap;
 }
+
+/* What do you want: the real number is a small red note above the goal, not a second headline.
+   On a picked tile (ink background) the other palette's red keeps it readable. */
+.scr.goals[data-goal-screen="what"] .g-num {
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--urgent);
+}
+
+.scr.goals[data-goal-screen="what"] .g-tile.on .g-num {
+  color: #E07A68;
+}
+
+:root[data-theme=dark] .scr.goals[data-goal-screen="what"] .g-tile.on .g-num {
+  color: #A83030;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme=light]) .scr.goals[data-goal-screen="what"] .g-tile.on .g-num {
+    color: #A83030;
+  }
+}
