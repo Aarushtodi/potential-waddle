@@ -16,7 +16,7 @@ import { classAverage } from '../grade-math.js';
 import { actionAttrs, toggle, CHEVRON } from './components.js';
 import { GOALS, gpaGoalBlock, gpaText, shortName, gradedClasses, planBlock } from './goals.js';
 import { gpaClasses, closestToNextLetter } from './gpa.js';
-import { gpaGoal, gpaGoalText, classTarget, need, finalNeed, finalLine, TARGET_MIN, TARGET_MAX } from './plan-math.js';
+import { gpaGoal, gpaGoalText, classTarget, need, finalPlan, TARGET_MIN, TARGET_MAX } from './plan-math.js';
 
 export const goalLabel = key => GOALS.find(goal => goal.key === key).label;
 
@@ -29,6 +29,8 @@ const section = (label, body) => `<div class="sec plan-sec"><div class="lab" sty
 function needCell(course, target) {
   const result = need(course, target);
   if (!result.text) return '';
+  // Already there: the goal is met, say so plainly.
+  if (result.kind === 'above') return `<span class="g-plan-s plan-done">Done, ${escapeHtml(result.text)}</span>`;
   const tap = inApp() && (result.kind === 'test' || result.kind === 'final');
   return `<span class="g-plan-s${result.kind === 'none' ? ' u' : ''}"${tap
     ? ` role="button" tabindex="0" ${actionAttrs('openPlanTarget', course.id, target + ':' + result.kind)}` : ''}>`
@@ -77,10 +79,10 @@ function finalsSection() {
   if (!SEMESTER_SPLIT) return '';
   const rows = gpaClasses().filter(course => classAverage(course.rows) != null && course.q1 != null).map(course => {
     const target = classTarget(course);
-    const exam = finalNeed(course, target);
-    const open = inApp() && exam > 0 && exam <= 100 ? ` role="button" tabindex="0" ${actionAttrs('openPlanTarget', course.id, target + ':final')}` : '';
+    const plan = finalPlan(course, target);
+    const open = inApp() && plan.reach && plan.exam > 0 ? ` role="button" tabindex="0" ${actionAttrs('openPlanTarget', course.id, target + ':final')}` : '';
     return `<div class="g-plan-row"${open}><span class="grow">${escapeHtml(shortName(course))}</span>`
-      + `<span class="g-plan-s${exam > 100 ? ' u' : ''}">${escapeHtml(finalLine(exam))} for ${target}</span></div>`;
+      + `<span class="g-plan-s">${escapeHtml(plan.text)}</span></div>`;
   }).join('');
   return section(`Finals, ${SEMESTER_SPLIT.examPercent}% of the semester`, `<div class="card g-plan plan-list">${rows}</div>`);
 }

@@ -4,7 +4,7 @@
  * from the gradebook. Target (js/views/gpa.js needView) does the same math one class at a time.
  */
 import { oneDecimal } from '../format.js';
-import { computeGpa, scoreNeededOnNext, finalExamNeeded, classAverage, isScored } from '../grade-math.js';
+import { computeGpa, scoreNeededOnNext, finalExamNeeded, semesterGrade, classAverage, isScored } from '../grade-math.js';
 import { state, SEMESTER_SPLIT } from '../state.js';
 import { gpaClasses, gradebookLetter, gpaAverage, currentGpa } from './gpa.js';
 
@@ -127,4 +127,26 @@ export function finalLine(need) {
   if (need <= 0) return 'Any score on the final';
   if (need > 100) return 'Over 100 on the final';
   return `${Math.ceil(need)} on the final`;
+}
+
+/** "an A" for 90, "a B" for 80, "a 91" for any other grade goal. */
+export const targetName = target => ({ 90: 'an A', 80: 'a B', 70: 'a C', 60: 'a D' }[target] || `a ${target}`);
+
+/**
+ * The Finals line for one class, never an impossible number:
+ *   "34 keeps an A"    already there, the final just can't sink it
+ *   "85 for an A"      the final can get it there
+ *   "Any score keeps an A"
+ *   "Best 88.9"        not even 100 gets there: the best semester grade it can reach
+ * reach: false only for "Best".
+ */
+export function finalPlan(course, target) {
+  const exam = finalNeed(course, target);
+  if (exam == null) return null;
+  const average = classAverage(course.rows);
+  const verb = average >= target ? 'keeps' : 'for';
+  if (exam <= 0) return { reach: true, exam, text: `Any score ${verb === 'keeps' ? 'keeps' : 'gets'} ${targetName(target)}` };
+  if (exam <= 100) return { reach: true, exam, text: `${Math.ceil(exam)} ${verb} ${targetName(target)}` };
+  // Rounded down: 89.96 is not a 90 yet, so it never reads as the goal it misses.
+  return { reach: false, exam, text: `Best ${tenthDown(semesterGrade(SEMESTER_SPLIT, course.q1, average, 100)).toFixed(1)}` };
 }
