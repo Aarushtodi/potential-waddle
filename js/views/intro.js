@@ -63,9 +63,13 @@ export function introView() {
 // ---- Slide art: the real pieces, rendered from sample data -------------------------------
 // With no motion (reduced motion, or a re-render on the same slide) these draw the end state.
 
-/** Slide 1: the class row from the Grades tab ("1 absent", not "1 ABS"). */
+/** The classes slide 1 lists under the sample class, so it reads as the Grades tab, not one lone row. */
+const SLIDE1_MORE_CLASS_IDS = ['chem', 'eng', 'hist'];
+
+/** Slide 1: the top of the Grades tab, sample class first ("1 absent", not "1 ABS"). */
 function classWithLockArt() {
-  return `<div class="card">${classRow(findClass(SAMPLE_CLASS_ID))}</div>`.replace(/(\d+) ABS</g, '$1 absent<');
+  const rows = [SAMPLE_CLASS_ID, ...SLIDE1_MORE_CLASS_IDS].map(id => classRow(findClass(id))).join('');
+  return `<div class="card">${rows}</div>`.replace(/(\d+) ABS</g, '$1 absent<');
 }
 
 /** Slide 2: What if with 95 typed into the next test. Hooks: the typed score and two counting numbers. */
