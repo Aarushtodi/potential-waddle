@@ -494,3 +494,106 @@
   font-size: 15.5px;
   margin: 8px 0 8px;
 }
+
+/* ---- Plan page (look A): where each goal stands up top, then every goal's section, editable ---- */
+
+.plan-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 24px;
+}
+
+.plan-stats.n1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.plan-stat {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 12px 14px;
+  min-width: 0;
+}
+
+.plan-stat-k {
+  font: 600 13px var(--sans);
+  color: var(--sec);
+}
+
+.plan-stat-n {
+  font: 500 18px/1.25 var(--sans);
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+}
+
+.plan-stat-n.u,
+.glist-s.u {
+  color: var(--urgent);
+}
+
+.plan-list {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.plan-a + .plan-a {
+  border-top: 1px solid var(--rule);
+}
+
+.plan-a-top {
+  align-items: center;
+  border-top: 0;
+}
+
+.plan-a-goal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 0 10px;
+}
+
+.plan-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-step .pill {
+  width: 36px;
+  height: 36px;
+  background: var(--paper);
+  font: 500 20px var(--sans);
+}
+
+.plan-step .pill[disabled] {
+  opacity: .35;
+}
+
+.plan-step-n {
+  font: 500 20px var(--sans);
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: center;
+}
+
+.plan-open {
+  cursor: pointer;
+}
+
+/* Home: the one Plan card. */
+.plan-card {
+  padding: 14px 0 4px;
+}
+
+.plan-card-k {
+  display: flex;
+  align-items: center;
+  padding: 0 16px 6px;
+  font: 600 13px var(--sans);
+  color: var(--sec);
+}
+
+.plan-list > .g-plan-row:first-child {
+  border-top: 0;
+}

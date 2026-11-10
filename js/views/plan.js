@@ -9,15 +9,19 @@
  *   Finals     what each class needs on the final for its grade goal
  */
 import { escapeHtml, oneDecimal } from '../format.js';
+import { zeroItems } from './home.js';
 import { real } from '../real-data.js';
 import { state, periodAverage, SEMESTER_SPLIT } from '../state.js';
 import { classAverage } from '../grade-math.js';
 import { actionAttrs, toggle, CHEVRON } from './components.js';
 import { GOALS, gpaGoalBlock, gpaText, shortName, gradedClasses, planBlock } from './goals.js';
 import { gpaClasses, closestToNextLetter } from './gpa.js';
-import { gpaGoal, classTarget, need, finalNeed, finalLine, TARGET_MIN, TARGET_MAX } from './plan-math.js';
+import { gpaGoal, gpaGoalText, classTarget, need, finalNeed, finalLine, TARGET_MIN, TARGET_MAX } from './plan-math.js';
 
 export const goalLabel = key => GOALS.find(goal => goal.key === key).label;
+
+/** Taps into app pages (Target, Missing work) only once setup is over: those pages live on Home's stack. */
+const inApp = () => state.screen !== 'goals';
 
 const section = (label, body) => `<div class="sec plan-sec"><div class="lab" style="margin:0 0 6px">${label}</div>${body}</div>`;
 
@@ -25,7 +29,7 @@ const section = (label, body) => `<div class="sec plan-sec"><div class="lab" sty
 function needCell(course, target) {
   const result = need(course, target);
   if (!result.text) return '';
-  const tap = result.kind === 'test' || result.kind === 'final';
+  const tap = inApp() && (result.kind === 'test' || result.kind === 'final');
   return `<span class="g-plan-s${result.kind === 'none' ? ' u' : ''}"${tap
     ? ` role="button" tabindex="0" ${actionAttrs('openPlanTarget', course.id, target + ':' + result.kind)}` : ''}>`
     + `${escapeHtml(result.text)}</span>`;
@@ -40,7 +44,7 @@ function stepper(action, id, value, low, high, label) {
 
 function gpaSection() {
   const goal = real.on ? null : gpaGoal();
-  if (goal != null) return section('GPA goal', `<div class="card g-plan">${gpaGoalBlock(goal, true)}</div>`);
+  if (goal != null) return section('GPA goal', `<div class="card g-plan">${gpaGoalBlock(goal, inApp())}</div>`);
   // Real HAC data has no GPA in the app; all As has no goal above it.
   const close = gradedClasses().length ? closestToNextLetter() : null;
   const line = real.on ? (close ? `${shortName(close.course)} ${close.text}` : '') : `All As, GPA ${gpaText()}`;
@@ -64,6 +68,7 @@ function aSection() {
 
 function missingSection() {
   const block = planBlock('missing').replace('<div class="g-plan-k">Missing</div>', '');
+  if (!inApp()) return section('Missing', block);
   return section('Missing', block.replace('<div class="card g-plan">',
     `<div class="card g-plan plan-open" role="button" tabindex="0" ${actionAttrs('openPage', 'missingEffect')}>`));
 }
@@ -73,7 +78,7 @@ function finalsSection() {
   const rows = gpaClasses().filter(course => classAverage(course.rows) != null && course.q1 != null).map(course => {
     const target = classTarget(course);
     const exam = finalNeed(course, target);
-    const open = exam > 0 && exam <= 100 ? ` role="button" tabindex="0" ${actionAttrs('openPlanTarget', course.id, target + ':final')}` : '';
+    const open = inApp() && exam > 0 && exam <= 100 ? ` role="button" tabindex="0" ${actionAttrs('openPlanTarget', course.id, target + ':final')}` : '';
     return `<div class="g-plan-row"${open}><span class="grow">${escapeHtml(shortName(course))}</span>`
       + `<span class="g-plan-s${exam > 100 ? ' u' : ''}">${escapeHtml(finalLine(exam))} for ${target}</span></div>`;
   }).join('');
@@ -84,5 +89,41 @@ const SECTIONS = { gpa: gpaSection, keepA: aSection, missing: missingSection, fi
 
 /** One goal's section on the Plan. */
 export const planSection = key => SECTIONS[key]();
+
+/**
+ * Where each goal stands now, one short line (the old Current stats numbers). Top of the Plan and
+ * the Home Plan card. { text, urgent }
+ */
+export function goalSummary(key) {
+  if (key === 'gpa') {
+    const now = gpaText();
+    const goal = real.on ? null : gpaGoal();
+    if (!now) return { text: '' };
+    return { text: goal != null ? `${now} to ${gpaGoalText(goal)}` : `GPA ${now}` };
+  }
+  if (key === 'missing') {
+    const n = zeroItems().filter(item => !item.kind).length;
+    return { text: n ? `${n} missing` : 'Nothing missing', urgent: n > 0 };
+  }
+  if (key === 'finals') return { text: SEMESTER_SPLIT ? `Worth ${SEMESTER_SPLIT.examPercent}%` : '' };
+  const picked = gradedClasses().filter(course => state.goalAClasses.includes(course.id));
+  if (!picked.length) return { text: 'No classes on' };
+  const there = picked.filter(course => periodAverage(course) >= classTarget(course)).length;
+  return { text: `${there} of ${picked.length} there`, urgent: there < picked.length };
+}
+
+/** Look A: every picked goal on one page, where it stands up top, then each goal's section. */
+export function planBody() {
+  const stats = state.goals.map(key => {
+    const sum = goalSummary(key);
+    return `<div class="plan-stat"><div class="plan-stat-k">${escapeHtml(goalLabel(key))}</div>`
+      + (sum.text && !state.hideScores ? `<div class="plan-stat-n${sum.urgent ? ' u' : ''}">${escapeHtml(sum.text)}</div>` : '')
+      + `</div>`;
+  }).join('');
+  return `<div class="plan-page look-a">`
+    + (stats ? `<div class="plan-stats n${state.goals.length}">${stats}</div>` : '')
+    + state.goals.map(planSection).join('')
+    + `</div>`;
+}
 
 export { CHEVRON };

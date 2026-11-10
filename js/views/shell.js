@@ -9,6 +9,7 @@ import { introView } from './intro.js';
 import { signInView } from './signin.js';
 import { themePickView } from './theme-pick.js';
 import { goalsView } from './goals.js';
+import { planBody } from './plan.js';
 import { homeNav, homeView, missingPageView } from './home.js';
 import { gradesView, classView, assignmentView } from './grades.js';
 import { gpaView, needView, gpaWhatIfView, gpaGoalView } from './gpa.js';
@@ -56,6 +57,7 @@ const PAGES = {
   settings: () => ({ title: 'Settings', body: settingsView() }),
   widgets: () => ({ title: 'Widgets', body: widgetsView() }),
   pace: () => ({ title: 'Pacing', body: paceView() }),
+  plan: () => ({ title: 'Plan', body: planBody() }),
 };
 
 /** Top bar and body for a tab's root page. */

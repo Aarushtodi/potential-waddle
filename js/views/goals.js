@@ -6,9 +6,10 @@
  *   2 Your GPA goal              only with Raise my GPA: a tenth past now (3.57 makes 3.7), − and +,
  *                                with the letters it takes (js/views/plan-math.js)
  *   3 Which classes need an A?   multi pick of every graded class (high to low), only with Get an A
- *   Current stats                built from the picks with real grades, under a cover plate that
- *                                lifts once (js/views/goals-motion.js). Start opens Home, which
- *                                then leads with the picked goals (js/views/home.js).
+ *   Your plan                    the Plan page (js/views/plan.js), built from the picks with real
+ *                                grades and editable, under a cover plate that lifts once
+ *                                (js/views/goals-motion.js). Start opens Home, whose one Plan card
+ *                                reopens the same page.
  *
  * No subtitles: every line under a heading is real data. Picked tiles get a fill, never a dim.
  * Two looks share this markup; css/goals.css styles .look-a (lead) and .look-b.
@@ -21,6 +22,7 @@ import { currentGpa, closestToNextLetter } from './gpa.js';
 import { zeroItems, zeroCountText, finalsTests } from './home.js';
 import { planPlateDue } from './goals-motion.js';
 import { gpaGoal, gpaGoalText, lettersToGoal, lettersUpText, stepText, need } from './plan-math.js';
+import { planBody } from './plan.js';
 
 export const GOALS = [
   { key: 'gpa', label: 'Raise my GPA' },
@@ -208,8 +210,8 @@ function planView() {
   return `<div class="scr goals plan look-${state.goalsLook}" data-goal-screen="plan">`
     + topBar('plan', true)
     + `<div class="g-body g-planbody">`
-    + riseTitle('Current ', 'stats')
-    + state.goals.map(planBlock).join('')
+    + riseTitle('Your ', 'plan')
+    + planBody()
     + `</div>`
     + `<div class="intro-foot"><button class="btn" ${actionAttrs('goalsStart')}>Start</button></div>`
     + (planPlateDue() ? planPlate() : '')
