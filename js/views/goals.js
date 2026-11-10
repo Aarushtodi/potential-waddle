@@ -1,7 +1,7 @@
 /**
  * Goals: right after sign in, before Home (a screen time app style setup).
  *
- *   1 What do you want?          multi pick: Raise my GPA, Never miss an assignment, Ace finals,
+ *   1 What do you want?          multi pick: Raise my GPA, Never miss assignments, Ace finals,
  *                                Get an A in a class. Each tile carries one real number.
  *   2 Which classes need an A?   multi pick of every graded class (high to low), only with Get an A
  *   3 Tell me when a class drops under   single pick 90 / 85 / 80, moves on by itself
@@ -22,7 +22,7 @@ import { planPlateDue } from './goals-motion.js';
 
 export const GOALS = [
   { key: 'gpa', label: 'Raise my GPA' },
-  { key: 'missing', label: 'Never miss an\u00a0assignment' },
+  { key: 'missing', label: 'Never miss assignments' },
   { key: 'finals', label: 'Ace finals' },
   { key: 'keepA', label: 'Get an\u00a0A in a class' },
 ];

@@ -145,11 +145,11 @@
 /* ---- Look A: square tiles, number top, label bottom ---- */
 
 .look-a .g-tiles {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .look-a .g-tiles.n3 {
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .look-a .g-tile {
@@ -190,7 +190,7 @@
 /* ---- Look B: full width tall rows, number right, round check ---- */
 
 .look-b .g-tiles {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .look-b .g-tile {
