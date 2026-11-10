@@ -1,0 +1,247 @@
+/* App wide motion (anim-1109), driven by js/views/app-motion.js. Tokens from motion.css only.
+   Every rule that moves sits under the root .motion class, so reduced motion never sees a start
+   state. Only transform and opacity animate, and every move ends on the plain layout. */
+
+/* ---- 1. Press: tappables shrink a little while held, then ease back --------------------- */
+
+.motion :is(.pill, .btn, .chip, .tab, .dy, .seg button, .tog, .row[role=button]) {
+  transition: transform var(--t-press) var(--ease);
+}
+
+.motion :is(.pill, .btn, .chip, .tab, .dy, .seg button, .tog, .row[role=button]):not([disabled]):active {
+  transform: scale(var(--press-scale));
+}
+
+/* A tap redraws the screen, so the new node eases back from the pressed size. */
+.motion :is(.pill, .btn, .chip, .tab, .dy, .seg button, .tog, .row[role=button]).tapped {
+  animation: press-out var(--t-press) var(--ease);
+}
+
+@keyframes press-out {
+  from {
+    transform: scale(var(--press-scale));
+  }
+}
+
+/* ---- 2. Tap memory: switch knob, sliding picked pill, calendar ------------------------- */
+
+.motion .tog.tapped.on::after {
+  animation: knob-on var(--t-enter) var(--ease);
+}
+
+.motion .tog.tapped:not(.on)::after {
+  animation: knob-off var(--t-enter) var(--ease);
+}
+
+@keyframes knob-on {
+  from {
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes knob-off {
+  from {
+    transform: translateX(20px);
+  }
+}
+
+/* The picked pill slides from the old spot to the tapped one (car row 8). */
+.motion .seg {
+  position: relative;
+}
+
+.motion :is(.seg, .tabs) > button {
+  position: relative;
+  z-index: 1;
+}
+
+.ind {
+  position: absolute;
+  z-index: 0;
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.ind.in {
+  transition: transform var(--t-enter) var(--ease);
+}
+
+.ind i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left center;
+}
+
+.ind.in i {
+  transition: transform var(--t-enter) var(--ease);
+}
+
+.tabs > .ind i {
+  background: var(--paper);
+}
+
+.seg > .ind i {
+  background: var(--card);
+}
+
+.tabs.sliding .tab.on,
+.seg.sliding button.on {
+  background: none;
+  box-shadow: none;
+}
+
+.motion .dy.sel.tapped span {
+  animation: day-pick var(--t-enter) var(--ease);
+}
+
+@keyframes day-pick {
+  from {
+    transform: scale(.6);
+  }
+}
+
+.motion .calg.mo-next {
+  animation: month-next var(--t-enter) var(--ease) both;
+}
+
+.motion .calg.mo-prev {
+  animation: month-prev var(--t-enter) var(--ease) both;
+}
+
+@keyframes month-next {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes month-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+/* ---- 3. Entrances: Target, Settings, Calendar (once a session), What if --------------- */
+
+.motion .pg-in > * {
+  animation: piece-rise var(--t-enter) var(--ease) calc(var(--i, 0) * var(--t-step)) both;
+}
+
+@keyframes piece-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+}
+
+.motion .sheet.anim {
+  animation: up var(--t-enter) var(--ease);
+}
+
+/* ---- 4. Odometer: one counter drives every column, so every frame reads a value between old and new (car row 5) ----- */
+
+.odo-w {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.big-res, .hd.big, .glead-g, .glist-g) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The real number sets the layout and stays visible until the overlay has painted. */
+.odo-real {
+  display: inline-block;
+}
+
+.odo-w.on .odo-real {
+  color: transparent;
+}
+
+.odo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  visibility: hidden;
+}
+
+.odo-w.on .odo {
+  visibility: visible;
+}
+
+.odo-col {
+  position: relative;
+  display: inline-block;
+}
+
+/* The placeholder gives the column its width and one line of height. */
+.odo-ph {
+  display: block;
+  visibility: hidden;
+}
+
+/* The window is exactly the column, clipped on every side; the 2px of side room keeps wide glyphs whole. */
+.odo-win {
+  position: absolute;
+  inset: 0 -2px;
+  overflow: hidden;
+  overflow: clip;
+  clip-path: inset(0);
+}
+
+/* 12 cells per strip (a 0 to 9 loop with a repeat at each end; blank + 1 to 9 for a column the old
+   number didn't have). The strip is exactly one window tall; each cell sits at n * 115% of it (a
+   small 0.15 line gap between digits), so translate percentages land any digit with no measuring.
+   Keep 115% in step with CELL in app-motion.js. */
+.odo-s {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.odo-s b {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--n) * 115%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-weight: inherit;
+}
+
+/* ---- 5. Nothing keeps moving ----------------------------------------------------------- */
+
+/* Face ID glyph: still. No pulse at all (pulsing badges are on his slop list). */
+.lk svg {
+  animation: none;
+}
+
+/* Bell now dot: one ring only when the current period changes. */
+.nowl i::after {
+  animation: none;
+  opacity: 0;
+}
+
+.motion .nowl.ping i::after {
+  animation: nowpulse var(--t-stage) var(--ease) 1;
+}
+
+/* Spinner: waits ~185ms before it shows, so a quick load never flashes it. */
+.motion .spin {
+  animation: spin-wait calc(var(--t-hold) + var(--t-step)) step-end, sp .8s linear infinite;
+}
+
+@keyframes spin-wait {
+  from,
+  to {
+    opacity: 0;
+  }
+}
