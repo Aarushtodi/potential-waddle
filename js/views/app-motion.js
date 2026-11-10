@@ -195,15 +195,49 @@ function tokenMs(name, fallback) {
   return v.endsWith('ms') ? n : v.endsWith('s') ? n * 1000 : n;
 }
 
+/** The --ease cubic-bezier as a function of time (0 to 1) -> progress, so the sampled counter follows it. */
+function easeFn() {
+  const m = /cubic-bezier\(([^)]+)\)/.exec(getComputedStyle(root).getPropertyValue('--ease'));
+  const [x1, y1, x2, y2] = m ? m[1].split(',').map(Number) : [0.22, 1, 0.36, 1];
+  const at = (a, b, t) => 3 * a * (1 - t) * (1 - t) * t + 3 * b * (1 - t) * t * t + t * t * t;
+  return x => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let lo = 0;
+    let hi = 1;
+    for (let i = 0; i < 24; i += 1) {
+      const mid = (lo + hi) / 2;
+      if (at(x1, x2, mid) < x) lo = mid; else hi = mid;
+    }
+    return at(y1, y2, (lo + hi) / 2);
+  };
+}
+
+const SAMPLES = 90;
+
+/**
+ * Where column k (0 = ones) of the number sits while the counter reads v: the digit there, plus a
+ * slide to the next digit only while every column below it is on its last unit (a real odometer
+ * carry). The ones column slides continuously with v. Returned unwrapped; the caller wraps mod 10.
+ */
+function columnPosition(v, k) {
+  if (k === 0) return v;
+  const unit = 10 ** k;
+  const below = v - Math.floor(v / unit) * unit;
+  return Math.floor(v / unit) + Math.min(1, Math.max(0, below - (unit - 1)));
+}
+
 /**
  * Roll the leading number of `el` from `from` to its current text.
- * Nothing is measured. The real number stays in the page, visible, and sets the layout. Over it
- * sits an overlay of columns: a digit placeholder gives each column its tabular width and line
- * height, and a 20 cell strip (0 to 9 twice) fills it. The strip is 2000% of the column tall, each
- * cell 5%, so a translate of -(index / 20) * 100% lands any digit with no pixel maths. Web
- * Animations with fill both holds the old digit through the hold. The overlay replaces the real
- * number only after every animation reports ready and one frame painted, in a single class flip.
- * With no old value there is no roll: the real number just shows.
+ * One counter runs from the old value to the new one on the --ease curve and every column shows
+ * its digit of that counter, so every whole frame reads a real value between old and new (a
+ * column never lands ahead of the ones below it). Nothing is measured. The real number stays
+ * visible and sets the layout. The overlay is a column per digit: a placeholder gives the width and
+ * line height and a strip of cells (a 0 to 9 loop, or blank + 1 to 9 for a column the old number
+ * didn't have) slides by percent. Web Animations with fill both holds the old digit through the
+ * hold; wraps from 9 to 0 are keyframe pairs at one offset. The overlay replaces the real number only
+ * after every animation reports ready and one frame painted, in a single class flip. No old value,
+ * or an old number with more digits: no roll, the real number just shows.
  */
 function roll(el, from) {
   const node = el.firstChild;
@@ -211,28 +245,52 @@ function roll(el, from) {
   const full = node.textContent;
   const to = full.trim();
   if (!/^[\d.]+$/.test(to) || from === to) return;
-  if (!from || !/^[\d.]+$/.test(from)) return; // no old value: no roll, the real number stays still
-  // The old number in the new one's shape, digit for digit. A new leading digit starts from a
-  // blank cell. An old number with more digits than the new one can't be shown truthfully in the
-  // new shape, so that rare case doesn't roll either (the real number just shows).
+  if (!from || !/^[\d.]+$/.test(from)) return;
   const toInt = to.split('.')[0].length;
   if (from.split('.')[0].length > toInt) return;
+  const pad = toInt - from.split('.')[0].length; // leading columns the old number didn't have
   const old = alignTo(from, to);
-  const pad = toInt - from.split('.')[0].length;
-  let k = 0;
-  const plan = [...to].map((ch, i) => {
-    if (ch === '.') return null;
-    const end = +ch;
-    const blank = k < pad; // leading digit the old number didn't have
-    k += 1;
-    // 21 cells: 0 is blank, 1 to 10 are 0 to 9, 11 to 20 are 0 to 9 again. Up lands in the first
-    // run, down runs on into the second.
-    const first = end + 1;
-    const start = blank ? 0 : +old[i] + 1;
-    const stop = blank ? first : start === first ? start : start < first ? first : first + 10;
-    return { ch, start, stop };
-  });
+  const A = parseInt(old.replace('.', ''), 10);
+  const B = parseInt(to.replace('.', ''), 10);
+  if (!Number.isFinite(A) || A === B) return;
+  const ease = easeFn();
+  const digitsOnly = [...to].filter(ch => ch !== '.');
+  const n = digitsOnly.length;
   const trailing = full.slice(full.indexOf(to) + to.length);
+
+  // Keyframes per column; a column that never moves gets none.
+  const columns = digitsOnly.map((ch, idx) => {
+    const k = n - 1 - idx;
+    const blank = idx < pad; // blank, then 1 to 9
+    const frames = [];
+    let prev = null;
+    for (let i = 0; i <= SAMPLES; i += 1) {
+      const t = i / SAMPLES;
+      const v = A + (B - A) * ease(t);
+      const u = columnPosition(i === SAMPLES ? B : v, k);
+      if (blank) {
+        frames.push({ offset: t, p: u });
+      } else {
+        if (prev) {
+          const dir = Math.sign(u - prev.u);
+          if (dir) {
+            // Each 10 crossed is a wrap: p runs 1 to 11 then jumps back to 1 (same picture).
+            let m = dir > 0 ? Math.floor(prev.u / 10) + 1 : Math.ceil(prev.u / 10) - 1;
+            while (dir > 0 ? m * 10 <= u : m * 10 >= u) {
+              const tc = prev.t + (t - prev.t) * ((m * 10 - prev.u) / (u - prev.u));
+              frames.push({ offset: tc, p: dir > 0 ? 11 : 1 }, { offset: tc, p: dir > 0 ? 1 : 11 });
+              m += dir;
+            }
+          }
+        }
+        frames.push({ offset: t, p: ((u % 10) + 10) % 10 + 1 });
+        prev = { u, t };
+      }
+    }
+    const moves = frames.some(f => Math.abs(f.p - frames[0].p) > 1e-6);
+    return { ch, blank, frames, moves };
+  });
+  if (!columns.some(c => c.moves)) return; // nothing moves: leave the page alone
 
   const real = document.createElement('span');
   real.className = 'odo-real';
@@ -241,31 +299,35 @@ function roll(el, from) {
   overlay.className = 'odo';
   overlay.setAttribute('aria-hidden', 'true');
   const strips = [];
-  plan.forEach(d => {
-    if (!d) {
+  let c = 0;
+  [...to].forEach(ch => {
+    if (ch === '.') {
       overlay.append('.');
       return;
     }
+    const column = columns[c];
+    c += 1;
     const col = document.createElement('span');
     col.className = 'odo-col';
     const ph = document.createElement('span');
     ph.className = 'odo-ph';
-    ph.textContent = d.ch;
+    ph.textContent = ch;
     const win = document.createElement('span');
     win.className = 'odo-win';
     const strip = document.createElement('span');
     strip.className = 'odo-s';
-    for (let n = 0; n < 21; n += 1) {
+    const count = column.blank ? 10 : 12;
+    for (let i = 0; i < count; i += 1) {
       const cell = document.createElement('b');
-      cell.style.setProperty('--n', String(n));
-      cell.textContent = n === 0 ? '' : String((n - 1) % 10);
+      cell.style.setProperty('--n', String(i));
+      cell.textContent = column.blank ? (i === 0 ? '' : String(i)) : String((i + 9) % 10);
       strip.append(cell);
     }
-    strip.style.transform = `translateY(${-d.start * CELL}%)`;
+    strip.style.transform = `translateY(${-column.frames[0].p * CELL}%)`;
     win.append(strip);
     col.append(ph, win);
     overlay.append(col);
-    strips.push({ strip, ...d });
+    strips.push({ strip, column });
   });
   const spot = document.createElement('span');
   spot.className = 'odo-w';
@@ -274,10 +336,7 @@ function roll(el, from) {
   if (trailing) spot.after(trailing);
 
   const stage = tokenMs('--t-stage', 780);
-  const step = tokenMs('--t-step', 45);
   const hold = tokenMs('--t-hold', 140);
-  const ease = getComputedStyle(root).getPropertyValue('--ease').trim() || 'cubic-bezier(0.22, 1, 0.36, 1)';
-  const moving = strips.filter(d => d.stop !== d.start);
   const anims = [];
   let timer = 0;
   let done = false;
@@ -291,17 +350,14 @@ function roll(el, from) {
   };
   finishers.add(finish);
   timer = setTimeout(finish, hold + stage + 600);
-  moving.forEach(d => {
-    const shorter = moving.length - 1 - moving.indexOf(d); // left columns land first
-    const anim = d.strip.animate(
-      [{ transform: `translateY(${-d.start * CELL}%)` }, { transform: `translateY(${-d.stop * CELL}%)` }],
-      { duration: Math.max(stage - shorter * step, 200), delay: hold, easing: ease, fill: 'both' },
-    );
-    anims.push(anim);
+  strips.forEach(({ strip, column }) => {
+    if (!column.moves) return;
+    anims.push(strip.animate(
+      column.frames.map(f => ({ offset: f.offset, transform: `translateY(${-f.p * CELL}%)`, easing: 'linear' })),
+      { duration: stage, delay: hold, easing: 'linear', fill: 'both' },
+    ));
   });
-  // The longest animation ends the roll; the rest land earlier.
-  const last = anims.reduce((a, b) => (b.effect.getComputedTiming().endTime > a.effect.getComputedTiming().endTime ? b : a));
-  last.finished.then(finish, () => {});
+  anims[0].finished.then(finish, () => {});
   Promise.all(anims.map(a => a.ready)).then(() => requestAnimationFrame(() => {
     if (!done) spot.classList.add('on'); // one flip: overlay shows, real digits go clear
   }), finish);
