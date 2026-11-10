@@ -22,6 +22,7 @@ import { beforeToggle } from './views/done-motion.js';
 import { THEMES, saveTheme, applyTheme, crossfade } from './theme.js';
 import { leaveIntro } from './views/intro-motion.js';
 import { goalPicked } from './views/goals-motion.js';
+import { gpaGoal, gpaGoalRange, classTarget, TARGET_MIN, TARGET_MAX } from './views/plan-math.js';
 import { real, reloadRealData } from './real-data.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
@@ -200,10 +201,34 @@ export const actions = {
   },
   goalsNext() {
     const step = goalSteps()[state.goalStep];
+    // Keep the goal they saw, so it holds still if the grades move later.
+    if (step === 'gpaGoal' && state.planGpa == null) state.planGpa = gpaGoal();
     if (step === 'what' && !state.goals.length) return false;
     if (step === 'which' && !state.goalAClasses.length) return false;
     if (state.goalStep < goalSteps().length - 1) state.goalStep++;
     else state.goalStage = 'plan';
+  },
+  /** GPA goal − and + (Goals and the Plan), a tenth at a time, between a tenth past now and all As. */
+  planGpaStep(direction) {
+    const goal = gpaGoal();
+    if (goal == null) return false;
+    const range = gpaGoalRange();
+    const next = Math.round((goal + 0.1 * Math.sign(+direction)) * 10) / 10;
+    if (next < range.low - 1e-9 || next > range.high + 1e-9) return false;
+    state.planGpa = next;
+  },
+  /** A goal class grade − and + on the Plan, one point at a time, 90 to 100. */
+  planTargetStep(classId, direction) {
+    const course = findClass(classId);
+    const next = classTarget(course) + Math.sign(+direction);
+    if (next < TARGET_MIN || next > TARGET_MAX) return false;
+    state.planTargets[classId] = next;
+  },
+  /** A Plan row opens Target on that class, its grade and the test or the final already set. */
+  openPlanTarget(classId, spec) {
+    const [target, kind] = String(spec).split(':');
+    state.needCalc = { classId, target: +target, kind: kind === 'final' ? 'final' : 'test' };
+    currentStack().push(['need']);
   },
   goalsBack() {
     if (state.goalStage === 'plan') state.goalStage = 'ask';

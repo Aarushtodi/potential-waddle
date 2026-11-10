@@ -22,8 +22,8 @@ const BIG_TITLE = 'style="font-size:15px"';
 export const gpaClasses = () => orderedClasses().filter(
   course => course.level !== 'A' && (course.typed || classAverage(course.rows) != null),
 );
-const gpaAverage = course => (course.typed ? course.grade : classAverage(course.rows));
-const gradebookLetter = course => letterGrade(gpaAverage(course));
+export const gpaAverage = course => (course.typed ? course.grade : classAverage(course.rows));
+export const gradebookLetter = course => letterGrade(gpaAverage(course));
 
 // ---- GPA page -----------------------------------------------------------------------------
 
