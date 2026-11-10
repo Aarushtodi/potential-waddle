@@ -9,14 +9,16 @@
  *           (state.planDetail picks the goal page; Back closes it)
  *   app     shell.js PAGES.plan and PAGES.planGoal(key) on the Home stack
  */
-import { escapeHtml } from '../format.js';
+import { escapeHtml, oneDecimal } from '../format.js';
 import { real } from '../real-data.js';
 import { state, SEMESTER_SPLIT, findClass, periodAverage } from '../state.js';
 import { actionAttrs, toggle, CHEVRON } from './components.js';
 import { GOALS, gpaText, shortName, gradedClasses } from './goals.js';
 import { zeroItems } from './home.js';
 import { closestToNextLetter } from './gpa.js';
-import { gpaGoal, gpaGoalText, lettersToGoal, lettersUpText } from './plan-math.js';
+import { gpaGoal, gpaGoalText, lettersToGoal, lettersUpText, classTarget, finalPlan } from './plan-math.js';
+import { gpaClasses } from './gpa.js';
+import { classAverage } from '../grade-math.js';
 import { planSection } from './plan.js';
 
 const label = key => GOALS.find(goal => goal.key === key).label;
@@ -34,9 +36,13 @@ export function goalSummary(key) {
     return close ? `${shortName(close.course)} ${close.text}` : 'No grades yet';
   }
   if (key === 'keepA') {
-    const names = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null).map(shortName);
-    if (!names.length) return 'Pick a class';
-    return names.length <= 2 ? names.join(', ') : `${names.slice(0, 2).join(', ')}, ${names.length - 2} more`;
+    const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
+    if (!classes.length) return 'Pick a class';
+    // The class furthest from its goal; all there = done.
+    const behind = classes.map(course => ({ course, gap: classTarget(course) - periodAverage(course) }))
+      .filter(item => item.gap > 0).sort((a, b) => b.gap - a.gap);
+    if (!behind.length) return classes.length === 1 ? `${shortName(classes[0])} done` : `All ${classes.length} done`;
+    return `${shortName(behind[0].course)} ${oneDecimal(behind[0].gap)} to go`;
   }
   if (key === 'missing') {
     const items = zeroItems();
@@ -44,7 +50,18 @@ export function goalSummary(key) {
     if (!items.length) return 'Nothing missing';
     return missing ? `${missing} missing now` : `${items.length} count as 0`;
   }
-  return SEMESTER_SPLIT ? `Worth ${SEMESTER_SPLIT.examPercent}% of the semester` : 'No finals yet';
+  return finalsSummary();
+}
+
+/** Ace finals: the hardest final still in reach ("Chemistry 68 on the final"). */
+function finalsSummary() {
+  if (!SEMESTER_SPLIT) return 'No finals yet';
+  const plans = gpaClasses().filter(course => classAverage(course.rows) != null && course.q1 != null)
+    .map(course => ({ course, plan: finalPlan(course, classTarget(course)) }))
+    .filter(item => item.plan && item.plan.reach && item.plan.exam > 0)
+    .sort((a, b) => b.plan.exam - a.plan.exam);
+  if (!plans.length) return `Worth ${SEMESTER_SPLIT.examPercent}%`;
+  return `${shortName(plans[0].course)} ${Math.ceil(plans[0].plan.exam)} on the final`;
 }
 
 /** Red only when something is missing right now. */
@@ -60,8 +77,7 @@ function goalRow(key) {
 }
 
 /** The list: every goal, picked ones on. Fixed order, so a toggle never moves a row. */
-export const planList = () => `<div class="card plan-b-list">${GOALS.map(goal => goalRow(goal.key)).join('')}</div>`
-  + `<div class="plan-b-hint">On goals show on Home. Tap one to change it.</div>`;
+export const planList = () => `<div class="card plan-b-list">${GOALS.map(goal => goalRow(goal.key)).join('')}</div>`;
 
 /**
  * A goal's page. During setup the app pages (Target, Missing work) are not open yet, so the rows
@@ -75,7 +91,9 @@ export function planGoalBody(key) {
 
 /** Home's one Plan card: the on goals and their lines. Opens the Plan page. */
 export function homePlanCard() {
-  const rows = state.goals.map(key => `<div class="plan-b-hrow"><span class="grow">${escapeHtml(label(key))}</span>`
+  const shown = state.goals.filter(key => !(key === 'missing' && zeroItems().length));
+  if (!shown.length) return '';
+  const rows = shown.map(key => `<div class="plan-b-hrow"><span class="grow">${escapeHtml(label(key))}</span>`
     + (state.hideScores ? '' : `<span class="plan-b-hs${urgent(key) ? ' u' : ''}">${escapeHtml(goalSummary(key))}</span>`)
     + `</div>`).join('');
   return `<div class="sec"><div class="card plan-b-home" role="button" tabindex="0" ${actionAttrs('openPage', 'plan')}>`

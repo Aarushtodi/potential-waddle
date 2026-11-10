@@ -520,12 +520,6 @@
   color: var(--sec);
 }
 
-.plan-b-hint {
-  font: 500 13.5px var(--sans);
-  color: var(--sec);
-  margin: 10px 4px 0;
-}
-
 /* Goal pages: the plan.js sections */
 
 .plan-sec .lab {
@@ -633,4 +627,8 @@
 
 .plan-b-hs.u {
   color: var(--urgent);
+}
+
+.plan-done {
+  color: var(--up);
 }
