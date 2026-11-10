@@ -292,7 +292,7 @@ function leadAndList(classes) {
     + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
     + `<span class="glist-g">${oneDecimal(periodAverage(course))}</span></div>`).join('');
   return `<div class="card glead" role="button" tabindex="0" ${openClass(lead)}>`
-    + `<div class="glead-k">${periodAverage(lead) < state.alertUnder ? `Lowest, under your ${state.alertUnder}` : 'Lowest'}</div>`
+    + '<div class="glead-k">Lowest</div>'
     + `<div class="glead-r"><span class="glead-n">${escapeHtml(shortName(lead))}</span>`
     + `<span class="glead-g${red ? ' u' : ''}">${oneDecimal(periodAverage(lead))}</span></div>`
     + (delta != null ? `<div class="glead-d">${signed(delta)} since the last grade</div>` : '')
