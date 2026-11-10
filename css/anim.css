@@ -195,6 +195,13 @@
 .odo-s.go {
   transition-property: transform;
   transition-timing-function: var(--ease);
+  /* A tap roll starts one 60Hz frame in, so the frame painted with the new words already shows
+     the number moving (the start offset, not a motion token). */
+  transition-delay: -16ms;
+}
+
+/* Home changed-since-seen roll only: a beat before it moves. */
+.odo-hold .odo-s.go {
   transition-delay: var(--t-hold);
 }
 

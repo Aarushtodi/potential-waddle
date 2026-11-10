@@ -15,7 +15,7 @@ const on = () => root.classList.contains('motion');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 reduce.addEventListener('change', () => root.classList.toggle('motion', !reduce.matches));
 const STAGGER_CAP = 5;
-const ODO_TIMEOUT_MS = 1200; // hold 140 + stage 780 + two frames, with room for a slow frame
+const ODO_TIMEOUT_MS = 1200; // Home: hold 140 + stage 780 + two frames, with room for a slow frame
 const CLEANUP_MS = 900;
 
 /** The tap being handled: what was tapped, where the picked pill sat, and the numbers before. */
@@ -199,14 +199,22 @@ function pairUp(from, to) {
  * two cell slot, old over new (new under old when the number went down), so every frame shows
  * the old digit, the new one, or both in passing; never a blank window or a third digit.
  * Digits that didn't change are plain text and never move.
+ * A number whose shape changes (34 to 1, 9.5 to 76.9, 100.0 to 87.0) is a plain swap: a slot
+ * with no old or new digit would show an empty window, and the text after it would shift once
+ * the roll ended.
+ * A tap roll starts on the tap frame, already moving, so the new words never sit over the old
+ * number. Only the Home changed-since-seen roll (hold: true) waits --t-hold first.
  */
-function roll(el, from) {
+function roll(el, from, { hold = false } = {}) {
   const node = el.firstChild;
   if (!node || node.nodeType !== 3) return;
   const full = node.textContent;
   const to = full.trim();
   const NUM = /^\d+(\.\d+)?$/;
   if (!from || from === to || !NUM.test(to) || !NUM.test(from)) return;
+  const [fromInt, fromFrac] = from.split('.');
+  const [toInt, toFrac] = to.split('.');
+  if (fromInt.length !== toInt.length || (fromFrac || '').length !== (toFrac || '').length) return;
   const pairs = pairUp(from, to);
   const moving = pairs.filter(([a, b]) => a !== b).length;
   if (!moving) return; // same digits ('100' to '100.0' only gains a place): nothing to roll
@@ -258,6 +266,7 @@ function roll(el, from) {
   const step = lineHeight + gap;
   odo.style.setProperty('--odo-h', lineHeight + 'px');
   odo.style.setProperty('--odo-gap', gap + 'px');
+  if (hold) odo.classList.add('odo-hold');
   const startY = up ? 0 : -step;
   const endY = up ? -step : 0;
   for (const strip of slots) strip.style.transform = `translateY(${startY}px)`;
@@ -271,12 +280,16 @@ function roll(el, from) {
   finishers.add(finish);
   slots[slots.length - 1].addEventListener('transitionend', finish, { once: true }); // rightmost ends last
   timer = setTimeout(finish, ODO_TIMEOUT_MS);
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  const go = () => {
     for (const strip of slots) {
       strip.classList.add('go');
       strip.style.transform = `translateY(${endY}px)`;
     }
-  }));
+  };
+  // The start offsets are committed above, so a tap roll can start in this same task and the
+  // first painted frame is already moving. Home keeps the double frame wait before its hold.
+  if (hold) requestAnimationFrame(() => requestAnimationFrame(go));
+  else go();
 }
 
 /** Any press or key skips a running roll straight to the number (car row 5). */
@@ -306,7 +319,7 @@ function homeGrades(animate) {
     const id = owner && owner.dataset.y;
     if (!id) return;
     const text = leadingText(el);
-    if (animate && seen[id] && seen[id] !== text) roll(el, seen[id]);
+    if (animate && seen[id] && seen[id] !== text) roll(el, seen[id], { hold: true });
     seen[id] = text;
   });
   stored('odo:seen', JSON.stringify(seen));
