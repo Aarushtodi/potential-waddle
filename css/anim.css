@@ -142,6 +142,38 @@
 
 /* ---- 4. Odometer: one counter drives every column, so every frame reads a value between old and new (car row 5) ----- */
 
+.odo-w {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.big-res, .hd.big, .glead-g, .glist-g) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The real number sets the layout and stays visible until the overlay has painted. */
+.odo-real {
+  display: inline-block;
+}
+
+.odo-w.on .odo-real {
+  color: transparent;
+}
+
+.odo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  visibility: hidden;
+}
+
+.odo-w.on .odo {
+  visibility: visible;
+}
+
 .odo-col {
   position: relative;
   display: inline-block;
@@ -158,6 +190,8 @@
   position: absolute;
   inset: 0 -2px;
   overflow: hidden;
+  overflow: clip;
+  clip-path: inset(0);
 }
 
 /* 12 cells per strip (a 0 to 9 loop with a repeat at each end; blank + 1 to 9 for a column the old
