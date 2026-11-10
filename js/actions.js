@@ -226,6 +226,8 @@ export const actions = {
   },
   /** A Plan row opens Target on that class, its grade and the test or the final already set. */
   openPlanTarget(classId, spec) {
+    // During setup Target has no stack to show on (Home would open on it later).
+    if (state.screen === 'goals') return false;
     const [target, kind] = String(spec).split(':');
     state.needCalc = { classId, target: +target, kind: kind === 'final' ? 'final' : 'test' };
     currentStack().push(['need']);

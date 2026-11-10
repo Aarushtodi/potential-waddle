@@ -19,10 +19,10 @@
 import { escapeHtml, shortDate, oneDecimal, signed, countWord, WEEKDAYS, dateAt } from '../format.js';
 import { real, realProblem, realUpdatedText } from '../real-data.js';
 import { countsAsZero } from '../grade-math.js';
-import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass, SEMESTER_SPLIT } from '../state.js';
+import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
 import { alertBadge } from './alerts.js';
-import { currentGpa, closestToNextLetter } from './gpa.js';
+import { goalSummary, goalLabel } from './plan.js';
 
 /** Rows shown per to-do group before "N more". */
 const GROUP_LIMIT = 3;
@@ -389,39 +389,24 @@ export function homeView() {
   }
   if (!state.goals.length) return homeTitleBlock() + lead + classStrip() + todoSection(shownAbove) + gpaRow();
 
-  // Goals picked: their sections first, in pick order, then the rest of Home. A plain reorder.
-  const sections = {
-    gpaGoal: () => goalGpaCard(),
-    finals: () => finalsCard(),
-    keepA: () => keepACard(),
-    zero: () => lead,
-    classes: () => classStrip(),
-    todos: () => todoSection(shownAbove),
-    gpaRow: () => gpaRow(),
-  };
-  const GOAL_SECTIONS = { gpa: ['gpaGoal'], keepA: ['keepA'], finals: ['finals'], missing: ['zero', 'todos'] };
-  const order = state.goals.flatMap(goal => GOAL_SECTIONS[goal] || []);
-  const rest = ['zero', 'classes', 'todos', state.goals.includes('gpa') ? null : 'gpaRow'];
-  for (const key of rest) if (key && !order.includes(key)) order.push(key);
-  return homeTitleBlock() + order.map(key => sections[key]()).join('');
+  // Goals picked: one Plan card first (it reopens the Plan page), then Home as usual. The GPA row
+  // goes when the GPA is a goal, since the card already carries it.
+  return homeTitleBlock() + planCard() + lead + classStrip() + todoSection(shownAbove)
+    + (state.goals.includes('gpa') ? '' : gpaRow());
 }
 
 // ---- Goals sections (picked on the Goals screens) -----------------------------------------------
 
-/** Raise my GPA: the GPA and the class closest to the next letter. Opens the GPA page. */
-function goalGpaCard() {
-  if (state.hideScores) return gpaRow();
-  const graded = visibleClasses().some(course => periodAverage(course) != null);
-  const close = graded ? closestToNextLetter() : null;
-  const gpa = graded ? currentGpa() : NaN;
-  // Real HAC data: no GPA number (the app hides it there), only the closest class line.
-  const showGpa = !real.on && Number.isFinite(gpa);
-  if (!showGpa && !close) return gpaRow();
-  return `<div class="sec"><div class="card glead" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
-    + `<div class="glead-k">GPA</div>`
-    + (showGpa ? `<div class="glead-r"><span class="glead-g">${gpa.toFixed(2)}</span></div>` : '')
-    + (close ? `<div class="glead-d">${escapeHtml(shortName(close.course))} ${escapeHtml(close.text)}</div>` : '')
-    + `</div></div>`;
+/** The Plan card: each picked goal and where it stands. Opens the Plan page (js/views/plan.js). */
+function planCard() {
+  const rows = state.goals.map(key => {
+    const sum = goalSummary(key);
+    return `<div class="row glist-row small"><div class="grow t">${escapeHtml(goalLabel(key))}</div>`
+      + (sum.text && !state.hideScores ? `<span class="glist-s${sum.urgent ? ' u' : ''}">${escapeHtml(sum.text)}</span>` : '')
+      + `</div>`;
+  }).join('');
+  return `<div class="sec"><div class="card plan-card" role="button" tabindex="0" ${actionAttrs('openPage', 'plan')}>`
+    + `<div class="plan-card-k"><span class="grow">Plan</span>${CHEVRON}</div>${rows}</div></div>`;
 }
 
 /**
@@ -438,18 +423,6 @@ export function finalsTests(limit = 3) {
   }));
 }
 
-/** Ace finals: how much the final exam counts, then the next tests. */
-function finalsCard() {
-  if (!SEMESTER_SPLIT) return '';
-  const rows = finalsTests().map(item => `<div class="row glist-row small">`
-    + `<div class="grow t">${escapeHtml(item.title)}</div>`
-    + `<span class="glist-s">${escapeHtml(item.course)}, ${escapeHtml(shortDate(item.due))}</span></div>`).join('');
-  return `<div class="sec"><div class="card glead"><div class="glead-k">Finals worth</div>`
-    + `<div class="glead-r"><span class="glead-g">${SEMESTER_SPLIT.examPercent}%</span></div></div>`
-    + (rows ? `<div class="card quiet" style="margin-top:8px">${rows}</div>` : '')
-    + `</div>`;
-}
-
 /** An A is 90 and up. */
 export const A_LINE = 90;
 
@@ -457,19 +430,4 @@ export const A_LINE = 90;
 export function aGoalNote(average) {
   const gap = average - A_LINE;
   return gap >= 0 ? `${oneDecimal(gap)} above` : `${oneDecimal(-gap)} to go`;
-}
-
-/** Get an A: the picked classes, their grades and how far from the A line, red only under the alert line. Each opens its class. */
-function keepACard() {
-  const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
-  if (!classes.length) return '';
-  const rows = classes.map(course => {
-    const average = periodAverage(course);
-    return `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
-      + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
-      + (state.hideScores ? CHEVRON : `<span class="glist-g${average < state.alertUnder ? ' u' : ''}">${oneDecimal(average)}</span>`
-        + `<span class="glist-s glist-gap">${aGoalNote(average)}</span>`)
-      + `</div>`;
-  }).join('');
-  return `<div class="sec"><div class="lab" style="margin:0 0 6px">A goals</div><div class="card quiet">${rows}</div></div>`;
 }
