@@ -3,9 +3,10 @@
  *
  *   1 What do you want?          multi pick: Raise my GPA, Never miss assignments, Ace finals,
  *                                Get an A in a class. Each tile carries one real number.
- *   2 Which classes need an A?   multi pick of every graded class (high to low), only with Get an A
- *   3 Tell me when a class drops under   single pick 90 / 85 / 80, moves on by itself
- *   Your plan                    built from the picks with real grades, under a cover plate that
+ *   2 Your GPA goal              only with Raise my GPA: a tenth past now (3.57 makes 3.7), − and +,
+ *                                with the letters it takes (js/views/plan-math.js)
+ *   3 Which classes need an A?   multi pick of every graded class (high to low), only with Get an A
+ *   Current stats                built from the picks with real grades, under a cover plate that
  *                                lifts once (js/views/goals-motion.js). Start opens Home, which
  *                                then leads with the picked goals (js/views/home.js).
  *
@@ -19,6 +20,7 @@ import { actionAttrs } from './components.js';
 import { currentGpa, closestToNextLetter } from './gpa.js';
 import { zeroItems, zeroCountText, finalsTests, A_LINE, aGoalNote } from './home.js';
 import { planPlateDue } from './goals-motion.js';
+import { gpaGoal, gpaGoalText, lettersToGoal, lettersUpText, stepText, need } from './plan-math.js';
 
 export const GOALS = [
   { key: 'gpa', label: 'Raise my GPA' },
@@ -28,7 +30,7 @@ export const GOALS = [
 ];
 
 const SHORT_NAMES = { 'AP World History': 'AP World', 'Computer Science': 'Comp Sci', 'Health and PE': 'PE' };
-const shortName = course => SHORT_NAMES[course.name] || course.name.replace(/ Honors$/, '');
+export const shortName = course => SHORT_NAMES[course.name] || course.name.replace(/ Honors$/, '');
 
 const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" '
   + 'fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -36,11 +38,11 @@ const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true
 // ---- Real numbers ---------------------------------------------------------------------------
 
 /** Every graded class, highest average first. */
-const gradedClasses = () => visibleClasses().filter(course => periodAverage(course) != null)
+export const gradedClasses = () => visibleClasses().filter(course => periodAverage(course) != null)
   .sort((a, b) => periodAverage(b) - periodAverage(a));
 const aClasses = () => gradedClasses().filter(course => periodAverage(course) >= A_LINE);
 /** The GPA, or '' when there is none to show: nothing graded, or real HAC data (the app hides it there). */
-function gpaText() {
+export function gpaText() {
   if (real.on || !gradedClasses().length) return '';
   const gpa = currentGpa();
   return Number.isFinite(gpa) ? gpa.toFixed(2) : '';
@@ -79,10 +81,10 @@ function progressBar(index, total) {
 }
 
 /**
- * Fixed slots, so the bar only ever grows: 1 what, 2 which, 3 plan. When "Which classes" is not
- * asked, the bar jumps from slot 1 to slot 3.
+ * Fixed slots, so the bar only ever grows: 1 what, 2 GPA goal, 3 which, 4 plan. A question that
+ * is not asked is jumped over.
  */
-const BAR_SLOTS = ['what', 'which', 'plan'];
+const BAR_SLOTS = ['what', 'gpaGoal', 'which', 'plan'];
 
 function topBar(step, canGoBack) {
   const index = BAR_SLOTS.indexOf(step);
@@ -94,7 +96,29 @@ function topBar(step, canGoBack) {
 
 // ---- Questions ------------------------------------------------------------------------------
 
+/** The GPA goal with − and +, and the letters it takes: "1 letter up", then "Spanish II to an A, 92 on Unit 5 Test". */
+export function gpaGoalBlock(goal, tappable = false) {
+  const plan = lettersToGoal(goal);
+  // On the Plan each row opens Target on that class (not during setup: Target is an app page).
+  const rows = plan.steps.map(step => {
+    const result = need(step.course, step.line);
+    const open = tappable ? ` role="button" tabindex="0" ${actionAttrs('openPlanTarget', step.course.id, step.line + ':' + result.kind)}` : '';
+    return `<div class="g-plan-row"${open}><span class="grow">${escapeHtml(stepText(step, shortName(step.course)))}</span>`
+      + `<span class="g-plan-s">${escapeHtml(result.text)}</span></div>`;
+  }).join('');
+  return `<div class="g-gpa"><button class="pill round g-step" aria-label="Lower goal" ${actionAttrs('planGpaStep', -1)}>−</button>`
+    + `<div class="g-gpa-n" data-live>${gpaGoalText(goal)}</div>`
+    + `<button class="pill round g-step" aria-label="Raise goal" ${actionAttrs('planGpaStep', 1)}>+</button></div>`
+    + `<div class="g-gpa-now">Now ${gpaText()}, ${plan.reached ? lettersUpText(plan.steps) : 'out of reach'}</div>`
+    + rows;
+}
+
 function questionBody(step) {
+  if (step === 'gpaGoal') {
+    const goal = gpaGoal();
+    return riseTitle('Your GPA ', 'goal')
+      + (goal == null ? `<div class="g-gpa-now">All As, GPA ${gpaText()}</div>` : `<div class="card g-plan">${gpaGoalBlock(goal)}</div>`);
+  }
   if (step === 'what') {
     return riseTitle('What do you ', 'want?')
       + `<div class="g-tiles n4" role="group" aria-label="Goals">`
@@ -113,7 +137,7 @@ function questionView() {
   const steps = goalSteps();
   const index = Math.min(state.goalStep, steps.length - 1);
   const step = steps[index];
-  const picked = step === 'what' ? state.goals.length : state.goalAClasses.length;
+  const picked = step === 'what' ? state.goals.length : step === 'gpaGoal' ? 1 : state.goalAClasses.length;
   const foot = `<div class="intro-foot"><button class="btn g-next${picked ? '' : ' ghost'}" aria-disabled="${!picked}" `
     + `${actionAttrs('goalsNext')}>Continue</button></div>`;
   return `<div class="scr goals look-${state.goalsLook}" data-goal-screen="${step}">`
@@ -126,7 +150,7 @@ function questionView() {
 // ---- Your plan ------------------------------------------------------------------------------
 
 
-function planBlock(key) {
+export function planBlock(key) {
   if (key === 'gpa') {
     let close = gradedClasses().length ? closestToNextLetter() : null;
     // The A goals card already says how far that class is from an A: don't say it twice.

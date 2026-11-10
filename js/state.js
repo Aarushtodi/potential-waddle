@@ -14,6 +14,7 @@ import {
 import { classAverage, averageEffect, isScored, countsAsZero, applyWhatIf, solveSemesterSplit } from './grade-math.js';
 import { scoreText, relativeDay } from './format.js';
 import { loadTheme } from './theme.js';
+import { real } from './real-data.js';
 
 /** Students can type in classes HAC does not have (dual credit, self study AP), up to this many. */
 export const TYPED_CLASS_LIMIT = 8;
@@ -34,7 +35,9 @@ export const state = {
   goals: [], // picked goal keys in pick order: 'gpa' | 'missing' | 'finals' | 'keepA'
   goalAClasses: [], // class ids picked on "Which classes stay As?"
   goalStep: 0, // index into goalSteps()
-  goalStage: 'ask', // 'ask' (the questions) | 'plan' (Your plan)
+  goalStage: 'ask', // 'ask' (the questions) | 'plan' (Current stats)
+  planGpa: null, // GPA goal this semester, asked in Goals and edited on the Plan; null = a tenth past now
+  planTargets: {}, // class id -> grade they want, set on the Plan (an A, 90, when not set)
   goalsLook: goalsLookParam(), // preview only: ?goals=a|b picks one of the 2 looks
 
   // Navigation. Each tab keeps its own stack of pushed pages: [pageName, id?].
@@ -115,12 +118,14 @@ function goalsLookParam() {
 }
 
 /**
- * The Goals questions in order. "Which classes need an A?" only when Get an A is picked and at
- * least one class has a grade (nothing to pick otherwise).
+ * The Goals questions in order. "Your GPA goal" only with Raise my GPA, "Which classes need an A?"
+ * only with Get an A; both need at least one class with a grade (nothing to pick otherwise).
  */
 export const goalSteps = () => {
   const anyGraded = visibleClasses().some(course => periodAverage(course) != null);
-  return ['what', ...(state.goals.includes('keepA') && anyGraded ? ['which'] : [])];
+  // The GPA goal only with Raise my GPA, and only where the app shows a GPA (not on real HAC data).
+  const gpaGoal = state.goals.includes('gpa') && anyGraded && !real.on;
+  return ['what', ...(gpaGoal ? ['gpaGoal'] : []), ...(state.goals.includes('keepA') && anyGraded ? ['which'] : [])];
 };
 
 /** Render bookkeeping: what was on screen last time, to keep scroll and skip replaying animations. */

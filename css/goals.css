@@ -475,3 +475,29 @@
     color: #A83030;
   }
 }
+
+/* ---- GPA goal (Goals step 2 and the Plan): − number +, then the letters it takes ---- */
+
+.g-gpa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.g-gpa-n {
+  font: 500 44px/1.05 var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.g-step {
+  width: 48px;
+  height: 48px;
+  background: var(--paper);
+  font: 500 24px var(--sans);
+}
+
+.g-gpa-now {
+  font-size: 15.5px;
+  margin: 8px 0 8px;
+}
