@@ -56,15 +56,17 @@
   padding: 26px 16px 16px;
 }
 
-/* Question title: weight 500, one style for the whole line (unslop 1 and 2, 11/10): no italic
-   serif swap word, normal tracking. The <i> stays in the markup for the rise motion. */
+/* Question title: weight 500, normal tracking (unslop 2, 11/10). Last words italic serif like
+   every other screen (.hd i), his call 11/10: keep the italic accent everywhere. */
 .g-q {
   font: 500 34px/1.12 var(--sans);
   margin: 0 0 16px; /* Unslop 28: title to content 16 (was 24) */
 }
 
 .g-q i {
-  font: inherit;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
 }
 
 /* Question opens: the whole body slides in and fades up as one. No clip or plate crosses text. */
