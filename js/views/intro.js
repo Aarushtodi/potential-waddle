@@ -55,7 +55,7 @@ export function introView() {
     + `<div class="intro-top"><button class="pill" ${actionAttrs('skipIntro')}>Skip</button></div>`
     + `<div class="intro-view" data-swipe="intro">`
     + `<div class="intro-track" style="transform:translateX(${-current * 100}%)">${slides}</div></div>`
-    + `<div class="intro-dots" aria-label="Slide ${current + 1} of ${SLIDES.length}">${dots}</div>`
+    + `<div class="intro-dots" role="img" aria-label="Slide ${current + 1} of ${SLIDES.length}">${dots}</div>`
     + `<div class="intro-foot"><button class="btn" ${actionAttrs('nextIntroSlide')}>${isLast ? 'Get started' : 'Next'}</button></div>`
     + `</div>`;
 }

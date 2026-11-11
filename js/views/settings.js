@@ -11,7 +11,7 @@ const THEME_CHOICES = [['light', 'Light'], ['dark', 'Dark'], ['system', 'Match m
 export function settingsView() {
   const muteRows = CLASSES.map(course =>
     `<div class="row"><div class="grow t" style="font-size:15px">Mute ${escapeHtml(course.name)}</div>`
-    + `${toggle(state.mutedClasses[course.id], 'toggleMute', course.id)}</div>`).join('');
+    + `${toggle(state.mutedClasses[course.id], 'toggleMute', course.id, `Mute ${escapeHtml(course.name)}`)}</div>`).join('');
 
   // The retest line is picked once at setup; any test under it triggers a retest reminder.
   const usesPreset = RETEST_LINE_CHOICES.includes(state.retestLine) && !state.retestLineCustom;
@@ -30,10 +30,10 @@ export function settingsView() {
     + (state.faceIdOn
       ? `<div class="s" role="button" tabindex="0" ${actionAttrs('lock')} style="text-decoration:underline">Try it now</div>`
       : '')
-    + `</div>${toggle(state.faceIdOn, 'toggleFaceId')}</div>`;
+    + `</div>${toggle(state.faceIdOn, 'toggleFaceId', undefined, 'Face ID to open')}</div>`;
 
   const ruleToggle = (key, title) => `<div class="row"><div class="grow"><div class="t">${title}</div>`
-    + `</div>${toggle(state.alertRules[key], 'toggleAlertRule', key)}</div>`;
+    + `</div>${toggle(state.alertRules[key], 'toggleAlertRule', key, title)}</div>`;
   return `<div class="sec"><div class="lab" style="margin-bottom:6px">Alert rules</div><div class="card">`
     + ruleToggle('newGrade', 'New grades')
     + ruleToggle('zero', 'Zero or missing')
@@ -41,7 +41,7 @@ export function settingsView() {
     + `<div class="row"><div class="grow"><div class="t">Average under my number</div>`
     + `</div>`
     + `<input class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder">`
-    + toggle(state.alertRules.under, 'toggleAlertRule', 'under') + `</div>`
+    + toggle(state.alertRules.under, 'toggleAlertRule', 'under', 'Average under my number') + `</div>`
     + `<div class="row"><div class="grow"><div class="t">Can't read your gradebook</div>`
     + `</div></div>`
     + `<div class="row" role="button" tabindex="0" ${actionAttrs('showSampleAlert')}><div class="grow"><div class="t">Send a test alert</div></div></div>`
@@ -51,7 +51,7 @@ export function settingsView() {
     + retestLine + faceId
     + `<div class="row"><div class="grow"><div class="t">Hide scores</div>`
     + `</div>`
-    + `${toggle(state.hideScores, 'toggleHideScores')}</div>`
+    + `${toggle(state.hideScores, 'toggleHideScores', undefined, 'Hide scores')}</div>`
     + `<div class="pad"><div class="t" style="margin-bottom:8px">Appearance</div>`
     + `<div class="seg-fit">${segmented('pickTheme', state.theme, THEME_CHOICES)}</div></div>`
     + `</div></div>`

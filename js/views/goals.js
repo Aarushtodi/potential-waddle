@@ -76,7 +76,7 @@ function tile(on, action, x, number, label, single) {
 }
 
 function progressBar(index, total) {
-  return `<div class="g-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${index + 1}">`
+  return `<div class="g-bar" role="progressbar" aria-label="Goals, step ${index + 1} of ${total}" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${index + 1}">`
     + `<i style="transform:scaleX(${((index + 1) / total).toFixed(4)})"></i></div>`;
 }
 

@@ -91,6 +91,6 @@ function tape() {
   }
   const last = boxes[boxes.length - 1];
   // data-live-key: when the current or next period changes, refreshLive redraws the whole tab.
-  return `<div class="tapew"><div id="tape" data-live-key="${state.bellDay}${currentIndex}${nextIndex}${inDay}">`
+  return `<div class="tapew"><div id="tape" tabindex="0" aria-label="Bell schedule" data-live-key="${state.bellDay}${currentIndex}${nextIndex}${inDay}">`
     + `<div class="tape-in" style="height:${last.top + last.height + BOTTOM_PAD}px">${html}</div></div></div>`;
 }

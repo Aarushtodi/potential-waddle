@@ -27,7 +27,7 @@
   --notgraded: #875A12;
   --empty: #CDC6B7;
   --outer: #BDB6A8;
-  --up: #2E7A47;
+  --up: #2C7544; /* Unslop 37: nearest shade at 4.5:1 on cards (was #2E7A47) */
   --chip-bg: #E0D9CB;
   --sans: "Avenir Next","Avenir","Nunito Sans","Segoe UI",system-ui,sans-serif;
   --serif: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;

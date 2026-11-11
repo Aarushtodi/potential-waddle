@@ -51,7 +51,7 @@ const SHEETS = {
       right: `<button class="pill" ${actionAttrs('saveTodo')}>Save</button>`,
       body: `<div class="card"><div class="pad"><input class="f w" placeholder="What do you need to do?" `
         + `value="${escapeHtml(form.title || '')}" data-input="formField" data-x="title" aria-label="To-do"></div>`
-        + `<div class="row"><div class="grow t">Due date</div>${toggle(form.hasDate, 'toggleFormDueDate')}</div>`
+        + `<div class="row"><div class="grow t">Due date</div>${toggle(form.hasDate, 'toggleFormDueDate', undefined, 'Due date')}</div>`
         + (form.hasDate
           ? `<div class="row"><div class="grow t">Due</div><input class="f" type="date" aria-label="Due" `
             + `value="${form.due || isoDate(1)}" data-input="formField" data-x="due"></div>`
@@ -192,7 +192,7 @@ export function sheetView() {
   const { title, left = '', right = '', body } = parts;
   const animate = sheetAnimKey() !== ui.lastAnimKey ? ' anim' : '';
   return `<div class="dim" ${actionAttrs('tapOutsideSheet')}>`
-    + `<div class="sheet${animate}" role="dialog" aria-modal="true">`
+    + `<div class="sheet${animate}" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">`
     + `<div class="bar"><div style="min-width:70px">${left}</div><div class="ttl">${escapeHtml(title)}</div>`
     + `<div style="min-width:70px;text-align:right">${right}</div></div>`
     + `<div class="body">${body}</div></div></div>`;

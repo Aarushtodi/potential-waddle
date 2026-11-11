@@ -268,7 +268,7 @@ function dropOrCurve(course) {
   const scenario = whatIfFor(course.id);
   const tests = course.rows.filter(row => row.category === 'Test' && isScored(row));
   return `<div class="card"><div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Drop my lowest test</div>`
-    + `<div class="s">If your teacher does it</div></div>${toggle(scenario.dropLowestTest, 'toggleDropLowest', course.id)}</div>`
+    + `<div class="s">If your teacher does it</div></div>${toggle(scenario.dropLowestTest, 'toggleDropLowest', course.id, 'Drop my lowest test')}</div>`
     + tests.map(row =>
       `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Curve ${escapeHtml(row.title)}</div>`
       + `<div class="s">Points added, was ${row.score}</div></div>`

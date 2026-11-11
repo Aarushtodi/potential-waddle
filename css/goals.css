@@ -445,7 +445,7 @@
   font-size: 16px;
   line-height: 1.2;
   color: inherit;
-  opacity: .6;
+  opacity: .62; /* Unslop 37: nearest shade that reads at 4.5:1 (was .6, 4.36) */
 }
 
 .scr.goals[data-goal-screen="what"] [data-pick="missing"] .g-num {

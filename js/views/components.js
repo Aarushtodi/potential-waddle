@@ -40,8 +40,10 @@ export function segmented(action, selected, options, target) {
   return `<div class="seg">${buttons.join('')}</div>`;
 }
 
-export function toggle(on, action, x) {
-  return `<button class="tog${on ? ' on' : ''}" ${actionAttrs(action, x)} aria-pressed="${!!on}"></button>`;
+/** label: the row's own title, read out by screen readers (unslop 37); nothing new on screen. */
+export function toggle(on, action, x, label = '') {
+  const name = label ? ` aria-label="${label}"` : '';
+  return `<button class="tog${on ? ' on' : ''}" ${actionAttrs(action, x)} aria-pressed="${!!on}"${name}></button>`;
 }
 
 /** Small section label above a card. */
