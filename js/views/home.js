@@ -325,7 +325,7 @@ function updatedLine() {
     const problem = realProblem();
     return `<div class="upd" data-live role="button" tabindex="0" ${actionAttrs('refreshFromHome')}>`
       + `Real HAC grades, Q2. ${realUpdatedText()}. Reload</div>`
-      + (problem ? `<div class="upd" style="color:var(--red, #d33)">${escapeHtml(problem)}</div>` : '');
+      + (problem ? `<div class="upd" style="color:var(--urgent)">${escapeHtml(problem)}</div>` : '');
   }
   if (state.loading) text = `<span class="spin"></span>${state.lastUpdated ? 'Loading' : 'Last grades, loading'}`;
   else if (state.firstOpen) {

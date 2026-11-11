@@ -60,7 +60,7 @@ function aSection() {
     return `<div class="plan-a${on ? ' on' : ''}"><div class="g-plan-row plan-a-top">`
       + `<span class="grow">${escapeHtml(shortName(course))}</span>`
       + `<span class="g-plan-g">${oneDecimal(periodAverage(course))}</span>`
-      + toggle(on, 'toggleGoalClass', course.id) + `</div>`
+      + toggle(on, 'toggleGoalClass', course.id, `A goal for ${escapeHtml(shortName(course))}`) + `</div>`
       + (on ? `<div class="plan-a-goal">${stepper('planTargetStep', course.id, target, TARGET_MIN, TARGET_MAX, 'grade goal')}`
         + needCell(course, target) + `</div>` : '')
       + `</div>`;
