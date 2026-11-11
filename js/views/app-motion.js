@@ -121,11 +121,12 @@ function slideIndicator(element) {
 
 // ---- Entrances (car row 3, up version) ---------------------------------------------------
 
-function stagger(container) {
+function stagger(container, tab = false) {
   if (!container || !on()) return;
   [...container.children].forEach((child, i) => child.style.setProperty('--i', Math.min(i, STAGGER_CAP)));
   container.classList.add('pg-in');
-  setTimeout(() => container.classList.remove('pg-in'), CLEANUP_MS);
+  container.classList.toggle('pg-tab', tab); // Unslop 27: a tab opens in 120ms (anim.css)
+  setTimeout(() => container.classList.remove('pg-in', 'pg-tab'), CLEANUP_MS);
 }
 
 function pageEntrance() {
@@ -141,7 +142,7 @@ function pageEntrance() {
   const once = page === 'settings' ? 'pg:settings' : !top && state.tab === 'calendar' ? 'pg:cal' : '';
   if (once && !session(once)) {
     session(once, '1');
-    stagger(document.getElementById('main'));
+    stagger(document.getElementById('main'), !top);
   }
 }
 

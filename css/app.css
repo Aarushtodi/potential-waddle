@@ -1147,16 +1147,17 @@ input[type=date].f {
 }
 
 /* Entrance on open (render.js adds .enter): cards fade up in a stagger, the now line slides in. */
+/* Unslop 27 (11/10): the bell is opened many times a day, so the whole tape lands in 120ms, ease out. */
 #tape.enter .tb {
-  animation: tapeup .24s cubic-bezier(.2,.7,.3,1) calc(var(--i) * 35ms) both;
+  animation: tapeup 120ms cubic-bezier(.2,.7,.3,1) both;
 }
 
 #tape.enter .tick, #tape.enter .tg {
-  animation: tapefade .3s ease-out both;
+  animation: tapefade 120ms ease-out both;
 }
 
 #tape.enter .nowl {
-  animation: nowslide .3s cubic-bezier(.2,.7,.3,1) .1s both;
+  animation: nowslide 120ms cubic-bezier(.2,.7,.3,1) both;
 }
 
 @keyframes tapeup {
