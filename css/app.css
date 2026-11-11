@@ -20,6 +20,7 @@
   --ink: #181812;
   --sec: #4A473F;
   --urgent: #A83030;
+  --urgent-on-paper: #A62F2F; /* 4.55:1 on --paper (--urgent is 4.46), real data HAC problem line */
   --rule: #CBC4B5;
   --ring: #181812;
   --done: #181812;
@@ -46,6 +47,7 @@
   --ink: #F0F0E4;
   --sec: #A9A99A;
   --urgent: #D87058;
+  --urgent-on-paper: #D87058;
   --rule: #3A3A30;
   --ring: #6E6E60;
   --done: #48B868;
@@ -65,6 +67,7 @@
     --ink: #F0F0E4;
     --sec: #A9A99A;
     --urgent: #D87058;
+    --urgent-on-paper: #D87058;
     --rule: #3A3A30;
     --ring: #6E6E60;
     --done: #48B868;
