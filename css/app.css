@@ -1106,7 +1106,7 @@ input[type=date].f {
   left: -50px;
   right: -8px;
   height: 0;
-  border-top: 2px solid var(--ink);
+  border-top: 2px solid var(--urgent); /* Red now marker (his go 11/10): line, dot, pill */
   z-index: 2;
   pointer-events: none;
 }
@@ -1123,8 +1123,8 @@ input[type=date].f {
   left: -3px;
   top: -11px;
   font-variant-numeric: tabular-nums;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--urgent);
+  color: var(--card); /* 5.49:1 light, 4.75:1 dark on --urgent (--paper fails light at 4.46) */
   font-size: 11px;
   font-weight: 700;
   padding: 2px 5px;
@@ -1139,7 +1139,7 @@ input[type=date].f {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--ink);
+  background: var(--urgent);
 }
 
 .nowl i::after {
@@ -1147,7 +1147,7 @@ input[type=date].f {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: var(--ink);
+  background: var(--urgent);
   animation: nowpulse 2.4s ease-out infinite;
 }
 
