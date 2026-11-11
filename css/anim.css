@@ -136,8 +136,9 @@
   }
 }
 
+/* Unslop 16 (11/10): sheets are UI, 150 to 250 ms, not the 420 ms page entrance. Same ease out. */
 .motion .sheet.anim {
-  animation: up var(--t-enter) var(--ease);
+  animation: up 240ms var(--ease);
 }
 
 /* ---- 4. Odometer: one counter drives every column, so every frame reads a value between old and new (car row 5) ----- */
