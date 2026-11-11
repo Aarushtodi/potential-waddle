@@ -1111,11 +1111,27 @@ input[type=date].f {
   pointer-events: none;
 }
 
-/* Inside a class the line stops at the dot on the card's edge (the fill shows now across the
-   card), so it never runs through the card's text. During a walk it crosses the whole tape. */
+/* Inside a class the outer line stops at the dot on the card's edge and .nowc carries it on
+   across the card (his ask 11/10: all the way across), under the class name and times. */
 .nowl.in-card {
   right: auto;
   width: 46px;
+}
+
+.tb .nowc {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--urgent);
+  pointer-events: none;
+}
+
+/* Where the line meets the class name or times it breaks around the letters (a halo halfway
+   between the card and its fill), so it never reads as a strikethrough. */
+.tb.cur .t, .tb.cur .s {
+  --halo: color-mix(in srgb, var(--ink) 6%, var(--paper));
+  text-shadow: 0 0 2px var(--halo), 0 0 2px var(--halo), 0 0 3px var(--halo), 0 0 3px var(--halo);
 }
 
 .nowl span {

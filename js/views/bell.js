@@ -80,6 +80,7 @@ function tape() {
       + `<div class="tb${kind}" style="top:${box.top}px;height:${box.height}px;--i:${i}">`
       + (i === currentIndex
         ? `<div class="fill" data-live-style style="height:${(clamp01((minutes - box.start) / (box.end - box.start)) * 100).toFixed(3)}%"></div>`
+          + `<div class="nowc" data-live-style style="top:${(clamp01((minutes - box.start) / (box.end - box.start)) * 100).toFixed(3)}%"></div>`
         : '')
       + `<div class="t">${escapeHtml(box.name)}</div><div class="s">${escapeHtml(box.room)}, to ${clockTime(box.end)}</div>`
       + (i === currentIndex ? `<div class="s left" data-live>${Math.ceil(box.end - minutes)} min left</div>` : '')
