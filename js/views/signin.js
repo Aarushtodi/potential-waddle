@@ -14,7 +14,7 @@ export function signInView() {
   else if (state.district) districtLabel = escapeHtml(state.district);
 
   let html = `<div class="scr"><div class="scroll nt" style="padding-top:calc(env(safe-area-inset-top) + 44px)">`
-    + `<div class="sec">`
+    + `<div class="sec form">`
     + heading('School gradebook', districtChosen ? 'Sign ' : 'Choose your ', districtChosen ? 'in' : 'district', { big: 1 })
     + `<div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('openDistrictPicker')}>`
     + `<div class="grow t">${districtLabel}</div>${CHEVRON}</div>`
@@ -23,7 +23,7 @@ export function signInView() {
       : '')
     + `</div></div>`;
   if (districtChosen) {
-    html += `<div class="sec"><div class="card"><div class="row"><div class="t">Sample Student</div></div>`
+    html += `<div class="sec form"><div class="card"><div class="row"><div class="t">Sample Student</div></div>`
       + `<div class="row"><div class="t" style="letter-spacing:2px">••••••••</div></div></div>`
       + `</div>`
       + `<button class="btn" ${actionAttrs('signIn')}>Sign in</button>`;

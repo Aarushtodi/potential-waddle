@@ -206,6 +206,19 @@ body {
   font-size: 34px;
 }
 
+.hd.big {
+  font-size: 34px;
+}
+
+/* Forms (sign in, GPA goal): heading group 24 above the first field, fields 16 apart, last field 24 above the button. */
+.sec.form .hd {
+  margin-bottom: 24px;
+}
+
+.sec.form:has(+ .sec.form) {
+  margin-bottom: 16px;
+}
+
 .hd i {
   font-family: var(--serif);
   font-weight: 700;
@@ -519,6 +532,10 @@ body {
   overflow-x: auto;
   padding: 2px 0 8px;
   scrollbar-width: none;
+}
+
+.need-chips {
+  padding-bottom: 12px;
 }
 
 .chips::-webkit-scrollbar {

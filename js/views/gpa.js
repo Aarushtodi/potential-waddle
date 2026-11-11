@@ -134,7 +134,7 @@ export function needView() {
       + `${escapeHtml(other.name)}</button>`).join('')
     + `</div>`
     + segmented('needPickKind', calc.kind, [['test', 'Next test'], ['final', 'Final']])
-    + `<div style="height:10px"></div>`
+    + `<div style="height:16px"></div>`
     + `<div class="card"><div class="row"><div class="grow t">Grade you want</div>`
     + `<input class="f" type="number" inputmode="decimal" aria-label="Target grade" value="${calc.target}" data-input="needTarget"></div>`
     + `<div class="pad" style="border-top:1px solid var(--rule)" data-live>${needResult(course)}</div></div></div>`;
@@ -226,7 +226,7 @@ export function gpaGoalView() {
     `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Semester ${history.semestersDone + i + 1}</div>`
     + `<div class="s">${mix}</div></div>`
     + `<div class="avg">${plan.perSemester > 5 ? '–' : plan.perSemester.toFixed(2)}</div></div>`).join('');
-  return `<div class="sec">`
+  return `<div class="sec form">`
     + heading(`Estimate, ${history.weightedSoFar.toFixed(2)} weighted so far over ${history.semestersDone} semesters`,
       'By ', 'graduation', { big: 1 })
     + `<div class="card"><div class="row"><div class="grow t">GPA I want</div>`
