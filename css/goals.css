@@ -60,7 +60,7 @@
    serif swap word, normal tracking. The <i> stays in the markup for the rise motion. */
 .g-q {
   font: 500 34px/1.12 var(--sans);
-  margin: 0 0 24px;
+  margin: 0 0 16px; /* Unslop 28: title to content 16 (was 24) */
 }
 
 .g-q i {
@@ -251,7 +251,7 @@
 /* ---- Your plan ---- */
 
 .g-planbody .g-q {
-  margin-bottom: 18px;
+  margin-bottom: 16px; /* Unslop 28: title to content 16 (was 18) */
 }
 
 .g-plan {
