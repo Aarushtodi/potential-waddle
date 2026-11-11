@@ -605,7 +605,8 @@ input[type=date].f {
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,.3);
-  transition: left .15s;
+  /* Unslop 22 (11/10): the knob moves by transform, never left. */
+  transition: transform .15s;
 }
 
 .tog.on {
@@ -613,7 +614,7 @@ input[type=date].f {
 }
 
 .tog.on:after {
-  left: 22px;
+  transform: translateX(20px);
 }
 
 :root[data-theme=dark] .tog.on:after {
@@ -1268,7 +1269,8 @@ input[type=date].f {
   height: 8px;
   border-radius: 50%;
   background: var(--empty);
-  transition: background .2s, width .2s;
+  /* Unslop 22 (11/10): no width transition (the dots re-render per slide, it never played). */
+  transition: background .2s;
 }
 
 .intro-dots span.on {
@@ -2446,4 +2448,18 @@ html.vt-leave-intro::view-transition-new(root) {
 .clab span:last-child,
 .g-plan-c {
   font-variant-numeric: tabular-nums;
+}
+
+/* Unslop 22 (11/10): reduced motion still gets a cue, an opacity fade in place, no travel.
+   motion.css turns every animation off under reduce; this one wins by being more specific. */
+@media (prefers-reduced-motion: reduce) {
+  .sheet.anim {
+    animation: rm-fade 150ms ease-out both !important;
+  }
+}
+
+@keyframes rm-fade {
+  from {
+    opacity: 0;
+  }
 }
