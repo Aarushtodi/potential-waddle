@@ -166,7 +166,7 @@ const SHEETS = {
       title: 'Add a class',
       left: cancelButton(),
       right: `<button class="pill" ${actionAttrs('saveClass')}>Add</button>`,
-      body: `<div class="card"><div class="pad"><input autocomplete="off" enterkeyhint="done" class="f w" placeholder="Class name, like Dual Credit English" `
+      body: `<div class="card"><div class="pad"><input autocomplete="off" enterkeyhint="done" class="f w" placeholder="Ex: Dual Credit English" `
         + `value="${escapeHtml(form.className || '')}" data-input="formField" data-x="className" aria-label="Class name"></div>`
         + `<div class="row"><div class="grow t">Current grade</div>`
         + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" inputmode="decimal" aria-label="Current grade" placeholder="90" `
