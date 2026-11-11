@@ -19,7 +19,7 @@ export function paceView() {
     return `<div class="row${done ? ' done' : ''}">`
       + `<div class="mark" role="button" tabindex="0" aria-label="Mark checkpoint" ${actionAttrs('toggleDone', 'cp' + i)}>`
       + `<b class="${done ? 'on' : checkpoint.due <= 0 ? 'u' : ''}"></b></div>`
-      + `<div class="grow"><input class="f plain" aria-label="Checkpoint name" value="${escapeHtml(checkpoint.title)}" `
+      + `<div class="grow"><input autocomplete="off" enterkeyhint="done" class="f plain" aria-label="Checkpoint name" value="${escapeHtml(checkpoint.title)}" `
       + `data-input="renameCheckpoint" data-x="${i}">`
       + `<div class="s">${shortDate(checkpoint.due)}</div><div class="s">${reminder}</div></div>`
       + `<button class="pill round" aria-label="One day earlier" ${actionAttrs('moveCheckpoint', i, -1)}>‹</button>`

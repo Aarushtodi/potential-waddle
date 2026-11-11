@@ -48,6 +48,11 @@ document.addEventListener('keydown', event => {
   }
 });
 
+// Done on the keyboard (enterkeyhint) closes it. Fields save as you type, so nothing else to do.
+document.addEventListener('keydown', event => {
+  if (event.key === 'Enter' && event.target.matches('input[data-input]')) event.target.blur();
+});
+
 // Typing updates state, then only the live regions, so the field keeps focus.
 document.addEventListener('input', event => {
   const { input, x, y } = event.target.dataset;

@@ -21,7 +21,7 @@ export function settingsView() {
     + segmented('pickRetestLine', usesPreset ? String(state.retestLine) : 'own',
       [['80', '80'], ['90', '90'], ['own', 'Type your own']])
     + (showTypedLine
-      ? `<div style="height:8px"></div><input class="f w" type="number" inputmode="decimal" aria-label="Retest line" `
+      ? `<div style="height:8px"></div><input autocomplete="off" enterkeyhint="done" class="f w" type="number" inputmode="decimal" aria-label="Retest line" `
         + `value="${state.retestLine}" data-input="retestLine">`
       : '')
     + `</div>`;
@@ -40,7 +40,7 @@ export function settingsView() {
     + ruleToggle('changed', 'Score changed')
     + `<div class="row"><div class="grow"><div class="t">Average under my number</div>`
     + `</div>`
-    + `<input class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder">`
+    + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder">`
     + toggle(state.alertRules.under, 'toggleAlertRule', 'under', 'Average under my number') + `</div>`
     + `<div class="row"><div class="grow"><div class="t">Can't read your gradebook</div>`
     + `</div></div>`

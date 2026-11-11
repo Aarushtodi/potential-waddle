@@ -69,7 +69,7 @@ function editRow(course) {
     ? `<button class="pill" ${actionAttrs('removeTypedClass', course.id)}>Remove</button>`
     : `<button class="pill" ${actionAttrs('toggleHideClass', course.id)}>${hidden ? 'Show' : 'Hide'}</button>`;
   return `<div class="row" style="${hidden ? 'opacity:.8' : ''}"><div class="grow">`
-    + `<input class="f plain" aria-label="Rename ${escapeHtml(course.name)}" value="${escapeHtml(course.name)}" data-input="renameClass" data-x="${course.id}">`
+    + `<input autocomplete="off" enterkeyhint="done" class="f plain" aria-label="Rename ${escapeHtml(course.name)}" value="${escapeHtml(course.name)}" data-input="renameClass" data-x="${course.id}">`
     + `${hidden ? '<div class="s">Hidden</div>' : ''}</div>`
     + `<button class="pill round" aria-label="Move up" ${actionAttrs('moveClass', course.id, -1)}>↑</button>`
     + `<button class="pill round" aria-label="Move down" ${actionAttrs('moveClass', course.id, 1)}>↓</button>`

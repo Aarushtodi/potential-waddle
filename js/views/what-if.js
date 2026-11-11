@@ -78,7 +78,7 @@ function estimateHeading(course) {
 }
 
 function numberInput(label, value, input, x, y, extra = '') {
-  return `<input class="f" type="number" inputmode="decimal" aria-label="${label}"${extra} value="${value}" `
+  return `<input autocomplete="off" enterkeyhint="done" class="f" type="number" inputmode="decimal" aria-label="${label}"${extra} value="${value}" `
     + `data-input="${input}" data-x="${x}"${y != null ? ` data-y="${y}"` : ''}>`;
 }
 
@@ -116,7 +116,7 @@ function stackScores(course) {
 
   html += sectionLabel('Add a fake future assignment')
     + `<div class="card">`
-    + `<div class="pad"><input class="f w" placeholder="Name it" aria-label="Fake assignment name" `
+    + `<div class="pad"><input autocomplete="off" enterkeyhint="done" class="f w" placeholder="Name it" aria-label="Fake assignment name" `
     + `value="${escapeHtml(draft.name)}" data-input="fakeAssignmentField" data-x="${course.id}" data-y="name"></div>`
     + `<div class="pad" style="border-top:1px solid var(--rule)">`
     + segmented('pickFakeCategory', draft.category, [['Test', 'Test'], ['Lab', 'Lab'], ['HW', 'HW']], course.id)
@@ -305,7 +305,7 @@ function savedScenarios(course) {
     + `</div></div>` + GAP_12
     + `<div class="card">`
     + saved.map((entry, i) =>
-      `<div class="row"><div class="grow"><input class="f plain" aria-label="Scenario name" value="${escapeHtml(entry.name)}" `
+      `<div class="row"><div class="grow"><input autocomplete="off" enterkeyhint="done" class="f plain" aria-label="Scenario name" value="${escapeHtml(entry.name)}" `
       + `data-input="renameScenario" data-x="${course.id}" data-y="${i}"></div>`
       + `<button class="pill" ${actionAttrs('deleteScenario', course.id, i)}>Remove</button></div>`).join('')
     + `</div>` + GAP_12 + saveButton;

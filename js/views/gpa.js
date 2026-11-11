@@ -136,7 +136,7 @@ export function needView() {
     + segmented('needPickKind', calc.kind, [['test', 'Next test'], ['final', 'Final']])
     + `<div style="height:16px"></div>`
     + `<div class="card"><div class="row"><div class="grow t">Grade you want</div>`
-    + `<input class="f" type="number" inputmode="decimal" aria-label="Target grade" value="${calc.target}" data-input="needTarget"></div>`
+    + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" inputmode="decimal" aria-label="Target grade" value="${calc.target}" data-input="needTarget"></div>`
     + `<div class="pad" style="border-top:1px solid var(--rule)" data-live>${needResult(course)}</div></div></div>`;
 }
 
@@ -230,7 +230,7 @@ export function gpaGoalView() {
     + heading(`Estimate, ${history.weightedSoFar.toFixed(2)} weighted so far over ${history.semestersDone} semesters`,
       'By ', 'graduation', { big: 1 })
     + `<div class="card"><div class="row"><div class="grow t">GPA I want</div>`
-    + `<input class="f" type="number" step="0.01" inputmode="decimal" aria-label="GPA goal" value="${escapeHtml(state.gpaGoal)}" data-input="gpaGoal">`
+    + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" step="0.01" inputmode="decimal" aria-label="GPA goal" value="${escapeHtml(state.gpaGoal)}" data-input="gpaGoal">`
     + `</div></div></div>`
     + `<div class="sec" data-live><div class="lab" style="margin-bottom:6px">Grades needed each semester</div>`
     + `<div class="card">${semesterRows}</div></div>`;

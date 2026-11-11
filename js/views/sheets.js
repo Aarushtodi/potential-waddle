@@ -49,7 +49,7 @@ const SHEETS = {
       title: 'Add to-do',
       left: cancelButton(),
       right: `<button class="pill" ${actionAttrs('saveTodo')}>Save</button>`,
-      body: `<div class="card"><div class="pad"><input class="f w" placeholder="What do you need to do?" `
+      body: `<div class="card"><div class="pad"><input autocomplete="off" enterkeyhint="done" class="f w" placeholder="What do you need to do?" `
         + `value="${escapeHtml(form.title || '')}" data-input="formField" data-x="title" aria-label="To-do"></div>`
         + `<div class="row"><div class="grow t">Due date</div>${toggle(form.hasDate, 'toggleFormDueDate', undefined, 'Due date')}</div>`
         + (form.hasDate
@@ -166,10 +166,10 @@ const SHEETS = {
       title: 'Add a class',
       left: cancelButton(),
       right: `<button class="pill" ${actionAttrs('saveClass')}>Add</button>`,
-      body: `<div class="card"><div class="pad"><input class="f w" placeholder="Class name, like Dual Credit English" `
+      body: `<div class="card"><div class="pad"><input autocomplete="off" enterkeyhint="done" class="f w" placeholder="Class name, like Dual Credit English" `
         + `value="${escapeHtml(form.className || '')}" data-input="formField" data-x="className" aria-label="Class name"></div>`
         + `<div class="row"><div class="grow t">Current grade</div>`
-        + `<input class="f" type="number" inputmode="decimal" aria-label="Current grade" placeholder="90" `
+        + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" inputmode="decimal" aria-label="Current grade" placeholder="90" `
         + `value="${escapeHtml(form.classGrade || '')}" data-input="formField" data-x="classGrade"></div>`
         + `<div class="pad" style="border-top:1px solid var(--rule)">`
         + segmented('pickClassLevel', form.classLevel || 'DC', [['DC', 'Dual credit'], ['AP', 'Self study AP'], ['R', 'Regular']])
