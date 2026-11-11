@@ -2439,3 +2439,11 @@ html.vt-leave-intro::view-transition-new(root) {
 .wi-more.open .chev {
   transform: rotate(90deg);
 }
+
+/* Unslop 11 (11/10): counts that change on a tap (missing count, "N left", the Plan missing line)
+   use tabular figures so the line never shifts width. The number roll on grades stays as is. */
+.card.lead .row.zero .t,
+.clab span:last-child,
+.g-plan-c {
+  font-variant-numeric: tabular-nums;
+}
