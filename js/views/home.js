@@ -253,6 +253,11 @@ function todoSection(shownAbove) {
   }
   if (groups.later.length) html += groupLabel('Later', leftText(groups.later)) + limitedRows('later', groups.later);
   html += anytimeRows(groups.anytime);
+  // Nothing to list: say so, and open the same Add to-do sheet as the + up top.
+  if (!html) {
+    html = `<div class="row more" role="button" tabindex="0" ${actionAttrs('openSheet', 'addTodo')}>`
+      + `<div class="grow s">No to-dos</div><span class="s">Add one</span>${CHEVRON}</div>`;
+  }
   return `<div class="sec"><div class="lab" style="margin:0 0 6px">To-dos</div>`
     + `<div class="card quiet${state.hideScores ? ' hide' : ''}">${html}</div></div>`;
 }
@@ -266,7 +271,8 @@ function todoSection(shownAbove) {
  */
 function classStrip() {
   const classes = visibleClasses().filter(course => periodAverage(course) != null);
-  return `<div class="sec grades-sec">${classes.length ? (state.hideScores ? namesList(classes) : leadAndList(classes)) : ''}${latestLine()}</div>`;
+  const empty = `<div class="card quiet"><div class="row"><div class="grow s">No grades posted yet</div></div></div>`;
+  return `<div class="sec grades-sec">${classes.length ? (state.hideScores ? namesList(classes) : leadAndList(classes)) : empty}${latestLine()}</div>`;
 }
 
 /** Change in a class average from its newest grade change, or null. */

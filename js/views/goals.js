@@ -132,8 +132,9 @@ function planBlock(key) {
     // The A goals card already says how far that class is from an A: don't say it twice.
     if (close && state.goals.includes('keepA') && state.goalAClasses.includes(close.course.id)) close = null;
     const gpa = gpaText();
-    if (!gpa && !close) return '';
+    if (!gpa && !close && gradedClasses().length) return '';
     return `<div class="card g-plan"><div class="g-plan-k">GPA</div>${gpa ? `<div class="g-plan-n">${gpa}</div>` : ''}`
+      + (!gpa && !close ? `<div class="g-plan-l">No grades posted yet</div>` : '')
       + (close ? `<div class="g-plan-l">${escapeHtml(shortName(close.course))} ${escapeHtml(close.text)}</div>` : '')
       + `</div>`;
   }
@@ -157,7 +158,10 @@ function planBlock(key) {
       + `</div>`;
   }
   const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
-  if (!classes.length) return '';
+  if (!classes.length) {
+    return gradedClasses().length ? ''
+      : `<div class="card g-plan"><div class="g-plan-k">A goals</div><div class="g-plan-l">No grades posted yet</div></div>`;
+  }
   return `<div class="card g-plan"><div class="g-plan-k">A goals</div>`
     + classes.map(course => {
       const average = periodAverage(course);
