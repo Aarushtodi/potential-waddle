@@ -56,17 +56,15 @@
   padding: 26px 16px 16px;
 }
 
-/* Question title: weight 500, last words italic serif like the rest of the app. */
+/* Question title: weight 500, one style for the whole line (unslop 1 and 2, 11/10): no italic
+   serif swap word, normal tracking. The <i> stays in the markup for the rise motion. */
 .g-q {
   font: 500 34px/1.12 var(--sans);
   margin: 0 0 24px;
-  letter-spacing: -.2px;
 }
 
 .g-q i {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 500;
+  font: inherit;
 }
 
 /* Question opens: the whole body slides in and fades up as one. No clip or plate crosses text. */
