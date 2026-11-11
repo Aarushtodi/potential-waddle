@@ -438,6 +438,13 @@
   white-space: nowrap;
 }
 
+/* Home, A goals card: how far each class sits from the A line, after its grade (rule 39 helper). */
+.glist-gap {
+  margin-left: 10px;
+  min-width: 72px;
+  text-align: right;
+}
+
 /* What do you want: the real number is a small note above the goal, not a second headline.
    Gray by default; red only on "N missing", since red means trouble everywhere else in the app.
    On a picked tile (ink background) the other palette's red keeps it readable. */

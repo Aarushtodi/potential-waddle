@@ -444,7 +444,16 @@ function finalsCard() {
     + `</div>`;
 }
 
-/** Get an A: the picked classes and their grades, red only under the alert line. Each opens its class. */
+/** An A is 90 and up. */
+export const A_LINE = 90;
+
+/** How far a class sits from the A line, said the way Goals' Current stats says it. */
+export function aGoalNote(average) {
+  const gap = average - A_LINE;
+  return gap >= 0 ? `${oneDecimal(gap)} above` : `${oneDecimal(-gap)} to go`;
+}
+
+/** Get an A: the picked classes, their grades and how far from the A line, red only under the alert line. Each opens its class. */
 function keepACard() {
   const classes = state.goalAClasses.map(findClass).filter(course => course && periodAverage(course) != null);
   if (!classes.length) return '';
@@ -452,7 +461,8 @@ function keepACard() {
     const average = periodAverage(course);
     return `<div class="row glist-row small" role="button" tabindex="0" ${openClass(course)}>`
       + `<div class="grow t">${escapeHtml(shortName(course))}</div>`
-      + (state.hideScores ? CHEVRON : `<span class="glist-g${average < state.alertUnder ? ' u' : ''}">${oneDecimal(average)}</span>`)
+      + (state.hideScores ? CHEVRON : `<span class="glist-g${average < state.alertUnder ? ' u' : ''}">${oneDecimal(average)}</span>`
+        + `<span class="glist-s glist-gap">${aGoalNote(average)}</span>`)
       + `</div>`;
   }).join('');
   return `<div class="sec"><div class="lab" style="margin:0 0 6px">A goals</div><div class="card quiet">${rows}</div></div>`;

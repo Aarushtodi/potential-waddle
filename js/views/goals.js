@@ -17,7 +17,7 @@ import { real } from '../real-data.js';
 import { state, SEMESTER_SPLIT, goalSteps, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs } from './components.js';
 import { currentGpa, closestToNextLetter } from './gpa.js';
-import { zeroItems, zeroCountText, finalsTests } from './home.js';
+import { zeroItems, zeroCountText, finalsTests, A_LINE, aGoalNote } from './home.js';
 import { planPlateDue } from './goals-motion.js';
 
 export const GOALS = [
@@ -26,8 +26,6 @@ export const GOALS = [
   { key: 'finals', label: 'Ace finals' },
   { key: 'keepA', label: 'Get an\u00a0A in a class' },
 ];
-
-const A_LINE = 90;
 
 const SHORT_NAMES = { 'AP World History': 'AP World', 'Computer Science': 'Comp Sci', 'Health and PE': 'PE' };
 const shortName = course => SHORT_NAMES[course.name] || course.name.replace(/ Honors$/, '');
@@ -163,8 +161,7 @@ function planBlock(key) {
   return `<div class="card g-plan"><div class="g-plan-k">A goals</div>`
     + classes.map(course => {
       const average = periodAverage(course);
-      const gap = average - A_LINE;
-      const note = gap >= 0 ? `${oneDecimal(gap)} above` : `${oneDecimal(-gap)} to go`;
+      const note = aGoalNote(average);
       return `<div class="g-plan-row"><span class="grow">${escapeHtml(shortName(course))}</span>`
         + `<span class="g-plan-g">${oneDecimal(average)}</span>`
         + `<span class="g-plan-s${average < state.alertUnder ? ' u' : ''}">${note}</span></div>`;
