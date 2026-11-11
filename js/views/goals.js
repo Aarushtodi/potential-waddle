@@ -143,7 +143,8 @@ function planBlock(key) {
     // Same source as Home's missing card: missing first, then absent and incomplete (count as 0).
     const items = zeroItems();
     const missing = items.some(item => !item.kind);
-    return `<div class="card g-plan"><div class="g-plan-k">Missing</div>`
+    // Unslop 3 (11/10): no "Missing" key, the count line under it already says missing.
+    return `<div class="card g-plan">`
       + `<div class="g-plan-c${missing ? ' u' : ''}">${items.length ? zeroCountText(items) : 'Nothing missing'}</div>`
       + items.map(item => `<div class="g-plan-row"><span class="grow">${escapeHtml(item.title)}</span>`
         + `<span class="g-plan-s">${escapeHtml(shortName(item.course))}, `
