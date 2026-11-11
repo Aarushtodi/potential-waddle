@@ -16,7 +16,7 @@ import { classAverage } from '../grade-math.js';
 import { actionAttrs, toggle, CHEVRON } from './components.js';
 import { GOALS, gpaGoalBlock, gpaText, shortName, gradedClasses, planBlock } from './goals.js';
 import { gpaClasses, closestToNextLetter } from './gpa.js';
-import { gpaGoal, gpaGoalText, classTarget, need, finalPlan, TARGET_MIN, TARGET_MAX } from './plan-math.js';
+import { gpaGoal, gpaGoalText, classTarget, need, finalPlan, TARGET_MIN, TARGET_MAX, A_LINE } from './plan-math.js';
 
 export const goalLabel = key => GOALS.find(goal => goal.key === key).label;
 
@@ -111,7 +111,10 @@ export function goalSummary(key) {
   const picked = gradedClasses().filter(course => state.goalAClasses.includes(course.id));
   if (!picked.length) return { text: 'No classes on' };
   const there = picked.filter(course => periodAverage(course) >= classTarget(course)).length;
-  return { text: `${there} of ${picked.length} there`, urgent: there < picked.length };
+  // Counts only the classes they picked (the GPA card lists other classes). Says "at A" while every
+  // picked goal is the A line (90); a goal raised above 90 says "at goal", short enough for the tile.
+  const atA = picked.every(course => classTarget(course) === A_LINE);
+  return { text: atA ? `${there} of ${picked.length} picks at A` : `${there}/${picked.length} picks at goal`, urgent: there < picked.length };
 }
 
 /** Look A: every picked goal on one page, where it stands up top, then each goal's section. */
