@@ -29,7 +29,7 @@ export function signInView() {
       + `<button class="btn" ${actionAttrs('signIn')}>Sign in</button>`;
   }
   html += `<div class="foot" style="margin-top:22px;padding-left:0;padding-right:0">Preview with made up sample data<br>`
-    + `Independent app. Not made by your school or district.</div>`
+    + `Tally is an independent app.<br>Not made by your school or district.</div>`
     + `</div>${sheetView()}</div>`;
   return html;
 }
