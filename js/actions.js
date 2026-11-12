@@ -24,6 +24,7 @@ import { leaveIntro } from './views/intro-motion.js';
 import { goalPicked } from './views/goals-motion.js';
 import { gpaGoal, gpaGoalRange, classTarget, TARGET_MIN, TARGET_MAX } from './views/plan-math.js';
 import { real, reloadRealData } from './real-data.js';
+import { forgetImport } from './hac-import.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
 
@@ -38,6 +39,12 @@ const BANNER_MS = 6000;
  */
 export function startRefresh(applyScores) {
   if (state.loading) return;
+  if (real.on && real.source === 'paste') {
+    // Pasted grades: the Tally bookmark on HAC is the refresh, so open the paste box.
+    openImport();
+    render();
+    return;
+  }
   state.loading = true;
   render();
   if (real.on) {
@@ -61,6 +68,14 @@ export function startRefresh(applyScores) {
     }
     render();
   }, REFRESH_MS);
+}
+
+/** Paste your grades, remembering where Back goes. */
+function openImport() {
+  state.importFrom = state.screen === 'app' ? 'app' : 'signin';
+  state.screen = 'import';
+  state.importError = '';
+  state.sheet = null;
 }
 
 /** After a real reload: keep the student's order, add any new class at the end. */
@@ -237,6 +252,13 @@ export const actions = {
     else if (state.goalStep > 0) state.goalStep--;
     else return false;
   },
+  openImport() {
+    openImport();
+  },
+  closeImport() {
+    state.screen = state.importFrom === 'app' ? 'app' : 'signin';
+    state.importError = '';
+  },
   goalsStart() {
     // What sign in did before Goals: Home, with the first gradebook update.
     state.screen = 'app';
@@ -246,6 +268,12 @@ export const actions = {
     return false;
   },
   signOut() {
+    if (real.on && real.source === 'paste') {
+      // Back to the sample preview: drop the saved grades and start fresh.
+      forgetImport();
+      location.reload();
+      return false;
+    }
     state.screen = 'signin';
     state.district = null;
     state.districtNotListed = false;

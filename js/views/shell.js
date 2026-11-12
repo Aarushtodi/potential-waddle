@@ -7,6 +7,7 @@ import { state, findClass, findRow } from '../state.js';
 import { actionAttrs } from './components.js';
 import { introView } from './intro.js';
 import { signInView } from './signin.js';
+import { importView } from './import.js';
 import { themePickView } from './theme-pick.js';
 import { goalsView } from './goals.js';
 import { planBody } from './plan.js';
@@ -84,6 +85,7 @@ export function view() {
   if (state.screen === 'intro') return introView();
   if (state.screen === 'theme') return themePickView();
   if (state.screen === 'signin') return signInView();
+  if (state.screen === 'import') return importView();
   if (state.screen === 'goals') return goalsView();
 
   const stack = state.pageStacks[state.tab];

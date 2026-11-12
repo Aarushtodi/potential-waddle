@@ -16,8 +16,12 @@ import {
 } from './sample-data.js';
 import { SAMPLE_TODAY, offsetOf } from './format.js';
 
-/** on: real data is showing. status: last Reload result from the server. */
-export const real = { on: false, pulledAt: null, status: null };
+/**
+ * on: real data is showing. status: last Reload result from the server.
+ * source: 'local' (real_server.py on his Mac) or 'paste' (the Tally bookmark, see hac-import.js).
+ * period: the grading period the grades came from, as HAC names it ("Q2").
+ */
+export const real = { on: false, pulledAt: null, status: null, source: null, period: '' };
 
 const STATUS_TEXT = {
   login: "HAC didn't accept the saved login. Nothing was deleted. Update ~/.hac/password, then Reload.",
@@ -43,6 +47,15 @@ export function realUpdatedText() {
   return 'Updated ' + (sameDay ? '' : when.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ') + time;
 }
 
+/** Pasted grades, short for Home's line: "updated 4:12 PM" today, else "updated Nov 8". */
+export function realPastedText() {
+  if (!real.pulledAt) return 'not updated yet';
+  const when = new Date(real.pulledAt * 1000);
+  return when.toDateString() === new Date().toDateString()
+    ? 'updated ' + when.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : 'updated ' + when.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
 // ---- Loading ------------------------------------------------------------------------------
 
 async function getJson(path) {
@@ -62,7 +75,15 @@ export async function loadRealData() {
   if (!data || !Array.isArray(data.classes) || data.quarter !== 'Q2') return false;
   real.status = await getJson('real-status.json');
   applyRealData(data);
+  real.source = 'local';
   return true;
+}
+
+/** Pasted grades (js/hac-import.js): same mapping, no server, nothing to reload. */
+export function applyImported(data) {
+  real.status = null;
+  applyRealData(data);
+  real.source = 'paste';
 }
 
 /** Reload button. Asks the local server for one fresh pull; it enforces the limits. */
@@ -131,6 +152,7 @@ function slug(name, taken) {
 function applyRealData(data) {
   real.on = true;
   real.pulledAt = data.pulledAt || null;
+  real.period = data.period != null ? data.period : data.quarter || '';
 
   // Dates count from the real today, not the sample Tuesday.
   const today = new Date();

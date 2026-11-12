@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src data:; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#D8D2C6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <title>Tally setup</title>
+  <link rel="stylesheet" href="css/app.css?v=20261112a">
+</head>
+<body>
+  <!-- Tally bookmark setup. The Copy button copies js/bookmarklet-code.js (see js/setup.js). -->
+  <main id="app"><div class="scr"><div class="scroll nt setup" style="padding-top:calc(env(safe-area-inset-top) + 44px)">
+    <div class="sec">
+      <div class="lab">Tally setup</div>
+      <div class="hd big">Add the Tally <i>bookmark</i></div>
+      <p class="setup-line">Your grades stay on your phone. Tally never asks for your password.</p>
+      <button class="btn" id="copy-code" type="button">Copy the bookmark code</button>
+      <p class="foot setup-note" id="copy-note" role="status">Then follow the steps for your phone.</p>
+    </div>
+
+    <div class="sec">
+      <div class="lab">Once: put Tally on your Home Screen</div>
+      <div class="card"><ol class="steps">
+        <li><a href="./">Open Tally</a> in Safari (iPhone) or Chrome (Android).</li>
+        <li>iPhone: tap <b>•••</b>, then <b>Share</b>, then <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+        <li>Android: tap the <b>three dots</b> menu, then <b>Add to Home screen</b>, then <b>Install</b>.</li>
+      </ol></div>
+    </div>
+
+    <div class="sec">
+      <div class="lab">Once: add the bookmark on iPhone (Safari)</div>
+      <div class="card"><ol class="steps">
+        <li>Tap <b>Copy the bookmark code</b> at the top of this page.</li>
+        <li>Tap <b>•••</b> at the bottom of Safari, then <b>Share</b>.</li>
+        <li>Scroll down and tap <b>Add Bookmark</b>. Name it <b>Tally grades</b>, pick <b>Favorites</b>, tap <b>Save</b>.</li>
+        <li>Tap <b>•••</b> again, then <b>Bookmarks</b>.</li>
+        <li>Tap <b>Edit</b>, then tap <b>Tally grades</b>.</li>
+        <li>Tap the web address under the name, clear it, long press, tap <b>Paste</b>.</li>
+        <li>Tap <b>Done</b>, then <b>Done</b>.</li>
+      </ol></div>
+    </div>
+
+    <div class="sec">
+      <div class="lab">Once: add the bookmark on Android (Chrome)</div>
+      <div class="card"><ol class="steps">
+        <li>Tap <b>Copy the bookmark code</b> at the top of this page.</li>
+        <li>Tap the <b>three dots</b> menu at the top right, then the <b>star</b>.</li>
+        <li>Tap <b>Edit</b> on the note at the bottom. If it is gone: <b>three dots</b> menu, <b>Bookmarks</b>, the <b>three dots</b> next to the bookmark, <b>Edit</b>.</li>
+        <li>Change the name to <b>Tally grades</b>.</li>
+        <li>Clear the web address, long press it, tap <b>Paste</b>.</li>
+        <li>Tap the <b>back arrow</b> to save.</li>
+      </ol></div>
+    </div>
+
+    <div class="sec">
+      <div class="lab">Each time: new grades on iPhone</div>
+      <div class="card"><ol class="steps">
+        <li>Open HAC in Safari and sign in.</li>
+        <li>Tap <b>•••</b>, then <b>Bookmarks</b>, then <b>Favorites</b>, then <b>Tally grades</b>.</li>
+        <li>Tap <b>Copy grades</b>.</li>
+        <li>Open Tally from your Home Screen, long press the box, tap <b>Paste</b>.</li>
+      </ol></div>
+    </div>
+
+    <div class="sec">
+      <div class="lab">Each time: new grades on Android</div>
+      <div class="card"><ol class="steps">
+        <li>Open HAC in Chrome and sign in.</li>
+        <li>Tap the address bar, type <b>Tally grades</b>, tap the starred <b>Tally grades</b>.</li>
+        <li>Tap <b>Copy grades</b>.</li>
+        <li>Open Tally from your Home Screen, long press the box, tap <b>Paste</b>.</li>
+      </ol></div>
+    </div>
+
+    <div class="sec">
+      <details class="card setup-code"><summary class="pad t">Copy did not work?</summary>
+        <div class="pad">
+          <p class="setup-line" style="margin-top:0">Long press the code, tap <b>Select All</b>, then <b>Copy</b>.</p>
+          <textarea class="f w" id="code-box" rows="4" readonly aria-label="Bookmark code"></textarea>
+        </div>
+      </details>
+      <p class="foot">Tally is an independent app. Not made by your school or district.</p>
+    </div>
+  </div></div></main>
+  <script type="module" src="js/setup.js?v=20261112a"></script>
+</body>
+</html>

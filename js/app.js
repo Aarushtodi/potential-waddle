@@ -14,7 +14,8 @@ import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.j
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 import { applyTheme } from './theme.js';
 import { noteTap } from './views/app-motion.js';
-import { real, loadRealData } from './real-data.js';
+import { real, loadRealData, applyImported } from './real-data.js';
+import { readPaste, saveImport, loadImport, clearClipboard, ImportError } from './hac-import.js';
 
 // Motion runs only when reduced motion is off (council motion.css rule).
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');
@@ -159,15 +160,69 @@ applyTheme(state.theme);
 // Real HAC data (local/real_server.py on the student's Mac only). Signed in already, so the
 // intro and sign in are skipped, and sample to-dos and alerts are cleared so nothing fake
 // sits next to real grades.
-if (await loadRealData()) {
+function showRealGrades() {
   Object.assign(state, {
-    screen: 'app', tab: 'home', firstOpen: false,
+    screen: 'app', tab: 'home', firstOpen: false, sheet: null,
     classOrder: CLASSES.map(course => course.id),
+    hiddenClasses: {}, doneIds: {}, dueOverrides: {},
     todos: [], testDatePicks: {}, gradeChanges: [], projectPace: [],
     lastUpdated: real.pulledAt ? real.pulledAt * 1000 : null,
+    nextUpdateAllowedAt: 0,
   });
+  Object.keys(state.pageStacks).forEach(tab => (state.pageStacks[tab] = []));
   if (CLASSES[0]) state.needCalc.classId = CLASSES[0].id;
 }
+
+if (await loadRealData()) {
+  showRealGrades();
+} else {
+  // Grades pasted earlier on this phone (Tally bookmark or the HAC page), saved by hac-import.js.
+  const saved = loadImport();
+  if (saved) {
+    applyImported(saved);
+    showRealGrades();
+  }
+}
+
+// ---- Paste your grades ---------------------------------------------------------------------
+
+async function importGrades(text) {
+  if (state.importBusy) return;
+  state.importBusy = true;
+  state.importError = '';
+  render();
+  try {
+    const data = await readPaste(text);
+    applyImported(data);
+    saveImport(data);
+    showRealGrades();
+  } catch (error) {
+    state.importError = error instanceof ImportError ? error.message
+      : "Couldn't read that paste. On HAC, tap Copy grades again, then paste here.";
+  }
+  state.importBusy = false;
+  render();
+}
+
+/** Grades or the HAC page, not some other text the student had copied. */
+const looksLikeGrades = text => /^\s*TALLY\d/.test(text) || /Student Grades|Date Due/i.test(text);
+
+document.addEventListener('paste', event => {
+  if (!event.target.matches || !event.target.matches('[data-paste]')) return;
+  const text = event.clipboardData ? event.clipboardData.getData('text/plain') : '';
+  if (!text) return; // let the box fill, the input listener below picks it up
+  event.preventDefault();
+  // Clear it while the paste still counts as a tap, so the grades don't linger on the clipboard.
+  if (looksLikeGrades(text)) clearClipboard();
+  importGrades(text);
+});
+
+// Keyboards that paste without a paste event (some Android ones) still fire input.
+document.addEventListener('input', event => {
+  if (event.target.matches && event.target.matches('[data-paste]') && event.target.value.trim().length > 40) {
+    importGrades(event.target.value);
+  }
+});
 
 render();
 

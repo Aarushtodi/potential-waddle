@@ -28,8 +28,13 @@ export function gradesView() {
   }
   html += `<div class="sec"><div style="display:flex;align-items:flex-end;gap:8px"><div class="grow">`
     + heading('From your gradebook', countWord(shownCount) + ' ', shownCount === 1 ? 'class' : 'classes', { big: 1 })
-    + `</div><button class="pill" style="margin-bottom:8px" ${actionAttrs('openPeriodPicker')}>`
-    + `${state.period} <span style="opacity:.6">▾</span></button></div>`;
+    + `</div>`
+    // Real grades come from one grading period (the one HAC showed), so the pill names it and
+    // has nothing to pick.
+    + (real.on
+      ? `<span class="pill" style="margin-bottom:8px">${escapeHtml(real.period || 'HAC')}</span></div>`
+      : `<button class="pill" style="margin-bottom:8px" ${actionAttrs('openPeriodPicker')}>`
+        + `${state.period} <span style="opacity:.6">▾</span></button></div>`);
 
   if (state.editingClasses) {
     // Add a class lives in Edit, not as a standing row.

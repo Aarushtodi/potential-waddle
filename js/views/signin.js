@@ -28,6 +28,7 @@ export function signInView() {
       + `</div>`
       + `<button class="btn" ${actionAttrs('signIn')}>Sign in</button>`;
   }
+  html += `<div class="sec form" style="margin-top:16px"><button class="btn ghost" ${actionAttrs('openImport')}>Paste grades from HAC</button></div>`;
   html += `<div class="foot" style="margin-top:22px;padding-left:0;padding-right:0">Preview with made up sample data<br>`
     + `Tally is an independent app.<br>Not made by your school or district.</div>`
     + `</div>${sheetView()}</div>`;

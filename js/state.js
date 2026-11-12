@@ -30,6 +30,9 @@ export const state = {
   theme: loadTheme(), // 'system' (Match my phone) | 'light' | 'dark', saved on the phone
   district: null,
   districtNotListed: false,
+  importFrom: null, // Paste your grades: the screen Back returns to ('signin' | 'app')
+  importError: '', // the last paste's problem, in words
+  importBusy: false, // reading a paste
 
   // Goals, after Pick a look; sign in came first, so the plan uses real grades (see js/views/goals.js)
   goals: [], // picked goal keys in pick order: 'gpa' | 'missing' | 'finals' | 'keepA'
