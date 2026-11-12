@@ -92,6 +92,7 @@ export const state = {
   finals: { target: 90 },
   whatIfMore: false, // What if sheet: the More group is open
   gpaGoal: '4.3',
+  gpaSplit: {}, // GPA goal page: semester number -> the GPA he set for it (uneven semesters)
 
   // Settings
   alertUnder: 85,

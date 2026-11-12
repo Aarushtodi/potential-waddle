@@ -109,7 +109,10 @@ export function refreshLive() {
   const freshKeys = [...scratch.querySelectorAll('[data-live-key]')].map(node => node.dataset.liveKey).join();
   const styled = qsa('[data-live-style]');
   const freshStyled = scratch.querySelectorAll('[data-live-style]');
-  if (fresh.length !== nodes.length || keys !== freshKeys || styled.length !== freshStyled.length) {
+  const valued = qsa('input[data-live-value]');
+  const freshValued = scratch.querySelectorAll('input[data-live-value]');
+  if (fresh.length !== nodes.length || keys !== freshKeys || styled.length !== freshStyled.length
+    || valued.length !== freshValued.length) {
     render();
     return;
   }
@@ -121,5 +124,11 @@ export function refreshLive() {
   styled.forEach((node, i) => {
     const style = freshStyled[i].getAttribute('style');
     if (node.getAttribute('style') !== style) node.setAttribute('style', style);
+  });
+  // Fields that follow other fields (the GPA goal semesters): new value, same node, and never
+  // the one being typed in.
+  valued.forEach((node, i) => {
+    const value = freshValued[i].getAttribute('value') || '';
+    if (node !== document.activeElement && node.value !== value) node.value = value;
   });
 }

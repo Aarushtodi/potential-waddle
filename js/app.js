@@ -10,7 +10,7 @@ import { qs } from './format.js';
 import { state, whatIfFor, whatIfAverage } from './state.js';
 import { CLASSES } from './sample-data.js';
 import { render, refreshLive, collapseHeader } from './render.js';
-import { actions, inputHandlers, startRefresh, changeDueDate } from './actions.js';
+import { actions, inputHandlers, startRefresh, changeDueDate, settleSemester } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 import { applyTheme } from './theme.js';
 import { noteTap } from './views/app-motion.js';
@@ -65,6 +65,13 @@ document.addEventListener('input', event => {
 
 document.addEventListener('change', event => {
   const { change, x } = event.target.dataset;
+  // A semester number on the GPA goal page, on Done: empty goes back to even, past the max
+  // comes back to it. No full redraw, so a tap into the next field keeps its focus.
+  if (event.target.dataset.input === 'gpaSemester') {
+    settleSemester(event.target.dataset.x);
+    refreshLive();
+    return;
+  }
   if (change === 'dueDate' && event.target.value) {
     changeDueDate(x, event.target.value);
     render();

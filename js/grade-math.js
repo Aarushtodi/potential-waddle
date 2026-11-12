@@ -216,23 +216,103 @@ export function computeGpa(classes, letterFor) {
   return { unweighted: unweighted / classes.length, weighted: weighted / classes.length };
 }
 
+/** The most a semester's weighted GPA can be on the 5 point honors scale. */
+export const GPA_MAX = 5;
+
+/** Weighted GPA over the finished semesters: the real semester GPAs when known. */
+export function gpaSoFar(history) {
+  const real = history.semesterGpas;
+  if (real && real.length >= history.semestersDone && history.semestersDone > 0) {
+    const done = real.slice(0, history.semestersDone);
+    return done.reduce((sum, gpa) => sum + gpa, 0) / done.length;
+  }
+  return history.weightedSoFar;
+}
+
 /**
- * Weighted GPA needed every remaining semester to graduate at a goal, and a letter mix that
- * gets there (A = 4, B = 3, C = 2, plus 1 for each honors class).
- * @param {number} goal GPA wanted at graduation
- * @param {{weightedSoFar: number, semestersDone: number, semestersLeft: number,
- *          classesPerSemester: number, honorsPerSemester: number}} history
- * @returns {{perSemester: number, reachable: boolean, as: number, bs: number}}
+ * A letter mix that reaches a semester GPA (A = 4, B = 3, C = 2, plus 1 for each honors class).
+ * @returns {{reachable: boolean, as: number, bs: number}}
  *   as > 0: that many As and the rest Bs. as <= 0: bs Bs and the rest Cs (bs <= 0: mostly Cs).
  */
-export function gpaGoalPlan(goal, history) {
-  const { weightedSoFar, semestersDone, semestersLeft, classesPerSemester: n } = history;
-  const perSemester = (goal * (semestersDone + semestersLeft) - weightedSoFar * semestersDone) / semestersLeft;
+export function semesterMix(perSemester, history) {
+  const n = history.classesPerSemester;
   // Grade points needed per semester, before the honors bonus.
   const points = perSemester * n - history.honorsPerSemester;
   // Small epsilon so 7.000000001 As does not round up to 8.
   const as = Math.ceil(points - 3 * n - 1e-9);
-  const reachable = !(perSemester > 5 || as > n);
+  const reachable = !(perSemester > GPA_MAX || as > n);
   const bs = as <= 0 ? Math.ceil(points - 2 * n - 1e-9) : 0;
-  return { perSemester, reachable, as, bs };
+  return { reachable, as, bs };
+}
+
+/**
+ * Weighted GPA needed every remaining semester to graduate at a goal, and a letter mix that
+ * gets there.
+ * @param {number} goal GPA wanted at graduation
+ * @param {{weightedSoFar: number, semestersDone: number, semestersLeft: number,
+ *          classesPerSemester: number, honorsPerSemester: number, semesterGpas?: number[]}} history
+ * @returns {{perSemester: number, reachable: boolean, as: number, bs: number}}
+ */
+export function gpaGoalPlan(goal, history) {
+  const { semestersDone, semestersLeft } = history;
+  const perSemester = (goal * (semestersDone + semestersLeft) - gpaSoFar(history) * semestersDone) / semestersLeft;
+  return { perSemester, ...semesterMix(perSemester, history) };
+}
+
+/** A semester number he typed, as a GPA from 0 to GPA_MAX, or null when it is not a number yet. */
+export function lockedValue(text) {
+  if (text == null || String(text).trim() === '') return null;
+  const value = Number(text);
+  return Number.isFinite(value) ? Math.min(GPA_MAX, Math.max(0, value)) : null;
+}
+
+/**
+ * Uneven semesters: the ones he set (locks) keep their number; the rest split what is left so
+ * the graduation goal still holds. Locks on finished semesters are ignored.
+ * @param {number} goal GPA wanted at graduation
+ * @param {object} history as gpaGoalPlan
+ * @param {Object<string, string>} locks semester number -> the GPA he typed for it
+ * @returns {{rows: {semester: number, need: number, locked: boolean, reachable: boolean,
+ *   as: number, bs: number}[], even: number, each: number|null, over: boolean,
+ *   graduateAt: number|null, laterHeavier: boolean}}
+ *   each: what every open semester needs (null when he set them all; graduateAt is then the
+ *   GPA his numbers land on). over: the open semesters would need more than GPA_MAX.
+ *   laterHeavier: Semester 7 or 8 needs more than an earlier semester left.
+ */
+export function gpaSplitPlan(goal, history, locks = {}) {
+  const { semestersDone: done, semestersLeft: left } = history;
+  const total = done + left;
+  const soFar = gpaSoFar(history) * done;
+  const semesters = Array.from({ length: left }, (_, i) => done + i + 1);
+  const set = {};
+  for (const semester of semesters) {
+    const value = lockedValue(locks[semester]);
+    if (value != null) set[semester] = value;
+  }
+  const setSum = Object.values(set).reduce((sum, value) => sum + value, 0);
+  const open = semesters.filter(semester => !(semester in set));
+  const each = open.length ? (goal * total - soFar - setSum) / open.length : null;
+  const graduateAt = open.length ? null : (soFar + setSum) / total;
+  const rows = semesters.map(semester => {
+    const locked = semester in set;
+    const need = locked ? set[semester] : Math.max(0, each);
+    return { semester, need, locked, ...semesterMix(need, history) };
+  });
+  const over = each != null && each > GPA_MAX;
+  const laterHeavier = !over && rows.some(row => row.semester > total - 2
+    && rows.some(earlier => earlier.semester < row.semester && row.need > earlier.need + 0.005));
+  return { rows, even: gpaGoalPlan(goal, history).perSemester, each, over, graduateAt, laterHeavier };
+}
+
+/**
+ * Semester check in: the finished count went up since he last saw the page, so the newest
+ * real semester GPA replaces the estimate. Null on the first look or when nothing changed.
+ * @param {number|null} seen semesters done the last time he opened the page
+ * @returns {{semester: number, gpa: number|null}|null}
+ */
+export function semesterCheckIn(seen, history) {
+  if (seen == null || !(history.semestersDone > seen)) return null;
+  const semester = history.semestersDone;
+  const real = history.semesterGpas && history.semesterGpas[semester - 1];
+  return { semester, gpa: real == null ? null : real };
 }

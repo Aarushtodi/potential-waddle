@@ -10,7 +10,7 @@
 import { escapeHtml, oneDecimal } from '../format.js';
 import {
   isScored, classAverage, scoreNeededOnNext, finalExamNeeded,
-  letterGrade, computeGpa, gpaGoalPlan,
+  letterGrade, computeGpa, gpaSoFar, gpaSplitPlan, semesterCheckIn, GPA_MAX,
 } from '../grade-math.js';
 import { CLASSES, SAMPLE_GPA_HISTORY } from '../sample-data.js';
 import { state, SEMESTER_SPLIT, findClass, orderedClasses, routeKey } from '../state.js';
@@ -101,6 +101,7 @@ const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
 const counter = { route: null, raf: 0 };
 
 export function afterGpaRender() {
+  leaveGoalPage();
   const node = document.querySelector('[data-gpa-count]');
   const route = routeKey();
   const before = counter.route || '';
@@ -217,21 +218,98 @@ function letterMix(plan, n) {
   return `${plan.as} A${plan.as > 1 ? 's' : ''} and ${n - plan.as} B${n - plan.as > 1 ? 's' : ''}`;
 }
 
+/**
+ * Semester check in: semesters done is kept in localStorage. When it goes up, the page shows
+ * one line ("Semester 3 done at 4.21. You now need 4.42 a semester.") for that one visit, and
+ * numbers he set on semesters that are now finished are dropped.
+ */
+const SEEN_KEY = 'gpa:semDone';
+const checkIn = { note: null, open: false };
+
+function stored(value) {
+  try {
+    if (value === undefined) return localStorage.getItem(SEEN_KEY);
+    localStorage.setItem(SEEN_KEY, String(value));
+  } catch { /* private mode: no check in line */ }
+  return null;
+}
+
+function noteCheckIn(history) {
+  checkIn.open = true;
+  const raw = stored();
+  const seen = raw == null || raw === '' || !Number.isFinite(+raw) ? null : +raw;
+  if (seen !== history.semestersDone) stored(history.semestersDone);
+  const fresh = semesterCheckIn(seen, history);
+  if (!fresh) return;
+  checkIn.note = fresh;
+  for (const semester of Object.keys(state.gpaSplit)) {
+    if (+semester <= history.semestersDone) delete state.gpaSplit[semester];
+  }
+}
+
+/** The line goes once he leaves the page it showed on. Called after every full redraw. */
+function leaveGoalPage() {
+  if (!checkIn.open) return;
+  const stack = state.pageStacks[state.tab] || [];
+  const top = stack[stack.length - 1];
+  if (state.screen === 'app' && top && top[0] === 'gpaGoal') return;
+  checkIn.open = false;
+  checkIn.note = null;
+}
+
+const two = n => n.toFixed(2);
+
+function checkInLine(plan) {
+  const { semester, gpa } = checkIn.note;
+  const done = `Semester ${semester} done${gpa == null ? '' : ' at ' + two(gpa)}.`;
+  const need = plan.even > GPA_MAX
+    ? ` You would now need more than ${two(GPA_MAX)} a semester.`
+    : ` You now need ${two(plan.even)} a semester.`;
+  return `<div class="foot gpa-top">${done}${need}</div>`;
+}
+
+/** One plain line under the semesters: why a '–', where set numbers land, or the college note. */
+function footLine(plan) {
+  if (plan.over) {
+    const open = plan.rows.filter(row => !row.locked);
+    const who = open.length === 1 ? `Semester ${open[0].semester} would need ${two(plan.each)}`
+      : `${open.length === plan.rows.length ? 'It would' : 'The other semesters would'} need ${two(plan.each)} each`;
+    return `<div class="foot">${who}, more than the ${two(GPA_MAX)} max.</div>`;
+  }
+  if (plan.graduateAt != null) {
+    return `<div class="foot">Every semester is set, so you would graduate at ${two(plan.graduateAt)}.</div>`;
+  }
+  if (plan.laterHeavier) {
+    return '<div class="foot">Colleges mostly see your GPA through junior year, so later semesters count less on applications.</div>';
+  }
+  return '';
+}
+
+function semesterRow(row, plan, n) {
+  const typed = state.gpaSplit[row.semester];
+  const value = row.locked ? typed : plan.over ? '' : two(row.need);
+  const undo = row.locked
+    ? ` <button class="gpa-undo" ${actionAttrs('gpaSemesterEven', row.semester)}>Undo</button>` : '';
+  return `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Semester ${row.semester}</div>`
+    + `<div class="s" data-live>${letterMix(row, n)}${undo}</div></div>`
+    + `<input autocomplete="off" enterkeyhint="done" class="f gpa-sem" type="number" step="0.01" inputmode="decimal"`
+    + ` aria-label="Semester ${row.semester} GPA" placeholder="–" value="${escapeHtml(value)}"`
+    + ` data-input="gpaSemester" data-x="${row.semester}" data-live-value></div>`;
+}
+
 export function gpaGoalView() {
   const history = SAMPLE_GPA_HISTORY;
+  noteCheckIn(history);
   const n = history.classesPerSemester;
-  const plan = gpaGoalPlan(+state.gpaGoal, history);
-  const mix = letterMix(plan, n);
-  const semesterRows = Array.from({ length: history.semestersLeft }, (_, i) =>
-    `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Semester ${history.semestersDone + i + 1}</div>`
-    + `<div class="s">${mix}</div></div>`
-    + `<div class="avg">${plan.perSemester > 5 ? '–' : plan.perSemester.toFixed(2)}</div></div>`).join('');
+  const plan = gpaSplitPlan(+state.gpaGoal, history, state.gpaSplit);
   return `<div class="sec form">`
-    + heading(`Estimate, ${history.weightedSoFar.toFixed(2)} weighted so far over ${history.semestersDone} semesters`,
+    + heading(`Estimate, ${two(gpaSoFar(history))} weighted so far over ${history.semestersDone} semesters`,
       'By ', 'graduation', { big: 1 })
     + `<div class="card"><div class="row"><div class="grow t">GPA I want</div>`
     + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" step="0.01" inputmode="decimal" aria-label="GPA goal" value="${escapeHtml(state.gpaGoal)}" data-input="gpaGoal">`
     + `</div></div></div>`
-    + `<div class="sec" data-live><div class="lab" style="margin-bottom:6px">Grades needed each semester</div>`
-    + `<div class="card">${semesterRows}</div></div>`;
+    + `<div class="sec"><div class="lab" style="margin-bottom:6px">Grades needed each semester</div>`
+    + `<div data-live>${checkIn.note ? checkInLine(plan) : ''}</div>`
+    + `<div class="card">${plan.rows.map(row => semesterRow(row, plan, n)).join('')}</div>`
+    + `<div data-live>${footLine(plan)}</div></div>`;
 }

@@ -207,6 +207,7 @@ export const SAMPLE_PACE = [
 /** Long term GPA goal page. */
 export const SAMPLE_GPA_HISTORY = {
   weightedSoFar: 4.1,
+  semesterGpas: [4.0, 4.09, 4.21], // real weighted GPA of each finished semester, newest last
   semestersDone: 3,
   semestersLeft: 5,
   classesPerSemester: 7,

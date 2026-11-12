@@ -8,8 +8,8 @@
  *   They change state; app.js then refreshes only the live regions so the input keeps focus.
  */
 import { offsetFromIso, isoDate } from './format.js';
-import { classAverage, isScored } from './grade-math.js';
-import { CLASSES, QUEUED_SCORES, PACED_PROJECT_ROW_ID } from './sample-data.js';
+import { classAverage, isScored, lockedValue, gpaSplitPlan } from './grade-math.js';
+import { CLASSES, QUEUED_SCORES, PACED_PROJECT_ROW_ID, SAMPLE_GPA_HISTORY } from './sample-data.js';
 import {
   state, ui, TYPED_CLASS_LIMIT, findClass, findRow, effectiveDue,
   whatIfFor, whatIfAverage, blankRowsLeft, gradeChangeEntry, goalSteps,
@@ -522,6 +522,10 @@ export const actions = {
   setGpaWhatIfLetter(letter, classId) {
     state.gpaWhatIf[classId] = letter;
   },
+  /** Undo on a semester he set: back to the even split. */
+  gpaSemesterEven(semester) {
+    delete state.gpaSplit[semester];
+  },
   resetGpaWhatIf() {
     state.gpaWhatIf = {};
   },
@@ -628,6 +632,16 @@ export const inputHandlers = {
   gpaGoal(value) {
     state.gpaGoal = value;
   },
+  // A semester number on the GPA goal page: typing sets it, the other semesters split the rest.
+  // A key that changes nothing (WebKit fires input for one it ignores) does not set the row.
+  gpaSemester(value, semester) {
+    if (!(semester in state.gpaSplit)) {
+      const row = gpaSplitPlan(+state.gpaGoal, SAMPLE_GPA_HISTORY, state.gpaSplit).rows
+        .find(item => item.semester === +semester);
+      if (row && value === row.need.toFixed(2)) return;
+    }
+    state.gpaSplit[semester] = value;
+  },
   alertUnder(value) {
     state.alertUnder = +value || 0;
   },
@@ -643,6 +657,14 @@ export const inputHandlers = {
 };
 
 /** The date picker on a to-do: moves a typed to-do, a checkpoint, or the student's copy of a gradebook due date. */
+/** Done on a semester number: an empty field goes back to even, the rest reads like 4.40, in range. */
+export function settleSemester(semester) {
+  const typed = state.gpaSplit[semester];
+  const value = lockedValue(typed);
+  if (value == null) delete state.gpaSplit[semester];
+  else state.gpaSplit[semester] = value.toFixed(2);
+}
+
 export function changeDueDate(itemId, isoValue) {
   const due = offsetFromIso(isoValue);
   const todo = state.todos.find(candidate => candidate.id === itemId);

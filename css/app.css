@@ -2256,6 +2256,30 @@ html.vt-leave-intro::view-transition-new(root) {
   font-weight: 600;
 }
 
+/* GPA goal page: semester check in line above the semesters, Undo on a semester he set. */
+.foot.gpa-top {
+  color: var(--ink);
+  padding: 0 16px 8px;
+}
+
+input.gpa-sem::placeholder {
+  color: var(--ink);
+  opacity: 1;
+}
+
+.gpa-undo {
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  padding: 6px 4px;
+  margin: -6px 0 -6px 4px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
 /* ---- Grades block on Home: Lowest leads ---- */
 .glist-row {
   min-height: 48px;
