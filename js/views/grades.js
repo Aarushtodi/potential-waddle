@@ -3,7 +3,7 @@
  * Everything here is the real grade as HAC shows it. Predictions live only in What if.
  */
 import { escapeHtml, shortDate, oneDecimal, signed, countWord, scoreText } from '../format.js';
-import { real } from '../real-data.js';
+import { real, realGpa } from '../real-data.js';
 import { isScored, countsAsZero, classAverage, averageEffect } from '../grade-math.js';
 import {
   state, TYPED_CLASS_LIMIT, orderedClasses, visibleClasses, rowsForPeriod, periodAverage,
@@ -20,7 +20,8 @@ export function gradesView() {
   const shownCount = visibleClasses().length;
   let html = statusStrip();
   // GPA sits on top as one small row; What changed and Alerts live on Home, Sign out in Settings.
-  if (!state.editingClasses && !real.on) {
+  // Real grades: only with HAC's transcript GPA (real-data.js realGpa), never a GPA of our own.
+  if (!state.editingClasses && (!real.on || realGpa())) {
     html += `<div class="sec" style="margin-bottom:16px"><div class="card">`
       + `<div class="row more" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
       + `<div class="grow t" style="font-size:15.5px">GPA</div>${CHEVRON}</div>`

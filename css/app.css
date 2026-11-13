@@ -2265,6 +2265,11 @@ html.vt-leave-intro::view-transition-new(root) {
   padding-top: 2px;
 }
 
+/* Real HAC data: how the Frisco ISD GPA is figured, under the unweighted line. */
+.foot.gpa-how {
+  padding-top: 8px;
+}
+
 .gpa-links .row {
   min-height: 46px;
 }

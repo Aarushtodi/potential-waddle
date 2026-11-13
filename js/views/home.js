@@ -17,7 +17,7 @@
  * "costs you" number. Hide scores (Settings) swaps every number for a word.
  */
 import { escapeHtml, shortDate, oneDecimal, signed, countWord, WEEKDAYS, dateAt } from '../format.js';
-import { real, realProblem, realUpdatedText, realPastedText } from '../real-data.js';
+import { real, realGpa, realProblem, realUpdatedText, realPastedText } from '../real-data.js';
 import { countsAsZero } from '../grade-math.js';
 import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage, findClass } from '../state.js';
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
@@ -308,7 +308,7 @@ function leadAndList(classes) {
 
 /** The Grades tab's GPA row, repeated at the bottom of Home. Opens the GPA page. */
 function gpaRow() {
-  if (real.on) return '';
+  if (real.on && !realGpa()) return '';
   return `<div class="sec"><div class="card"><div class="row more" role="button" tabindex="0" ${actionAttrs('openPage', 'gpa')}>`
     + `<div class="grow t" style="font-size:15.5px">GPA</div>${CHEVRON}</div></div></div>`;
 }

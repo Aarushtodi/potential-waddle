@@ -1,7 +1,8 @@
 /**
  * GPA page and its tools: GPA what if, Long term goal (Missing work is in home.js). Also the
  * Target page (the score you need for a grade), opened from a class page with that class set.
- * All of these are estimates; the school computes the real GPA.
+ * On sample data these are estimates. On real HAC data with the transcript, the GPA page shows
+ * HAC's own GPA on the Frisco ISD scale and What if adds a typed semester grade per class to it.
  *
  * The GPA page: the weighted number as the hero, then the counted classes sorted by how close
  * each average sits to a letter line. The 2 closest (within NEAR points) get their distance in
@@ -11,10 +12,13 @@ import { escapeHtml, oneDecimal } from '../format.js';
 import {
   classAverage, finalExamNeeded,
   letterGrade, computeGpa, gpaSoFar, gpaSplitPlan, semesterCheckIn, GPA_MAX,
+  FISD_GPA, fisdGpaWith,
 } from '../grade-math.js';
+import { real, realGpa } from '../real-data.js';
 import { CLASSES, SAMPLE_GPA_HISTORY } from '../sample-data.js';
 import {
   state, SEMESTER_SPLIT, findClass, orderedClasses, routeKey, nowAverage, nextTestRow, neededOnNext,
+  periodAverage,
 } from '../state.js';
 import { actionAttrs, heading, navRow, segmented } from './components.js';
 
@@ -79,6 +83,7 @@ function classRow(item, close) {
 }
 
 export function gpaView() {
+  if (realGpa()) return realGpaView();
   const gpa = computeGpa(gpaClasses(), gradebookLetter);
   const ranked = gpaClasses().map(lineDistance).sort((a, b) => a.points - b.points);
   const rows = ranked.map((item, i) => classRow(item, i < CLOSE_COUNT && item.points <= NEAR)).join('');
@@ -112,14 +117,15 @@ export function afterGpaRender() {
   if (!opened || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   cancelAnimationFrame(counter.raf);
   const to = +node.dataset.gpaCount;
+  const places = +(node.dataset.gpaPlaces || 2);
   const start = performance.now();
-  node.textContent = (0).toFixed(2);
+  node.textContent = (0).toFixed(places);
   const frame = now => {
     const k = Math.min(1, (now - start) / COUNT_MS);
     // Look the node up each frame: a full redraw mid count replaces it.
     const current = document.querySelector('[data-gpa-count]');
     if (!current) return;
-    current.textContent = k < 1 ? (to * easeOutQuart(k)).toFixed(2) : current.dataset.gpaCount;
+    current.textContent = k < 1 ? (to * easeOutQuart(k)).toFixed(places) : current.dataset.gpaCount;
     if (k < 1) counter.raf = requestAnimationFrame(frame);
   };
   counter.raf = requestAnimationFrame(frame);
@@ -190,6 +196,7 @@ function resultBlock(need, onWhat, note, target) {
 // ---- GPA what if --------------------------------------------------------------------------
 
 export function gpaWhatIfView() {
+  if (realGpa()) return realGpaWhatIfView();
   const base = computeGpa(gpaClasses(), gradebookLetter);
   const letterFor = course => state.gpaWhatIf[course.id] || gradebookLetter(course);
   const gpa = computeGpa(gpaClasses(), letterFor);
@@ -205,6 +212,73 @@ export function gpaWhatIfView() {
       + segmented('setGpaWhatIfLetter', letterFor(course), ['A', 'B', 'C', 'D', 'F'].map(l => [l, l]), course.id)
       + `</div>`).join('')
     + `</div></div><button class="btn ghost" ${actionAttrs('resetGpaWhatIf')}>Reset</button>`;
+}
+
+// ---- Real HAC data: Frisco ISD GPA -------------------------------------------------------
+
+const three = n => n.toFixed(3);
+const HOW_IT_IS_FIGURED = 'How it’s figured: Frisco ISD counts every semester grade of a high school credit class. '
+  + 'A 100 is 6.0 in AP, 5.5 in Advanced and 5.0 on level, 0.1 less for each point down, and under 70 is 0. '
+  + 'Unweighted, 90 and up is 4, 80s are 3, 70s are 2.';
+
+/** HAC's transcript GPA, the same number HAC shows, through last semester. */
+function realGpaView() {
+  const gpa = realGpa();
+  const weighted = three(gpa.weighted);
+  return `<div class="sec">`
+    + `<div class="gpa-hero"><span class="gpa-n" data-gpa-count="${weighted}" data-gpa-places="3">${weighted}</span>`
+    + ` <i>weighted</i></div>`
+    + `<div class="foot gpa-unw">${three(gpa.unweighted)} unweighted. From your HAC transcript, ${gpa.count} semester grades through last semester.</div>`
+    + `<div class="foot gpa-how">${HOW_IT_IS_FIGURED}</div></div>`
+    + `<div class="sec"><div class="card gpa-links">`
+    + navRow('GPA what if', '', 'openPage', 'gpaWhatIf')
+    + `</div></div>`;
+}
+
+/** Real classes on the What if page, in the Grades order. */
+const realGpaClasses = () => orderedClasses().filter(course => course.real);
+
+/** The semester grade he typed for a class, or null (blank or not 0 to 100): left out. */
+function typedScore(course) {
+  const text = String(state.gpaScores[course.id] ?? '').trim();
+  const value = text === '' ? NaN : +text;
+  return Number.isFinite(value) && value >= 0 && value <= 100 ? Math.round(value) : null;
+}
+
+/** "AP, 100 is 6.0, Q2 now 85" under each class name. */
+function tierLine(course) {
+  const average = periodAverage(course);
+  const now = average == null ? '' : `, ${escapeHtml(real.period || 'HAC')} now ${oneDecimal(average)}`;
+  return `${FISD_GPA.tierName[course.tier]}, 100 is ${FISD_GPA.tierTop[course.tier]}${now}`;
+}
+
+function realWhatIfTop() {
+  const gpa = realGpa();
+  const counted = realGpaClasses().map(course => ({ course, grade: typedScore(course) }))
+    .filter(item => item.grade != null);
+  const after = fisdGpaWith(gpa, counted.map(item => ({ grade: item.grade, tier: item.course.tier })));
+  const change = after.weighted - gpa.weighted;
+  const changeText = (change >= 0 ? '+' : '−') + Math.abs(change).toFixed(3);
+  return heading(`Now ${three(gpa.weighted)} weighted, change ${changeText}`, three(after.weighted) + ' ', 'what if', { big: 1 })
+    + `<div class="s" style="padding-bottom:10px;font-size:15px">${three(after.unweighted)} unweighted${counted.length ? ' after this semester' : ''}</div>`;
+}
+
+function realWhatIfFoot() {
+  return `<div class="foot">Type the semester grade you expect in a class. Each one is added to your `
+    + `${realGpa().count} transcript grades; blank classes are left out.</div>`;
+}
+
+function realGpaWhatIfView() {
+  return `<div class="sec"><div data-live>${realWhatIfTop()}</div>`
+    + `<div class="card">`
+    + realGpaClasses().map(course =>
+      `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>${escapeHtml(course.name)}</div>`
+      + `<div class="s">${tierLine(course)}</div></div>`
+      + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" step="1" min="0" max="100" inputmode="numeric"`
+      + ` aria-label="${escapeHtml(course.name)} semester grade" placeholder="–" value="${escapeHtml(state.gpaScores[course.id] ?? '')}"`
+      + ` data-input="gpaScore" data-x="${course.id}"></div>`).join('')
+    + `</div>${realWhatIfFoot()}</div>`
+    + `<button class="btn ghost" ${actionAttrs('resetGpaWhatIf')}>Reset</button>`;
 }
 
 // ---- Long term GPA goal -------------------------------------------------------------------

@@ -91,6 +91,7 @@ export const state = {
   semesterInputs: {}, // class id -> { q1, q2, final, target }
   needCalc: { classId: 'alg', target: 90, kind: 'test' }, // 'test' | 'final'
   gpaWhatIf: {}, // class id -> letter
+  gpaScores: {}, // real data GPA what if: class id -> the semester score he typed
   finals: { target: 90 },
   whatIfMore: false, // What if sheet: the More group is open
   gpaGoal: '4.3',

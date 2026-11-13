@@ -8,20 +8,26 @@
  *
  * What HAC's Assignments page gives: class names, HAC's own average, category weights, and every
  * row as the teacher entered it. What it does not give (teachers, rooms, bell times, test dates)
- * is left blank or hidden on real data, never filled from the sample. GPA is hidden on real data
- * (the district says third party GPA is wrong).
+ * is left blank or hidden on real data, never filled from the sample. GPA shows on real data only
+ * when the pull carries the HAC transcript (local/hac_transcript.py) and its grades give back HAC's
+ * own two GPA numbers (grade-math.js transcriptTotals); otherwise it stays hidden, since a wrong
+ * GPA is worse than none.
  */
 import {
   CLASSES, SEEN_CHANGES, QUEUED_SCORES, LAST_QUARTER_SAME_POINT, BELL_SCHEDULE,
 } from './sample-data.js';
 import { SAMPLE_TODAY, offsetOf } from './format.js';
+import { fisdTier, transcriptTotals } from './grade-math.js';
 
 /**
  * on: real data is showing. status: last Reload result from the server.
  * source: 'local' (real_server.py on his Mac) or 'paste' (the Tally bookmark, see hac-import.js).
  * period: the grading period the grades came from, as HAC names it ("Q2").
  */
-export const real = { on: false, pulledAt: null, status: null, source: null, period: '' };
+export const real = { on: false, pulledAt: null, status: null, source: null, period: '', gpa: null };
+
+/** Transcript GPA totals (grade-math.js transcriptTotals) when they check out against HAC, else null. */
+export const realGpa = () => (real.on && real.gpa && real.gpa.ok ? real.gpa : null);
 
 const STATUS_TEXT = {
   login: "HAC didn't accept the saved login. Nothing was deleted. Update ~/.hac/password, then Reload.",
@@ -153,6 +159,7 @@ function applyRealData(data) {
   real.on = true;
   real.pulledAt = data.pulledAt || null;
   real.period = data.period != null ? data.period : data.quarter || '';
+  real.gpa = data.transcript ? transcriptTotals(data.transcript) : null;
 
   // Dates count from the real today, not the sample Tuesday.
   const today = new Date();
@@ -166,6 +173,7 @@ function applyRealData(data) {
       id: slug(name, taken), name, real: true,
       teacher: '', room: '',
       level: /\b(AP|Honors|Pre-AP)\b/.test(name) ? 'H' : 'R',
+      tier: fisdTier(name),
       absences: 0, tardies: 0, q1: null, q1rows: [],
       hacAverage: raw.average,
       categoryWeights: raw.categoryWeights || {},

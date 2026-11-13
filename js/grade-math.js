@@ -326,3 +326,89 @@ export function semesterCheckIn(seen, history) {
   const real = history.semesterGpas && history.semesterGpas[semester - 1];
   return { semester, gpa: real == null ? null : real };
 }
+
+// ---- Frisco ISD GPA (real HAC data) --------------------------------------------------------
+// Frisco ISD High School Academic Guide, "Grading & Grade Point Average" and "Course Grade Weights
+// for GPA Calculation": every semester grade of a high school credit course counts once (a 2 credit
+// course twice), 3 decimal places.
+//   Weighted: Tier I (on level) 100 = 5.0, 0.1 less per point, 70 = 2.0. Tier II (Advanced, dual
+//   credit) adds 0.5, Tier III (AP, IB) adds 1.0. Below 70 = 0 in every tier.
+//   Unweighted: 90 to 100 = 4, 80 to 89 = 3, 70 to 79 = 2, below 70 = 0.
+// Points are kept in tenths (whole numbers) so sums never drift.
+
+export const FISD_GPA = {
+  tierBonusTenths: { 1: 0, 2: 5, 3: 10 },
+  tierName: { 1: 'On level', 2: 'Advanced', 3: 'AP' },
+  tierTop: { 1: '5.0', 2: '5.5', 3: '6.0' },
+};
+
+/**
+ * A class's Frisco tier from its HAC name. AP and IB are Tier III; Advanced ("Adv"), dual credit
+ * and Pre-AP are Tier II (Frisco names its Tier II classes Advanced); everything else Tier I.
+ * Dual credit moves to Tier III from the Class of 2030, not handled here.
+ */
+export function fisdTier(name) {
+  const text = String(name || '');
+  if (/\bPre-?AP\b/i.test(text)) return 2;
+  if (/\b(AP|IB)\b/.test(text)) return 3;
+  if (/\b(Adv|Advanced|Dual Credit|DC)\b/i.test(text)) return 2;
+  return 1;
+}
+
+/** Weighted points for one semester grade, in tenths: 100 in Tier I = 50. */
+export function fisdWeightedTenths(grade, tier) {
+  const whole = Math.round(grade);
+  if (!(whole >= 70)) return 0;
+  return Math.min(whole, 100) - 50 + FISD_GPA.tierBonusTenths[tier];
+}
+
+/** Unweighted points for one semester grade. */
+export const fisdUnweightedPoints = grade => {
+  const whole = Math.round(grade);
+  return whole >= 90 ? 4 : whole >= 80 ? 3 : whole >= 70 ? 2 : 0;
+};
+
+const toThree = n => Math.round(n * 1000) / 1000;
+
+/**
+ * Totals behind the GPA HAC shows on the transcript, so a what if can add to them exactly.
+ * The transcript lists every semester grade but not each class's tier, so the tier bonus is read
+ * back from HAC's own weighted GPA: bonus = HAC weighted x count - on level points, which is
+ * always a whole number of halves. Both of HAC's numbers must come back out of these totals, or
+ * ok is false and nothing should be shown.
+ * @param {{weighted: number, unweighted: number, grades: number[]}} transcript
+ *        grades: every numeric semester grade of a GPA course (a 2 credit course twice)
+ * @returns {{ok: boolean, count: number, weightedTenths: number, unweightedPoints: number,
+ *            weighted: number, unweighted: number}}
+ */
+export function transcriptTotals(transcript) {
+  const grades = (transcript && transcript.grades || []).filter(g => Number.isFinite(g));
+  const count = grades.length;
+  const hacW = transcript && +transcript.weighted;
+  const hacU = transcript && +transcript.unweighted;
+  const bad = { ok: false, count, weightedTenths: 0, unweightedPoints: 0, weighted: hacW, unweighted: hacU };
+  if (!count || !Number.isFinite(hacW) || !Number.isFinite(hacU)) return bad;
+  const unweightedPoints = grades.reduce((sum, g) => sum + fisdUnweightedPoints(g), 0);
+  const baseTenths = grades.reduce((sum, g) => sum + fisdWeightedTenths(g, 1), 0);
+  // Bonus in tenths, a multiple of 5 (half a point).
+  const bonusTenths = Math.round((hacW * 10 * count - baseTenths) / 5) * 5;
+  const weightedTenths = baseTenths + bonusTenths;
+  const weighted = weightedTenths / 10 / count;
+  const unweighted = unweightedPoints / count;
+  const ok = bonusTenths >= 0 && bonusTenths <= 10 * count
+    && toThree(weighted) === toThree(hacW) && toThree(unweighted) === toThree(hacU);
+  return { ok, count, weightedTenths, unweightedPoints, weighted, unweighted };
+}
+
+/**
+ * GPA after adding this semester's grades to the transcript totals.
+ * @param {ReturnType<typeof transcriptTotals>} totals
+ * @param {{grade: number, tier: 1|2|3}[]} added
+ */
+export function fisdGpaWith(totals, added) {
+  const count = totals.count + added.length;
+  if (!count) return { weighted: 0, unweighted: 0 };
+  const tenths = added.reduce((sum, item) => sum + fisdWeightedTenths(item.grade, item.tier), totals.weightedTenths);
+  const points = added.reduce((sum, item) => sum + fisdUnweightedPoints(item.grade), totals.unweightedPoints);
+  return { weighted: tenths / 10 / count, unweighted: points / count };
+}

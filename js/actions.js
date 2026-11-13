@@ -542,6 +542,7 @@ export const actions = {
   },
   resetGpaWhatIf() {
     state.gpaWhatIf = {};
+    state.gpaScores = {};
   },
 
   // Alerts
@@ -647,6 +648,9 @@ export const inputHandlers = {
   },
   gpaGoal(value) {
     state.gpaGoal = value;
+  },
+  gpaScore(value, classId) {
+    state.gpaScores[classId] = value;
   },
   // A semester number on the GPA goal page: typing sets it, the other semesters split the rest.
   // A key that changes nothing (WebKit fires input for one it ignores) does not set the row.

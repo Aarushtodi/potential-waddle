@@ -7,7 +7,8 @@ Serves the preview from this folder and two extra paths:
   GET  /real-data.json    last good pull (404 = the preview falls back to sample data)
   GET  /real-status.json  state of the last Reload: ok | login | page_changed | wrong_quarter |
                           network | cooldown, plus a message and when
-  POST /api/refresh       one fresh HAC login + read, through ~/bin/hac_grades.py
+  POST /api/refresh       one fresh HAC login + read, through ~/bin/hac_grades.py; the transcript
+                          (GPA) is read too, at most every 12 hours (local/hac_transcript.py)
 
 Rules (Grade App Keep Scope, "Real HAC data in the web preview"):
   - The password never leaves this Mac. It stays in ~/.hac, read by hac_grades.py.
@@ -29,11 +30,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path.home() / "bin"))
 import hac_grades  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import hac_transcript  # noqa: E402
+
 PORT = int(os.environ.get("PORT", "8812"))
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = Path.home() / ".hac" / "grade-preview"
 DATA = DATA_DIR / "real-data.json"
 STATUS = DATA_DIR / "real-status.json"
+TRANSCRIPT = DATA_DIR / "transcript.json"
+TRANSCRIPT_MAX_AGE_S = 12 * 3600
 PASSWORD_FILE = Path.home() / ".hac" / "password"
 COOLDOWN_S = 60
 
@@ -61,6 +67,25 @@ def password_mtime():
         return None
 
 
+def transcript():
+    """The last transcript read, re-read from HAC when older than 12 hours. A failed read keeps
+    the last copy and never touches the grades or the status."""
+    try:
+        saved = json.loads(TRANSCRIPT.read_text())
+    except (FileNotFoundError, ValueError):
+        saved = None
+    if saved and time.time() - saved.get("pulledAt", 0) < TRANSCRIPT_MAX_AGE_S:
+        return saved
+    try:
+        fresh = hac_transcript.pull()
+    except Exception as error:  # noqa: BLE001
+        print("transcript error:", type(error).__name__, file=sys.stderr, flush=True)  # type only
+        return saved
+    fresh["pulledAt"] = time.time()
+    write_json(TRANSCRIPT, fresh)
+    return fresh
+
+
 def refresh():
     """One pull, if the rules allow it. Returns the new status dict."""
     with lock:
@@ -83,6 +108,7 @@ def refresh():
                       "pulledAt": status.get("pulledAt")}
         else:
             data["pulledAt"] = now
+            data["transcript"] = transcript()
             write_json(DATA, data)
             status = {"kind": "ok", "message": "", "triedAt": now, "pulledAt": now}
         write_json(STATUS, status)
