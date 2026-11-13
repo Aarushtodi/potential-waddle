@@ -146,6 +146,8 @@ export const actions = {
   },
   /** Settings > Show intro again. Leaving it goes back to Settings, skipping Pick a look and Goals. */
   showIntro() {
+    // The slides are drawn from a sample class; real grades replaced it, so the row is hidden there.
+    if (real.on) return false;
     state.introSlide = 0;
     state.introReturnTo = 'app';
     state.screen = 'intro';
@@ -545,7 +547,9 @@ export const actions = {
   // Alerts
   showSampleAlert() {
     const latest = state.gradeChanges[0];
-    showBanner(findClass(latest.classId).name, alertText(latest), latest);
+    const course = latest && findClass(latest.classId);
+    if (!course) return false; // real grades start with no changes to replay
+    showBanner(course.name, alertText(latest), latest);
   },
   tapBanner() {
     state.banner = null;

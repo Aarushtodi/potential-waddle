@@ -17,6 +17,7 @@ import {
 } from '../state.js';
 import { actionAttrs, navRow, segmented, toggle, sectionLabel, CHEVRON } from './components.js';
 import { needView } from './gpa.js';
+import { real } from '../real-data.js';
 
 /** [key, title] for each tool on the What if menu. The title also heads the tool's sheet. */
 export const WHAT_IF_TOOLS = [
@@ -67,7 +68,7 @@ function whatIfMenu() {
     + `<div class="card">`
     + `<div class="row more wi-more${open ? ' open' : ''}" role="button" tabindex="0" aria-expanded="${open}" ${actionAttrs('toggleWhatIfMore')}>`
     + `<div class="grow"><div class="t">More</div></div>${CHEVRON}</div>`
-    + (open ? more.map(toolRow).join('') + navRow('Long term GPA goal', '', 'openGpaGoal') : '')
+    + (open ? more.map(toolRow).join('') + (real.on ? '' : navRow('Long term GPA goal', '', 'openGpaGoal')) : '')
     + `</div>`;
 }
 
@@ -209,6 +210,7 @@ function retestTool(course) {
 // ---- Cushion ------------------------------------------------------------------------------
 
 const LETTER_CUTOFFS = { A: 90, B: 80, C: 70, D: 60 };
+const PASSING = 70;
 
 function cushionTool(course) {
   const average = nowAverage(course);
@@ -219,7 +221,14 @@ function cushionTool(course) {
   const total = nextTest ? nextTest.total : 100;
 
   let line;
-  if (!cutoff) {
+  if (course.real && average != null && average < PASSING) {
+    // Frisco ISD: 70 is passing and there is no D, so never tell a kid under 70 to "keep" anything.
+    const result = neededOnNext(course, PASSING, total);
+    line = `You're under ${PASSING}, which is failing. `
+      + (result.reach
+        ? `A ${Math.max(result.need, 0)} on ${escapeHtml(title)} gets you to ${PASSING}`
+        : `A perfect score on ${escapeHtml(title)} gets you to ${oneDecimal(result.best)}, still under ${PASSING}`);
+  } else if (!cutoff) {
     line = 'Keep going, any passing score helps.';
   } else {
     const result = neededOnNext(course, cutoff, total);
@@ -232,7 +241,9 @@ function cushionTool(course) {
     const result = neededOnNext(course, cut, total);
     const article = /[AEFHILMNORSX]/.test(holdLetter) ? 'an' : 'a';
     const needed = result.reach ? (result.need === 0 ? 'Any score' : result.need + ' of ' + total) : 'Out of reach';
-    return `<div class="row"><div class="grow t" ${BIG_TITLE}>To hold ${article} ${holdLetter}</div>`
+    // A real class under the cutoff has no letter to hold yet.
+    const verb = course.real && average != null && average < cut ? 'reach' : 'hold';
+    return `<div class="row"><div class="grow t" ${BIG_TITLE}>To ${verb} ${article} ${holdLetter}</div>`
       + `<div class="s" style="${STRONG}">${needed}</div></div>`;
   }).join('');
 
@@ -257,6 +268,9 @@ function semesterInputsFor(course) {
 
 function semesterResult(course) {
   const inputs = semesterInputsFor(course);
+  // HAC paste has no Quarter 1, and a blank box is not a 0: ask for it instead of a number.
+  const blank = [['q1', 'Quarter 1'], ['q2', 'Quarter 2']].find(([key]) => String(inputs[key]).trim() === '');
+  if (blank) return `<div class="t" style="margin-top:6px">Type your ${blank[1]} grade to see what you need on the final.</div>`;
   const q1 = +inputs.q1;
   const q2 = +inputs.q2;
   const withFinal = inputs.final !== ''

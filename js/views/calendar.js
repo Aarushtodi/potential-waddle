@@ -6,6 +6,7 @@
 import { SAMPLE_TODAY, MONTHS_LONG, offsetOf, longDate, countWord, clockTime, escapeHtml } from '../format.js';
 import { periodsFor, currentPeriod } from '../schedule.js';
 import { state, todoItems, sortByDue } from '../state.js';
+import { real } from '../real-data.js';
 import { actionAttrs, heading, statusStrip, todoRow, progressBars } from './components.js';
 
 const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -54,7 +55,8 @@ export function calendarView() {
       ? `<div class="foot">Test dates are unofficial, confirm with your teacher.</div>`
       : '')
     + `</div>`
-    + (selected === 0 ? periodsSection() : '');
+    // Bell times are not in HAC: no made up periods next to real grades.
+    + (selected === 0 && !real.on ? periodsSection() : '');
 }
 
 /**

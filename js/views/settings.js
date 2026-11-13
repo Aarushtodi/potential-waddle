@@ -4,6 +4,7 @@ import { isScored } from '../grade-math.js';
 import { CLASSES } from '../sample-data.js';
 import { state, todoItems, sortByDue, findRow, effectiveDue, isTestRow } from '../state.js';
 import { CHEVRON, actionAttrs, heading, navRow, segmented, toggle } from './components.js';
+import { real } from '../real-data.js';
 
 const RETEST_LINE_CHOICES = [80, 90];
 // Tester feedback (Google Form on his personal account, no sign in, no emails collected).
@@ -43,28 +44,28 @@ export function settingsView() {
   return feedback + `<div class="sec"><div class="lab" style="margin-bottom:6px">Alert rules</div><div class="card">`
     + ruleToggle('newGrade', 'New grades')
     + ruleToggle('zero', 'Zero or missing')
-    + ruleToggle('changed', 'Score changed')
+    + (real.on ? '' : ruleToggle('changed', 'Score changed'))
     + `<div class="row"><div class="grow"><div class="t">Average under my number</div>`
     + `</div>`
     + `<input autocomplete="off" enterkeyhint="done" class="f" type="number" inputmode="decimal" aria-label="Alert under" value="${state.alertUnder}" data-input="alertUnder">`
     + toggle(state.alertRules.under, 'toggleAlertRule', 'under', 'Average under my number') + `</div>`
-    + `<div class="row"><div class="grow"><div class="t">Can't read your gradebook</div>`
-    + `</div></div>`
-    + `<div class="row" role="button" tabindex="0" ${actionAttrs('showSampleAlert')}><div class="grow"><div class="t">Send a test alert</div></div></div>`
+    + (real.on ? '' : `<div class="row"><div class="grow"><div class="t">Can't read your gradebook</div>`
+      + `</div></div>`
+      + `<div class="row" role="button" tabindex="0" ${actionAttrs('showSampleAlert')}><div class="grow"><div class="t">Send a test alert</div></div></div>`)
     + muteRows + `</div></div>`
     + `<div class="sec"><div class="card">`
-    + navRow('Widgets', '', 'openPage', 'widgets')
-    + retestLine + faceId
+    + (real.on ? '' : navRow('Widgets', '', 'openPage', 'widgets'))
+    + retestLine + (real.on ? '' : faceId)
     + `<div class="row"><div class="grow"><div class="t">Hide scores</div>`
     + `</div>`
     + `${toggle(state.hideScores, 'toggleHideScores', undefined, 'Hide scores')}</div>`
     + `<div class="pad"><div class="t" style="margin-bottom:8px">Appearance</div>`
     + `<div class="seg-fit">${segmented('pickTheme', state.theme, THEME_CHOICES)}</div></div>`
     + `</div></div>`
-    + `<div class="sec"><div class="card">${navRow('Show intro again', '', 'showIntro')}</div></div>`
+    + (real.on ? '' : `<div class="sec"><div class="card">${navRow('Show intro again', '', 'showIntro')}</div></div>`)
     + `<div class="sec"><div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('signOut')}>`
     + `<div class="t">Sign out</div></div></div></div>`
-    + `<div class="foot" style="padding-top:0">Preview with made up sample data. Independent app. Not made by your school or district.</div>`;
+    + `<div class="foot" style="padding-top:0">${real.on ? '' : 'Preview with made up sample data. '}Independent app. Not made by your school or district.</div>`;
 }
 
 // ---- Widgets ------------------------------------------------------------------------------

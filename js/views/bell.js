@@ -11,6 +11,7 @@ import { escapeHtml, clockTime } from '../format.js';
 import { state } from '../state.js';
 import { periodsFor, sampleMinutesNow } from '../schedule.js';
 import { segmented } from './components.js';
+import { real } from '../real-data.js';
 
 const PX_PER_MINUTE = 1.7;
 const WALK_GAP_PX = 30; // a walk gap is at least this tall, so its label never touches a card
@@ -21,6 +22,11 @@ const BOTTOM_PAD = 12;
 const clamp01 = n => Math.max(0, Math.min(1, n));
 
 export function bellView() {
+  // HAC's Assignments page has no bell times or rooms, so real grades get no made up schedule.
+  if (real.on) {
+    return `<div class="sec"><div class="card"><div class="pad"><div class="t">Your bell schedule isn't in HAC</div>`
+      + `<div class="s" style="margin-top:4px">Tally only shows what HAC gives it, so there are no class times here yet.</div></div></div></div>`;
+  }
   return `<div class="sec" style="margin-bottom:14px">`
     + segmented('pickBellDay', state.bellDay, [['A', 'A day, today'], ['B', 'B day, next']])
     + `</div><div class="sec">${tape()}</div>`;

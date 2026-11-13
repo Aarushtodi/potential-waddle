@@ -152,7 +152,8 @@ export function finalExamNeeded(split, q1, q2, target) {
  *   2. a correction or retest score replaces that (it is the score that will be entered),
  *   3. a curve adds points on top,
  *   4. fake future assignments are added,
- *   5. "drop my lowest test" removes the lowest test by percent (only with 2+ tests).
+ *   5. "drop my lowest test" removes the lowest counted test by percent, a missing or absent
+ *      0 included (only with 2+ tests), and never when that would lower the average.
  * @param {object[]} rows
  * @param {{scores: object, corrections: object, curve: object, fakeAssignments: object[],
  *          dropLowestTest: boolean}} scenario values are strings as typed ('' = not set)
@@ -176,10 +177,15 @@ export function applyWhatIf(rows, scenario, testCategory = 'Test') {
     ...(fake.catWeight != null ? { catWeight: fake.catWeight } : {}),
   })));
   if (scenario.dropLowestTest) {
-    const tests = result.filter(row => row.category === testCategory && isScored(row));
+    // A missing, INC or ABS row counts as 0 in HAC, so it is the lowest test and the one to drop.
+    const percent = row => (isScored(row) ? row.score / row.total : 0);
+    const tests = result.filter(row => row.category === testCategory && row.total > 0 && (isScored(row) || countsAsZero(row)));
     if (tests.length > 1) {
-      const lowest = tests.reduce((low, row) => (row.score / row.total < low.score / low.total ? row : low));
-      result = result.filter(row => row !== lowest);
+      const lowest = tests.reduce((low, row) => (percent(row) < percent(low) ? row : low));
+      const dropped = result.filter(row => row !== lowest);
+      const before = classAverage(result);
+      const after = classAverage(dropped);
+      if (before == null || after == null || after >= before) result = dropped;
     }
   }
   return result;

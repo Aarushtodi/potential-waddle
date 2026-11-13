@@ -7,9 +7,9 @@
  * preview stays on sample data.
  *
  * What HAC's Assignments page gives: class names, HAC's own average, category weights, and every
- * row as the teacher entered it. What it does not give stays sample, and the app says so:
- * teachers, rooms, bell times, test dates. GPA is hidden on real data (the district says third
- * party GPA is wrong).
+ * row as the teacher entered it. What it does not give (teachers, rooms, bell times, test dates)
+ * is left blank or hidden on real data, never filled from the sample. GPA is hidden on real data
+ * (the district says third party GPA is wrong).
  */
 import {
   CLASSES, SEEN_CHANGES, QUEUED_SCORES, LAST_QUARTER_SAME_POINT, BELL_SCHEDULE,
@@ -164,7 +164,7 @@ function applyRealData(data) {
     const name = className(raw.name);
     const course = {
       id: slug(name, taken), name, real: true,
-      teacher: 'Sample teacher', room: 'Sample room',
+      teacher: '', room: '',
       level: /\b(AP|Honors|Pre-AP)\b/.test(name) ? 'H' : 'R',
       absences: 0, tardies: 0, q1: null, q1rows: [],
       hacAverage: raw.average,
@@ -180,7 +180,8 @@ function applyRealData(data) {
   QUEUED_SCORES.length = 0;
   for (const key of Object.keys(LAST_QUARTER_SAME_POINT)) delete LAST_QUARTER_SAME_POINT[key];
 
-  // Bell times stay sample, but point at real classes in HAC's order so nothing breaks.
+  // Bell times are not in HAC, so the Bell tab and Classes today are hidden on real data. The sample
+  // schedule still points at real classes in HAC's order so nothing that reads it breaks.
   const ids = courses.map(course => course.id);
   let next = 0;
   for (const day of Object.keys(BELL_SCHEDULE)) {

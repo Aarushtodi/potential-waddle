@@ -11,6 +11,7 @@ import {
 import { actionAttrs, segmented, toggle } from './components.js';
 import { whatIfSheetBody, WHAT_IF_TOOLS } from './what-if.js';
 import { graphSheetBody } from './grades.js';
+import { real } from '../real-data.js';
 
 const doneButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Done</button>`;
 const cancelButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Cancel</button>`;
@@ -145,9 +146,10 @@ const SHEETS = {
         + `<div class="row"><div class="s" style="width:50px">To</div><div class="t" ${BIG_TITLE}>${escapeHtml(course.teacher)}</div></div>`
         + `<div class="row"><div class="s" style="width:50px">Subject</div><div class="t" ${BIG_TITLE}>${escapeHtml(subject)}</div></div>`
         + `<div class="pad" style="border-top:1px solid var(--rule);font-size:15px;line-height:1.4">`
-        + `Hi ${escapeHtml(course.teacher)},<br><br>I had a question about ${about}`
+        // Real HAC grades carry no teacher name: blank, never a placeholder.
+        + `Hi${course.teacher ? ' ' + escapeHtml(course.teacher) : ''},<br><br>I had a question about ${about}`
         + `${row ? ` (${scoreText(row)}, ${course.name})` : ''}. Could you take a look when you get a chance?`
-        + `<br><br>Thank you,<br>Sample Student</div></div>`,
+        + `<br><br>Thank you,${real.on ? '' : '<br>Sample Student'}</div></div>`,
     };
   },
 

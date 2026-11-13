@@ -20,6 +20,7 @@ import { settingsView, widgetsView } from './settings.js';
 import { paceView } from './pace.js';
 import { calendarView } from './calendar.js';
 import { bellView } from './bell.js';
+import { real } from '../real-data.js';
 import { sheetView } from './sheets.js';
 import { liveBanner } from './banner.js';
 
@@ -74,7 +75,8 @@ function tabRoot(tab) {
   if (tab === 'calendar') {
     return {
       nav: `<div class="nav"><div class="ttl">Calendar</div>`
-        + `<button class="pill" ${actionAttrs('openSheet', 'testDates')}>Test dates</button></div>`,
+        // The test date list is sample only (made up teachers): not next to real grades.
+        + (real.on ? '' : `<button class="pill" ${actionAttrs('openSheet', 'testDates')}>Test dates</button>`) + `</div>`,
       body: calendarView(),
     };
   }
