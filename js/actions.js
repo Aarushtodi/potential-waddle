@@ -12,7 +12,7 @@ import { classAverage, isScored, lockedValue, gpaSplitPlan } from './grade-math.
 import { CLASSES, QUEUED_SCORES, PACED_PROJECT_ROW_ID, SAMPLE_GPA_HISTORY } from './sample-data.js';
 import {
   state, ui, TYPED_CLASS_LIMIT, findClass, findRow, effectiveDue,
-  whatIfFor, whatIfAverage, blankRowsLeft, gradeChangeEntry, goalSteps,
+  whatIfFor, whatIfAverage, blankRowsLeft, gradeChangeEntry, goalSteps, fakeCategory,
 } from './state.js';
 import { render } from './render.js';
 import { alertText } from './views/changes.js';
@@ -463,12 +463,14 @@ export const actions = {
     const scenario = whatIfFor(classId);
     const draft = scenario.draft;
     if (!draft.name.trim() || !(+draft.points > 0) || draft.score === '') return false;
-    scenario.fakeAssignments.push({
-      id: 'f' + state.nextId++, name: draft.name.trim(), category: draft.category,
+    const course = findClass(classId);
+    const category = fakeCategory(course, draft);
+    scenario.fakeAssignments.push(Object.assign({
+      id: 'f' + state.nextId++, name: draft.name.trim(), category,
       points: draft.points, score: draft.score,
-    });
+    }, course.real ? { catWeight: course.categoryWeights[category] ?? 0 } : {}));
     // Keep category and points for the next one; most fake assignments look alike.
-    scenario.draft = { name: '', category: draft.category, points: draft.points, score: '' };
+    scenario.draft = { name: '', category, points: draft.points, score: '' };
   },
   removeFakeAssignment(classId, fakeId) {
     const scenario = whatIfFor(classId);

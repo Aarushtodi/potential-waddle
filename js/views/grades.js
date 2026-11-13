@@ -7,7 +7,7 @@ import { real } from '../real-data.js';
 import { isScored, countsAsZero, classAverage, averageEffect } from '../grade-math.js';
 import {
   state, TYPED_CLASS_LIMIT, orderedClasses, visibleClasses, rowsForPeriod, periodAverage,
-  findRow, effectiveDue, isMissing, isUnderRetestLine, nowAverage,
+  findRow, effectiveDue, isMissing, isUnderRetestLine, nowAverage, rowCounts,
 } from '../state.js';
 import { actionAttrs, heading, navRow, statusStrip, CHEVRON } from './components.js';
 
@@ -120,7 +120,7 @@ export function classView(course) {
   for (const [title, group] of [['Coming up', upcoming], ['Already due', past], ['No due date', undated]]) {
     if (!group.length) continue;
     html += `<div class="sec"><div class="lab" style="margin-bottom:6px">${title}</div>`
-      + `<div class="card">${group.map(assignmentRow).join('')}</div></div>`;
+      + `<div class="card">${group.map(row => assignmentRow(row, course)).join('')}</div></div>`;
   }
   return html;
 }
@@ -128,7 +128,8 @@ export function classView(course) {
 /** Running average after each graded row (0s included), oldest first: [{ row, average }]. */
 function graphSeries(course) {
   const points = course.rows
-    .filter(row => (isScored(row) || countsAsZero(row)) && row.due != null)
+    // A real HAC row weighted 0 (Frisco Progress Check) never moves the line, so it is not a point.
+    .filter(row => (isScored(row) || countsAsZero(row)) && row.due != null && rowCounts(row))
     .sort((a, b) => a.due - b.due);
   const soFar = [];
   return points.map(row => {
@@ -195,8 +196,8 @@ export function graphSheetBody(course) {
     + `</div></div></div>`;
 }
 
-function assignmentRow(row) {
-  const underLine = !row.old && isUnderRetestLine(row);
+function assignmentRow(row, course) {
+  const underLine = !row.old && isUnderRetestLine(row, course);
   const due = row.due == null ? 'No date' : 'Due ' + shortDate(effectiveDue(row));
   // Last quarter's rows are read only.
   const open = row.old ? '' : actionAttrs('openPage', 'assignment', row.id);
@@ -211,7 +212,8 @@ function assignmentRow(row) {
 
 export function assignmentView(rowId) {
   const { course, row } = findRow(rowId);
-  const effect = isScored(row) ? averageEffect(course.rows, row) : null;
+  const counts = rowCounts(row);
+  const effect = isScored(row) && counts ? averageEffect(course.rows, row) : null;
   const detail = (label, value, extraStyle = '') =>
     `<div class="row"><div class="grow s">${label}</div><div class="s" style="${STRONG}${extraStyle}">${value}</div></div>`;
 
@@ -219,9 +221,9 @@ export function assignmentView(rowId) {
     + `<div class="row"><div class="grow s">Score</div><div class="score ${isScored(row) ? 'g' : 'n'}">${scoreText(row)}</div></div>`
     + detail('Type', row.category)
     + detail('Due', row.due == null ? 'No date' : shortDate(effectiveDue(row)))
-    + detail('Points effect', effect != null ? signed(effect) + ' on your average' : 'None yet, no number', ';text-align:right')
-    + (isMissing(row) ? detail('At stake', `${row.total} points, missing`) : '')
-    + (isUnderRetestLine(row) ? detail(`Under your ${state.retestLine}`, 'You can retest or waterfall this.') : '')
+    + detail('Points effect', !counts ? "Doesn't count toward your grade" : effect != null ? signed(effect) + ' on your average' : 'None yet, no number', ';text-align:right')
+    + (isMissing(row) && counts ? detail('At stake', `${row.total} points, missing`) : '')
+    + (isUnderRetestLine(row, course) ? detail(`Under your ${state.retestLine}`, 'You can retest or waterfall this.') : '')
     + `</div></div>`;
   html += `<div class="toolrow"><button class="pill" ${actionAttrs('openWhatIf', course.id)}>What if</button>`
     + `<button class="pill" ${actionAttrs('openEmailDraft', course.id, row.id)}>Email teacher</button></div>`;

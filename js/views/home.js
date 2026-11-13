@@ -159,7 +159,7 @@ function homeRow(item, showDate) {
 function allClearSection() {
   const open = homeTodos().filter(item => !isDone(item));
   const leadCard = items => `<div class="card lead">${items.map(item => homeRow(item, false)).join('')}</div>`;
-  const tests = sortByDue(open.filter(item => item.category === 'Test' && (item.due === 0 || item.due === 1)));
+  const tests = sortByDue(open.filter(item => item.test && (item.due === 0 || item.due === 1)));
   if (tests.length) {
     const first = tests[0];
     return {
@@ -177,7 +177,7 @@ function allClearSection() {
         { urgent: overdue, big: 1 })}${leadCard(today)}</div>`,
     };
   }
-  const nextTest = sortByDue(open.filter(item => item.category === 'Test' && item.due > 0))[0];
+  const nextTest = sortByDue(open.filter(item => item.test && item.due > 0))[0];
   const next = nextTest ? `Next: ${escapeHtml(nextTest.title)} ${weekday(nextTest.due)}` : 'Nothing due';
   return {
     shown: [],
@@ -419,7 +419,7 @@ function planCard() {
  */
 export function finalsTests(limit = 3) {
   // Tests only: the long project (big) has its own pace line on Home.
-  const tests = homeTodos().filter(item => item.category === 'Test' && !item.big && item.due != null && item.due >= 0 && !isDone(item));
+  const tests = homeTodos().filter(item => item.test && !item.big && item.due != null && item.due >= 0 && !isDone(item));
   return sortByDue(tests).slice(0, limit).map(item => ({
     title: item.title,
     course: item.source === 'testDate' ? item.title.replace(/ (Test|Quiz)$/, '') : shortClassName(String(item.detail)),

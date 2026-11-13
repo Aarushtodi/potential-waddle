@@ -156,9 +156,10 @@ export function finalExamNeeded(split, q1, q2, target) {
  * @param {object[]} rows
  * @param {{scores: object, corrections: object, curve: object, fakeAssignments: object[],
  *          dropLowestTest: boolean}} scenario values are strings as typed ('' = not set)
+ * @param {string} [testCategory='Test'] which category "test" means (real HAC: the heaviest one)
  * @returns {object[]}
  */
-export function applyWhatIf(rows, scenario) {
+export function applyWhatIf(rows, scenario, testCategory = 'Test') {
   let result = rows.map(row => {
     let score = row.score;
     const typed = scenario.scores[row.id];
@@ -171,9 +172,11 @@ export function applyWhatIf(rows, scenario) {
   });
   result = result.concat((scenario.fakeAssignments || []).map(fake => ({
     id: fake.id, title: fake.name, category: fake.category, score: +fake.score, total: +fake.points,
+    // Real HAC classes: the fake carries its category's weight, like the rows it joins.
+    ...(fake.catWeight != null ? { catWeight: fake.catWeight } : {}),
   })));
   if (scenario.dropLowestTest) {
-    const tests = result.filter(row => row.category === 'Test' && isScored(row));
+    const tests = result.filter(row => row.category === testCategory && isScored(row));
     if (tests.length > 1) {
       const lowest = tests.reduce((low, row) => (row.score / row.total < low.score / low.total ? row : low));
       result = result.filter(row => row !== lowest);

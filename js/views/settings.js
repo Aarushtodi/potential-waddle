@@ -2,7 +2,7 @@
 import { escapeHtml, shortDate, longDate, signed } from '../format.js';
 import { isScored } from '../grade-math.js';
 import { CLASSES } from '../sample-data.js';
-import { state, todoItems, sortByDue, findRow, effectiveDue } from '../state.js';
+import { state, todoItems, sortByDue, findRow, effectiveDue, isTestRow } from '../state.js';
 import { actionAttrs, heading, navRow, segmented, toggle } from './components.js';
 
 const RETEST_LINE_CHOICES = [80, 90];
@@ -84,7 +84,7 @@ function widgetData(kind, classId) {
     for (const course of CLASSES) {
       if (!matches(course.id)) continue;
       for (const row of course.rows) {
-        if (row.category === 'Test' && !isScored(row) && !row.pending && row.due >= 0) {
+        if (isTestRow(course, row) && !isScored(row) && !row.pending && row.due >= 0) {
           const due = effectiveDue(row);
           if (!soonest || due < soonest.due) soonest = { due, title: row.title };
         }

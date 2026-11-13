@@ -13,7 +13,7 @@ import {
 import { CLASSES, LAST_QUARTER_SAME_POINT } from '../sample-data.js';
 import {
   state, SEMESTER_SPLIT, whatIfFor, whatIfAverage, blankRowsLeft, isUnderRetestLine,
-  nowAverage, nextTestRow, neededOnNext,
+  nowAverage, nextTestRow, neededOnNext, isTestRow, weightedCategories, fakeCategory, plainCategory, testWord,
 } from '../state.js';
 import { actionAttrs, navRow, segmented, toggle, sectionLabel, CHEVRON } from './components.js';
 import { needView } from './gpa.js';
@@ -111,7 +111,7 @@ function stackScores(course) {
   }).join('');
   const fakeRows = scenario.fakeAssignments.map(fake =>
     `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>${escapeHtml(fake.name)}</div>`
-    + `<div class="s">Fake ${fake.category}, ${escapeHtml(fake.score)} of ${escapeHtml(fake.points)}</div></div>`
+    + `<div class="s">Fake ${course.real ? escapeHtml(plainCategory(fake.category)) : fake.category}, ${escapeHtml(fake.score)} of ${escapeHtml(fake.points)}</div></div>`
     + `<button class="pill" ${actionAttrs('removeFakeAssignment', course.id, fake.id)}>Remove</button></div>`).join('');
   html += sectionLabel('Type the grade you expect') + `<div class="card">${scoreRows}${fakeRows}</div>` + GAP_14;
 
@@ -119,9 +119,7 @@ function stackScores(course) {
     + `<div class="card">`
     + `<div class="pad"><input autocomplete="off" enterkeyhint="done" class="f w" placeholder="Name it" aria-label="Fake assignment name" `
     + `value="${escapeHtml(draft.name)}" data-input="fakeAssignmentField" data-x="${course.id}" data-y="name"></div>`
-    + `<div class="pad" style="border-top:1px solid var(--rule)">`
-    + segmented('pickFakeCategory', draft.category, [['Test', 'Test'], ['Lab', 'Lab'], ['HW', 'HW']], course.id)
-    + `</div>`
+    + categoryPicker(course, draft)
     + `<div class="row"><div class="grow t" ${BIG_TITLE}>Points</div>`
     + numberInput('Points', escapeHtml(draft.points), 'fakeAssignmentField', course.id, 'points') + `</div>`
     + `<div class="row"><div class="grow t" ${BIG_TITLE}>Your score</div>`
@@ -131,9 +129,9 @@ function stackScores(course) {
     + `</div></div>` + GAP_14;
 
   // A correction is the new score the teacher will type in, so it replaces the old one.
-  const tests = course.rows.filter(row => row.category === 'Test' && isScored(row));
+  const tests = gradedTests(course);
   html += sectionLabel('Corrections') + `<div class="card">`
-    + (tests.length ? '' : '<div class="pad s">No graded tests to correct yet.</div>')
+    + (tests.length ? '' : `<div class="pad s">No graded ${testWord(course)}s to correct yet.</div>`)
     + tests.map(row =>
       `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Corrected ${escapeHtml(row.title)}</div>`
       + `<div class="s">Type your score after corrections, was ${row.score}</div></div>`
@@ -151,6 +149,27 @@ function stackScores(course) {
   html += `<div style="height:8px"></div>`
     + `<button class="btn ghost" ${actionAttrs('resetWhatIf', course.id)}>Reset</button>`;
   return html;
+}
+
+/** Graded tests: 'Test' rows on sample data, the heaviest weighted category on real HAC classes. */
+const gradedTests = course => course.rows.filter(row => isTestRow(course, row) && isScored(row));
+
+/**
+ * Category for a fake assignment. Sample: Test, Lab, HW. Real HAC: only categories that count
+ * (a weight 0 one like Frisco's Progress Check would move nothing), so with one that counts it is
+ * a plain line, not a one button control.
+ */
+function categoryPicker(course, draft) {
+  const picked = fakeCategory(course, draft);
+  const options = course.real
+    ? weightedCategories(course).map(category => [category, escapeHtml(plainCategory(category))])
+    : [['Test', 'Test'], ['Lab', 'Lab'], ['HW', 'HW']];
+  if (options.length < 2) {
+    return `<div class="row"><div class="grow t" ${BIG_TITLE}>Type</div>`
+      + `<div class="s" style="${STRONG}">${escapeHtml(plainCategory(picked))}</div></div>`;
+  }
+  return `<div class="pad" style="border-top:1px solid var(--rule)">`
+    + segmented('pickFakeCategory', picked, options, course.id) + `</div>`;
 }
 
 function finalsResult(course) {
@@ -172,15 +191,15 @@ function finalsResult(course) {
 
 function retestTool(course) {
   const scenario = whatIfFor(course.id);
-  const tests = course.rows.filter(row => row.category === 'Test' && isScored(row));
-  if (!tests.length) return `<div class="card"><div class="pad"><div class="t">No graded tests here yet</div></div></div>`;
+  const tests = gradedTests(course);
+  if (!tests.length) return `<div class="card"><div class="pad"><div class="t">No graded ${testWord(course)}s here yet</div></div></div>`;
   // Same field as Corrections: either way it is the score that replaces the old one.
   return `<div class="sec" data-live style="margin-bottom:14px">${estimateHeading(course)}</div>`
     + sectionLabel('Type the retest score you expect')
     + `<div class="card">`
     + tests.map(row =>
       `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Retest ${escapeHtml(row.title)}</div>`
-      + `<div class="s">Was ${row.score} of ${row.total}${isUnderRetestLine(row) ? ', under your ' + state.retestLine : ''}</div></div>`
+      + `<div class="s">Was ${row.score} of ${row.total}${isUnderRetestLine(row, course) ? ', under your ' + state.retestLine : ''}</div></div>`
       + numberInput('Expected retest score', scenario.corrections[row.id] ?? '', 'whatIfCorrection', course.id, row.id,
         ` placeholder="${row.score}"`)
       + `</div>`).join('')
@@ -266,9 +285,10 @@ function semesterTool(course) {
 
 function dropOrCurve(course) {
   const scenario = whatIfFor(course.id);
-  const tests = course.rows.filter(row => row.category === 'Test' && isScored(row));
-  return `<div class="card"><div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Drop my lowest test</div>`
-    + `<div class="s">If your teacher does it</div></div>${toggle(scenario.dropLowestTest, 'toggleDropLowest', course.id, 'Drop my lowest test')}</div>`
+  const tests = gradedTests(course);
+  const drop = `Drop my lowest ${testWord(course)}`;
+  return `<div class="card"><div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>${drop}</div>`
+    + `<div class="s">If your teacher does it</div></div>${toggle(scenario.dropLowestTest, 'toggleDropLowest', course.id, drop)}</div>`
     + tests.map(row =>
       `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Curve ${escapeHtml(row.title)}</div>`
       + `<div class="s">Points added, was ${row.score}</div></div>`

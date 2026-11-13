@@ -177,9 +177,13 @@ export const effectiveDue = row => (row.id in state.dueOverrides ? state.dueOver
 
 export const isMissing = row => row.missing && !isScored(row);
 
-/** Graded test under the retest line the student picked at setup. */
-export const isUnderRetestLine = row =>
-  row.category === 'Test' && isScored(row) && row.score / row.total * 100 < state.retestLine;
+/**
+ * Graded test under the retest line the student picked at setup. On real HAC classes a test is
+ * a row in the heaviest weighted category (Frisco "Assessment of Learning").
+ */
+export function isUnderRetestLine(row, course = findRow(row.id)?.course) {
+  return Boolean(course) && isTestRow(course, row) && isScored(row) && row.score / row.total * 100 < state.retestLine;
+}
 
 /** Every missing row in every class. */
 export function missingWork() {
@@ -208,7 +212,7 @@ export function todoItems() {
       if (blank && row.due != null && row.due >= 0) {
         items.push({
           id: row.id, title: row.title, detail: course.name, due: effectiveDue(row),
-          source: 'gradebook', rowId: row.id, category: row.category, big: row.big,
+          source: 'gradebook', rowId: row.id, category: row.category, big: row.big, test: isTestRow(course, row),
         });
       }
     }
@@ -221,7 +225,7 @@ export function todoItems() {
     if (day) {
       items.push({
         id: test.key, title: test.title, detail: 'Test date, ' + day + ' day',
-        due: test.due[day], source: 'testDate', category: 'Test',
+        due: test.due[day], source: 'testDate', category: 'Test', test: true,
       });
     }
   }
@@ -247,7 +251,7 @@ export function whatIfFor(classId) {
       fakeAssignments: [],
       dropLowestTest: false,
       curve: {}, // row id -> points added
-      draft: { name: '', category: 'Test', points: '100', score: '' }, // Add a fake assignment form
+      draft: { name: '', category: testSlot(findClass(classId) || {}).category, points: '100', score: '' }, // Add a fake assignment form
     };
   }
   return state.whatIf[classId];
@@ -271,7 +275,7 @@ export function nowAverage(course) {
 }
 
 export function whatIfAverage(course, scenario = whatIfFor(course.id)) {
-  const average = classAverage(applyWhatIf(course.rows, scenario));
+  const average = classAverage(applyWhatIf(course.rows, scenario, testSlot(course).category));
   return average == null ? null : average + hacShift(course);
 }
 
@@ -282,18 +286,57 @@ export function whatIfAverage(course, scenario = whatIfFor(course.id)) {
  */
 export function testSlot(course) {
   if (!course.real) return { category: 'Test' };
-  const weights = course.categoryWeights || {};
-  let best = null;
-  for (const category of Object.keys(weights)) {
-    if (Number.isFinite(weights[category]) && (best == null || weights[category] > weights[best])) best = category;
-  }
-  return best == null ? { category: 'Test' } : { category: best, catWeight: weights[best] };
+  const [best] = weightedCategories(course);
+  return best == null ? { category: 'Test' } : { category: best, catWeight: course.categoryWeights[best] };
 }
+
+/**
+ * Real HAC classes: the categories that count (weight above 0), heaviest first; on a tie a name
+ * starting with "Assessment" first, then HAC's order. Frisco: ['Assessment of Learning'], since
+ * "Progress Check for Learning" is weight 0. Sample and typed classes: Test, Lab, HW.
+ */
+export function weightedCategories(course) {
+  if (!course.real) return ['Test', 'Lab', 'HW'];
+  const weights = course.categoryWeights || {};
+  const assessment = name => (/^assessment/i.test(name) ? 0 : 1);
+  return Object.keys(weights)
+    .filter(category => Number.isFinite(weights[category]) && weights[category] > 0)
+    .map((category, order) => ({ category, order }))
+    .sort((a, b) => weights[b.category] - weights[a.category]
+      || assessment(a.category) - assessment(b.category) || a.order - b.order)
+    .map(item => item.category);
+}
+
+/** A test: 'Test' on sample data; on real HAC classes a row in the heaviest weighted category. */
+export const isTestRow = (course, row) => row.category === testSlot(course).category;
+
+/** False only for a real HAC row in a category weighted 0 (Frisco "Progress Check for Learning"). */
+export const rowCounts = row => row.catWeight == null || row.catWeight > 0;
+
+/**
+ * A category name in plain words for labels: "Assessment of Learning" -> "Assessment",
+ * "Progress Check for Learning" -> "Progress check". Other names stay as HAC writes them.
+ */
+export function plainCategory(category) {
+  const name = String(category).replace(/\s+(of|for)\s+learning$/i, '');
+  return /^progress check$/i.test(name) ? 'Progress check' : name;
+}
+
+/**
+ * The category a fake assignment goes in: what the student picked, if it still counts in this
+ * class; else the heaviest (a draft made before a paste could still say 'Test').
+ */
+export function fakeCategory(course, draft) {
+  const options = weightedCategories(course);
+  return options.includes(draft.category) ? draft.category : (options[0] ?? testSlot(course).category);
+}
+
+/** The word for "test" in labels: "assessment" on a Frisco class, "test" everywhere else. */
+export const testWord = course => (course.real && /^assessment/i.test(testSlot(course).category) ? 'assessment' : 'test');
 
 /** The next blank test in the gradebook (a null due date still counts on sample data). */
 export function nextTestRow(course) {
-  const { category } = testSlot(course);
-  return course.rows.find(row => row.category === category && !isScored(row) && row.due >= 0 && !row.pending
+  return course.rows.find(row => isTestRow(course, row) && !isScored(row) && row.due >= 0 && !row.pending
     // Real data: a missing or marked row is not a test to come (an undated M has due null).
     && !(course.real && (countsAsZero(row) || row.mark))) || null;
 }
@@ -317,7 +360,7 @@ export const blankRowsLeft = course => course.rows.filter(
 export function gradeChangeEntry(course, row, before, after, when) {
   return {
     classId: course.id, title: row.title, category: row.category, scoreText: scoreText(row),
-    underRetestLine: isUnderRetestLine(row), before, after, when,
+    underRetestLine: isUnderRetestLine(row, course), before, after, when,
   };
 }
 

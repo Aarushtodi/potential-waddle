@@ -41,7 +41,7 @@ export function needsYou() {
           step: 'Open', action: actionAttrs('openPage', 'assignment', row.id),
         });
       }
-      if (rules.newGrade && isUnderRetestLine(row)) {
+      if (rules.newGrade && isUnderRetestLine(row, course)) {
         items.push({
           kind: 'retest', classId: course.id, title: row.title,
           rest: `${numbers(`${row.score}. `)}Your retest line is ${state.retestLine}.`,
