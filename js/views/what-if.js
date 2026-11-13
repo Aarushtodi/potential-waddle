@@ -335,7 +335,8 @@ function savedScenarios(course) {
     + tableRow('Average, estimate', col => `<div class="avg">${oneDecimal(col.average)}</div>`)
     + tableRow('Change', col => `<div class="s">${col.scenario ? signed(col.average - now) : '–'}</div>`)
     + tableRow('Fake scores', col => `<div class="s">${col.scenario ? fakeCount(col.scenario) : '–'}</div>`)
-    + tableRow('Letter', col => `<div class="s">${letterGrade(col.average)}</div>`)
+    // Frisco ISD has no D: under 70 is an F on real classes.
+    + tableRow('Letter', col => `<div class="s">${course.real && letterGrade(col.average) === 'D' ? 'F' : letterGrade(col.average)}</div>`)
     + `</div></div>` + GAP_12
     + `<div class="card">`
     + saved.map((entry, i) =>
