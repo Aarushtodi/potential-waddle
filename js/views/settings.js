@@ -3,9 +3,11 @@ import { escapeHtml, shortDate, longDate, signed } from '../format.js';
 import { isScored } from '../grade-math.js';
 import { CLASSES } from '../sample-data.js';
 import { state, todoItems, sortByDue, findRow, effectiveDue, isTestRow } from '../state.js';
-import { actionAttrs, heading, navRow, segmented, toggle } from './components.js';
+import { CHEVRON, actionAttrs, heading, navRow, segmented, toggle } from './components.js';
 
 const RETEST_LINE_CHOICES = [80, 90];
+// Tester feedback (Google Form on his personal account, no sign in, no emails collected).
+const FEEDBACK_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSccg8gErMi47SaHwfVOtPKVp_WNzx8dWnDfzZBtujZ2zLwsBg/viewform';
 const THEME_CHOICES = [['light', 'Light'], ['dark', 'Dark'], ['system', 'Match my phone']];
 
 export function settingsView() {
@@ -34,7 +36,11 @@ export function settingsView() {
 
   const ruleToggle = (key, title) => `<div class="row"><div class="grow"><div class="t">${title}</div>`
     + `</div>${toggle(state.alertRules[key], 'toggleAlertRule', key, title)}</div>`;
-  return `<div class="sec"><div class="lab" style="margin-bottom:6px">Alert rules</div><div class="card">`
+  const feedback = `<div class="sec"><div class="card">`
+    + `<a class="row" href="${FEEDBACK_FORM}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">`
+    + `<div class="grow"><div class="t">Send feedback</div><div class="s">About 1 minute</div></div>${CHEVRON}</a>`
+    + `</div></div>`;
+  return feedback + `<div class="sec"><div class="lab" style="margin-bottom:6px">Alert rules</div><div class="card">`
     + ruleToggle('newGrade', 'New grades')
     + ruleToggle('zero', 'Zero or missing')
     + ruleToggle('changed', 'Score changed')
