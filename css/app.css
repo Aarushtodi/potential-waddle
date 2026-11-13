@@ -186,6 +186,24 @@ body {
   padding-bottom: calc(env(safe-area-inset-bottom) + 36px);
 }
 
+/* First screen: heading at the top, the two buttons around the middle, the note at the very bottom. */
+.scroll.first {
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll.first > * {
+  flex: none;
+}
+
+.scroll.first > .first-mid {
+  margin: auto 0;
+}
+
+.first-mid > .sec:last-child {
+  margin-bottom: 0;
+}
+
 .sec {
   margin: 0 0 24px;
 }

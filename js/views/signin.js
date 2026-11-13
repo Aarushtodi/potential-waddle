@@ -13,6 +13,21 @@ export function signInView() {
   if (state.districtNotListed) districtLabel = "My district isn't listed";
   else if (state.district) districtLabel = escapeHtml(state.district);
 
+  // First screen (no district yet): heading at the top, the two buttons around the middle,
+  // the note at the very bottom (his layout 11/12 9:09 PM). Sign in keeps the old flow.
+  if (!districtChosen) {
+    return `<div class="scr"><div class="scroll nt first" style="padding-top:calc(env(safe-area-inset-top) + 44px)">`
+      + `<div class="sec form">`
+      + heading('School gradebook', 'Choose your ', 'district', { big: 1 })
+      + `</div><div class="first-mid">`
+      + `<div class="sec form"><div class="card"><div class="row" role="button" tabindex="0" ${actionAttrs('openDistrictPicker')}>`
+      + `<div class="grow t">${districtLabel}</div>${CHEVRON}</div></div></div>`
+      + `<div class="sec form" style="margin-top:16px"><button class="btn ghost" ${actionAttrs('openImport')}>Paste grades from HAC</button></div>`
+      + `</div><div class="foot" style="margin-top:22px;padding-left:0;padding-right:0">Preview with made up sample data<br>`
+      + `Tally is an independent app.<br>Not made by your school or district.</div>`
+      + `</div>${sheetView()}</div>`;
+  }
+
   let html = `<div class="scr"><div class="scroll nt" style="padding-top:calc(env(safe-area-inset-top) + 44px)">`
     + `<div class="sec form">`
     + heading('School gradebook', districtChosen ? 'Sign ' : 'Choose your ', districtChosen ? 'in' : 'district', { big: 1 })
