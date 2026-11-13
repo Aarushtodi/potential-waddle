@@ -21,6 +21,25 @@ python3 -m http.server 8000   # then open http://localhost:8000
 Plain HTML, CSS and JavaScript. No build step, no dependencies, no framework.
 It deploys as a static site on Vercel.
 
+## Deploy
+
+1. Cache bust, every deploy: `dev/bust.sh` (or `dev/bust.sh 20261113a`). It writes ONE build stamp
+   to every `?v=` in `index.html` and `setup.html` and to `version.json`, and fails if anything is
+   left on another stamp. Never edit the `?v=` by hand: the stamp on `js/app.js` is the build the
+   page thinks it is running, and `version.json` is the build that is live.
+2. Syntax check: `for f in js/*.js js/views/*.js; do node --check $f; done`.
+3. Commit, `vercel --prod --yes`, push main.
+4. Check live: `curl -sI https://grade-app-preview.vercel.app/version.json` says `no-store`, and its
+   body has the new stamp.
+
+**Phones pick up a deploy on their own.** A Home Screen web app can stay in memory for days and
+keep running old code. `js/fresh.js` asks `version.json` (no-store) which build is live when the
+app comes back to the front, when it returns from the back/forward cache, and every 10 minutes
+while open. If it is not the running build, the app reloads at a safe moment (no field focused,
+no sheet open, no paste or refresh running, no tap since the check started), carrying the whole
+`state` across in sessionStorage so nothing the student did is lost. Offline or any error: it does
+nothing. It never reloads twice for the same build, so a slow edge can't loop it.
+
 ## File map
 
 ```
@@ -32,6 +51,7 @@ js/actions.js           Everything a tap or keystroke does. Also the simulated g
 js/render.js            render(): redraw from state. refreshLive(): patch only [data-live] parts
 js/grade-math.js        Pure grade math: averages, weights, what if, semester split, GPA (JSDoc'd)
 js/schedule.js          Bell schedule: current period, minutes left
+js/fresh.js             Stays on the newest build: checks version.json, reloads at a safe moment, keeps state
 js/theme.js             Appearance: Light, Dark or Match my phone, saved in localStorage, crossfade on change
 js/format.js            Escaping, sample calendar (day offsets), number and date text
 js/sample-data.js       SAMPLE DATA: classes, rows, past report card, bell schedule, test dates
@@ -50,7 +70,8 @@ js/views/pace.js        Pacing page for the long project
 js/views/intro.js       Intro slides before the district pick (and from Settings > Show intro again)
 js/views/theme-pick.js  Pick a look, after the intro and before sign in (3 cards with mini Home pictures)
 js/views/signin.js      Sign in
-dev/                    Handoff notes and a Playwright check script. Not deployed (.vercelignore)
+version.json            The live build stamp, written by dev/bust.sh, served no-store (vercel.json)
+dev/                    Handoff notes, bust.sh (cache bust) and a Playwright check script. Not deployed (.vercelignore)
 ```
 
 ## Data flow
@@ -96,4 +117,4 @@ what a student hopes:
 | Face ID is a 1.3 s cover | Real Face ID |
 | Email teacher shows a draft | Opens Mail |
 | Widgets and lock screen are pictures | Real iOS widgets |
-| State resets on reload (except the Appearance pick, kept in localStorage) | Saved on the phone |
+| State resets on a fresh launch (pasted grades and the Appearance pick are kept in localStorage; a reload onto a new build keeps everything) | Saved on the phone |

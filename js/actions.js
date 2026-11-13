@@ -99,6 +99,16 @@ function applyNextQueuedScore() {
   if (!state.mutedClasses[course.id]) showBanner(course.name, alertText(change), change);
 }
 
+/** After a reload to a new build (js/fresh.js): the sample scores that already came in, no banner. */
+export function replayQueuedScores() {
+  QUEUED_SCORES.slice(0, state.queuedScoreIndex).forEach(queued => {
+    const row = findClass(queued.classId)?.rows.find(candidate => candidate.title === queued.title);
+    if (!row) return;
+    row.score = queued.score;
+    delete row.pending;
+  });
+}
+
 let bannerTimer;
 function showBanner(title, body, change) {
   state.banner = { title, body, fresh: true, data: bannerData(change) };

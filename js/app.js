@@ -10,12 +10,13 @@ import { qs } from './format.js';
 import { state, whatIfFor, whatIfAverage } from './state.js';
 import { CLASSES } from './sample-data.js';
 import { render, refreshLive, collapseHeader } from './render.js';
-import { actions, inputHandlers, startRefresh, changeDueDate, settleSemester } from './actions.js';
+import { actions, inputHandlers, startRefresh, changeDueDate, settleSemester, replayQueuedScores } from './actions.js';
 import { INTRO_SLIDE_COUNT } from './views/intro.js';
 import { applyTheme } from './theme.js';
 import { noteTap } from './views/app-motion.js';
 import { real, loadRealData, applyImported } from './real-data.js';
 import { readPaste, saveImport, loadImport, clearClipboard, ImportError } from './hac-import.js';
+import { startFreshCheck, restoreHandoff } from './fresh.js';
 
 // Motion runs only when reduced motion is off (council motion.css rule).
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');
@@ -191,6 +192,9 @@ if (await loadRealData()) {
   }
 }
 
+// Just reloaded to a new build (js/fresh.js): put back where the student was and what they typed.
+if (restoreHandoff()) replayQueuedScores();
+
 // ---- Paste your grades ---------------------------------------------------------------------
 
 async function importGrades(text) {
@@ -232,6 +236,9 @@ document.addEventListener('input', event => {
 });
 
 render();
+
+// Reload to a new build on its own after a deploy. The running build is the ?v= this file was loaded with.
+startFreshCheck(new URL(import.meta.url).searchParams.get('v'));
 
 // Handle for the Playwright checks in dev/shots.js. The app itself never reads it.
 window.gradeApp = { state, actions, render, CLASSES, whatIfFor, whatIfAverage };
