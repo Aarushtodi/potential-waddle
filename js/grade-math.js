@@ -82,12 +82,13 @@ export function averageEffect(rows, row) {
  * @param {object[]} rows current gradebook rows
  * @param {number} target average wanted, like 90
  * @param {number} [total=100] points possible on the next assignment
- * @param {string} [category='Test']
+ * @param {object} [slot={category: 'Test'}] the next assignment's category, and on real HAC
+ *   classes its catWeight (and row weight), so it counts even in a category with no rows yet
  * @returns {{reach: false, best: number} | {reach: true, need: number}}
  *   need is a whole number of points; best is the average even a perfect score gives
  */
-export function scoreNeededOnNext(rows, target, total = 100, category = 'Test') {
-  const averageWith = score => classAverage(rows.concat([{ category, score, total }]));
+export function scoreNeededOnNext(rows, target, total = 100, slot = { category: 'Test' }) {
+  const averageWith = score => classAverage(rows.concat([Object.assign({}, slot, { score, total })]));
   if (averageWith(total) < target) return { reach: false, best: averageWith(total) };
   if (averageWith(0) >= target) return { reach: true, need: 0 };
   let low = 0;

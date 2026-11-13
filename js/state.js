@@ -11,7 +11,9 @@ import {
   CLASSES, PAST_REPORT_CARD, TEST_DATE_CATALOG, SEEN_CHANGES,
   SAMPLE_TODOS, SAMPLE_PACE,
 } from './sample-data.js';
-import { classAverage, averageEffect, isScored, countsAsZero, applyWhatIf, solveSemesterSplit } from './grade-math.js';
+import {
+  classAverage, averageEffect, isScored, countsAsZero, applyWhatIf, solveSemesterSplit, scoreNeededOnNext,
+} from './grade-math.js';
 import { scoreText, relativeDay } from './format.js';
 import { loadTheme } from './theme.js';
 import { real } from './real-data.js';
@@ -251,8 +253,59 @@ export function whatIfFor(classId) {
   return state.whatIf[classId];
 }
 
-export const whatIfAverage = (course, scenario = whatIfFor(course.id)) =>
-  classAverage(applyWhatIf(course.rows, scenario));
+/**
+ * Real HAC classes: HAC's printed average minus ours from the same rows. Usually 0; a code we
+ * don't read would make them differ, and What if and Target add this so they start from the
+ * number on the class page. 0 for sample and typed classes, or when either average is missing.
+ */
+export function hacShift(course) {
+  if (!course.real || typeof course.hacAverage !== 'number') return 0;
+  const ours = classAverage(course.rows);
+  return ours == null ? 0 : course.hacAverage - ours;
+}
+
+/** The average What if and Target start from ("Now", "You're at"). Same as the class page. */
+export function nowAverage(course) {
+  const ours = classAverage(course.rows);
+  return ours == null ? null : ours + hacShift(course);
+}
+
+export function whatIfAverage(course, scenario = whatIfFor(course.id)) {
+  const average = classAverage(applyWhatIf(course.rows, scenario));
+  return average == null ? null : average + hacShift(course);
+}
+
+/**
+ * Where the next test goes. Sample: 'Test'. Real HAC: the heaviest weighted category of that
+ * class (Frisco "Assessment of Learning"; ties go to the first in HAC's order), with its weight
+ * on the row so it counts even before that category has a grade.
+ */
+export function testSlot(course) {
+  if (!course.real) return { category: 'Test' };
+  const weights = course.categoryWeights || {};
+  let best = null;
+  for (const category of Object.keys(weights)) {
+    if (Number.isFinite(weights[category]) && (best == null || weights[category] > weights[best])) best = category;
+  }
+  return best == null ? { category: 'Test' } : { category: best, catWeight: weights[best] };
+}
+
+/** The next blank test in the gradebook (a null due date still counts on sample data). */
+export function nextTestRow(course) {
+  const { category } = testSlot(course);
+  return course.rows.find(row => row.category === category && !isScored(row) && row.due >= 0 && !row.pending
+    // Real data: a missing or marked row is not a test to come (an undated M has due null).
+    && !(course.real && (countsAsZero(row) || row.mark))) || null;
+}
+
+/** scoreNeededOnNext for a class: right category, and lined up with HAC's average on real data. */
+export function neededOnNext(course, target, total = 100) {
+  const test = nextTestRow(course);
+  const slot = Object.assign({}, testSlot(course), course.real && test && test.weight != null ? { weight: test.weight } : {});
+  const shift = hacShift(course);
+  const result = scoreNeededOnNext(course.rows, target - shift, total, slot);
+  return result.reach ? result : { reach: false, best: result.best + shift };
+}
 
 /** Blank rows still to come, the ones Quick fill fills in. */
 export const blankRowsLeft = course => course.rows.filter(

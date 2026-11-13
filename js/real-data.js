@@ -134,9 +134,9 @@ function mapRow(raw, course, index) {
     catWeight: course.categoryWeights[raw.category] ?? 0,
   };
   if (score == null && raw.score) {
-    // "ABS - Missing Work Due to Absence" -> ABS. M is missing (counts as 0).
+    // "ABS - Missing Work Due to Absence" -> ABS. M and Z are missing (HAC counts both as 0).
     const code = raw.score.split(' ')[0].toUpperCase();
-    if (code === 'M') row.missing = 1;
+    if (code === 'M' || code === 'Z') row.missing = 1;
     else row.mark = MARKS[code] || code;
   }
   return row;

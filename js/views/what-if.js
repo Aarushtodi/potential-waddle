@@ -7,12 +7,13 @@
  */
 import { escapeHtml, oneDecimal, signed } from '../format.js';
 import {
-  isScored, countsAsZero, classAverage, scoreNeededOnNext, letterGrade,
+  isScored, countsAsZero, classAverage, letterGrade,
   semesterGrade, finalExamNeeded,
 } from '../grade-math.js';
 import { CLASSES, LAST_QUARTER_SAME_POINT } from '../sample-data.js';
 import {
   state, SEMESTER_SPLIT, whatIfFor, whatIfAverage, blankRowsLeft, isUnderRetestLine,
+  nowAverage, nextTestRow, neededOnNext,
 } from '../state.js';
 import { actionAttrs, navRow, segmented, toggle, sectionLabel, CHEVRON } from './components.js';
 import { needView } from './gpa.js';
@@ -72,7 +73,7 @@ function whatIfMenu() {
 
 function estimateHeading(course) {
   const estimate = whatIfAverage(course);
-  const now = classAverage(course.rows);
+  const now = nowAverage(course);
   return `<div class="lab">Now ${oneDecimal(now)}, change ${signed(estimate - now)}, estimate</div>`
     + `<div class="hd big">${oneDecimal(estimate)} <i>what if</i></div>`;
 }
@@ -191,11 +192,10 @@ function retestTool(course) {
 const LETTER_CUTOFFS = { A: 90, B: 80, C: 70, D: 60 };
 
 function cushionTool(course) {
-  const average = classAverage(course.rows);
+  const average = nowAverage(course);
   const letter = letterGrade(average);
   const cutoff = LETTER_CUTOFFS[letter];
-  const nextTest = course.rows.find(row =>
-    row.category === 'Test' && !isScored(row) && !row.pending && row.due != null && row.due >= 0);
+  const nextTest = nextTestRow(course);
   const title = nextTest ? nextTest.title : 'a 100 point test';
   const total = nextTest ? nextTest.total : 100;
 
@@ -203,14 +203,14 @@ function cushionTool(course) {
   if (!cutoff) {
     line = 'Keep going, any passing score helps.';
   } else {
-    const result = scoreNeededOnNext(course.rows, cutoff, total);
+    const result = neededOnNext(course, cutoff, total);
     if (!result.reach) line = `A perfect score on ${escapeHtml(title)} gets you to ${oneDecimal(result.best)}, under your ${letter}`;
     else if (result.need === 0) line = `Even a 0 on ${escapeHtml(title)} keeps your ${letter}`;
     else line = `You can get a ${result.need} on ${escapeHtml(title)} and keep your ${letter}`;
   }
 
   const holdRows = [['A', 90], ['B', 80], ['C', 70]].map(([holdLetter, cut]) => {
-    const result = scoreNeededOnNext(course.rows, cut, total);
+    const result = neededOnNext(course, cut, total);
     const article = /[AEFHILMNORSX]/.test(holdLetter) ? 'an' : 'a';
     const needed = result.reach ? (result.need === 0 ? 'Any score' : result.need + ' of ' + total) : 'Out of reach';
     return `<div class="row"><div class="grow t" ${BIG_TITLE}>To hold ${article} ${holdLetter}</div>`
@@ -225,7 +225,7 @@ function cushionTool(course) {
 
 function semesterInputsFor(course) {
   if (!state.semesterInputs[course.id]) {
-    const average = classAverage(course.rows);
+    const average = nowAverage(course);
     state.semesterInputs[course.id] = {
       q1: course.q1 ?? '',
       q2: average != null ? +average.toFixed(1) : '',
@@ -287,7 +287,7 @@ function savedScenarios(course) {
     return `<div class="card"><div class="pad"><div class="t">Nothing saved yet</div>`
       + `<div class="s">Stack some scores, then save it here to compare.</div></div></div>` + GAP_12 + saveButton;
   }
-  const now = classAverage(course.rows);
+  const now = nowAverage(course);
   const columns = [{ name: 'Now', average: now, scenario: null }].concat(saved);
   const tableRow = (label, cell) =>
     `<div class="s" style="font-weight:600;padding:9px 0 3px">${label}</div>`

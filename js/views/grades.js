@@ -7,7 +7,7 @@ import { real } from '../real-data.js';
 import { isScored, countsAsZero, classAverage, averageEffect } from '../grade-math.js';
 import {
   state, TYPED_CLASS_LIMIT, orderedClasses, visibleClasses, rowsForPeriod, periodAverage,
-  findRow, effectiveDue, isMissing, isUnderRetestLine,
+  findRow, effectiveDue, isMissing, isUnderRetestLine, nowAverage,
 } from '../state.js';
 import { actionAttrs, heading, navRow, statusStrip, CHEVRON } from './components.js';
 
@@ -180,7 +180,7 @@ export function graphSheetBody(course) {
   }).join('');
 
   return `<div class="sec" style="margin-bottom:14px">`
-    + heading(assignmentCount(course.rows.length), oneDecimal(classAverage(course.rows)) + ' ', 'average', { big: 1 })
+    + heading(assignmentCount(course.rows.length), oneDecimal(nowAverage(course)) + ' ', 'average', { big: 1 })
     + `</div>`
     + `<div class="card"><div class="pad"><div class="lab">Grade over time</div>`
     + `<svg viewBox="0 0 ${WIDTH} ${HEIGHT}" width="100%" role="img" aria-label="Average over time">`

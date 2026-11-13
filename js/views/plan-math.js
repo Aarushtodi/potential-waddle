@@ -4,8 +4,8 @@
  * from the gradebook. Target (js/views/gpa.js needView) does the same math one class at a time.
  */
 import { oneDecimal } from '../format.js';
-import { computeGpa, scoreNeededOnNext, finalExamNeeded, semesterGrade, classAverage, isScored } from '../grade-math.js';
-import { state, SEMESTER_SPLIT } from '../state.js';
+import { computeGpa, finalExamNeeded, semesterGrade, classAverage } from '../grade-math.js';
+import { state, SEMESTER_SPLIT, nowAverage, nextTestRow, neededOnNext } from '../state.js';
 import { gpaClasses, gradebookLetter, gpaAverage, currentGpa } from './gpa.js';
 
 export const A_LINE = 90;
@@ -71,9 +71,7 @@ const letterDistance = (from, to) => 'FDCBA'.indexOf(to) - 'FDCBA'.indexOf(from)
 export const stepText = (step, name) => `${name} to ${article(step.letter)}`;
 
 /** The next blank test in the gradebook, the one Target uses (a null due date still counts). */
-export function nextTest(course) {
-  return course.rows.find(row => row.category === 'Test' && !isScored(row) && row.due >= 0 && !row.pending) || null;
-}
+export const nextTest = nextTestRow;
 
 /**
  * The grade they want in a class: what they set on the Plan; else an A for an A goal class, else
@@ -96,13 +94,13 @@ export const TARGET_MAX = 100;
  * kind is the Target tab a tap opens.
  */
 export function need(course, target) {
-  const average = classAverage(course.rows);
+  const average = nowAverage(course);
   if (average == null) return { kind: 'none', text: '' };
   if (average >= target) return { kind: 'above', text: `${oneDecimal(average - target)} above` };
   const test = nextTest(course);
   const title = test ? test.title : 'the next test';
   const total = test ? test.total : 100;
-  const result = scoreNeededOnNext(course.rows, target, total);
+  const result = neededOnNext(course, target, total);
   if (result.reach) {
     if (result.need <= 0) return { kind: 'test', text: `Any score on ${title}` };
     return { kind: 'test', text: `${result.need}${total === 100 ? '' : ' of ' + total} on ${title}` };
