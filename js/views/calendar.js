@@ -8,6 +8,7 @@ import { periodsFor, currentPeriod } from '../schedule.js';
 import { state, todoItems, sortByDue } from '../state.js';
 import { real } from '../real-data.js';
 import { actionAttrs, heading, statusStrip, todoRow, progressBars } from './components.js';
+import { calendarItems, hasHacCalendar } from './hac-adds.js';
 
 const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -18,7 +19,9 @@ export function calendarView() {
   const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate();
 
   const hasOpen = {};
-  todoItems().filter(item => item.due != null && !state.doneIds[item.id]).forEach(item => (hasOpen[item.due] = 1));
+  // On real grades the list also has what teachers already posted in HAC's Calendar (hac-adds.js).
+  const allItems = calendarItems();
+  allItems.filter(item => item.due != null && !state.doneIds[item.id]).forEach(item => (hasOpen[item.due] = 1));
 
   let grid = WEEKDAY_LETTERS.map(letter => `<div class="w">${letter}</div>`).join('');
   grid += '<div></div>'.repeat(leadingBlanks);
@@ -31,7 +34,7 @@ export function calendarView() {
   }
 
   const selected = state.calendarSelected;
-  const dayItems = sortByDue(todoItems().filter(item => item.due === selected));
+  const dayItems = sortByDue(allItems.filter(item => item.due === selected));
   const openCount = dayItems.filter(item => !state.doneIds[item.id]).length;
   let head;
   if (!dayItems.length) head = heading(longDate(selected), 'Nothing ', 'due');
@@ -47,16 +50,39 @@ export function calendarView() {
     + `<button aria-label="Last month" ${actionAttrs('changeMonth', -1)}>‹</button>`
     + `<button aria-label="Next month" ${actionAttrs('changeMonth', 1)}>›</button></div>`
     + `<div class="calg">${grid}</div></div></div></div>`
-    + `<div class="sec">${head}`
+    + (selected === 0 && hasHacCalendar() ? weekSection(allItems) : `<div class="sec">${head}`
     + (dayItems.length
       ? `<div class="card">${progressBars(dayItems)}${dayItems.map(item => todoRow(item, false)).join('')}</div>`
       : '')
     + (Object.values(state.testDatePicks).some(Boolean)
       ? `<div class="foot">Test dates are unofficial, confirm with your teacher.</div>`
       : '')
-    + `</div>`
+    + `</div>`)
     // Bell times are not in HAC: no made up periods next to real grades.
     + (selected === 0 && !real.on ? periodsSection() : '');
+}
+
+/**
+ * Real grades with HAC's Calendar on the phone, today picked: the next 7 days, one group per day
+ * with something due (grade rows, HAC's posted assignments and the student's own to-dos, one list).
+ */
+function weekSection(allItems) {
+  const groups = [];
+  for (let offset = 0; offset < 7; offset++) {
+    const items = sortByDue(allItems.filter(item => item.due === offset));
+    if (items.length) groups.push([offset, items]);
+  }
+  const open = groups.reduce((n, [, items]) => n + items.filter(item => !state.doneIds[item.id]).length, 0);
+  if (!groups.length) {
+    return `<div class="sec">${heading('Next 7 days', 'Nothing ', 'due')}`
+      + `<div class="foot">Nothing posted in HAC yet, teachers often post on Canvas.</div></div>`;
+  }
+  const title = open ? heading('Next 7 days', countWord(open) + ' ', 'due', { urgent: groups[0][0] === 0 && groups[0][1].some(item => !state.doneIds[item.id]) })
+    : heading('Next 7 days', 'All ', 'done');
+  return `<div class="sec">${title}`
+    + groups.map(([offset, items]) => `<div class="lab" style="margin:12px 0 6px">${offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : longDate(offset)}</div>`
+      + `<div class="card">${items.map(item => todoRow(item, false)).join('')}</div>`).join('')
+    + `</div>`;
 }
 
 /**

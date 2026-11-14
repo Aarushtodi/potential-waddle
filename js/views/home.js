@@ -23,6 +23,7 @@ import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
 import { alertBadge } from './alerts.js';
 import { goalSummary, goalLabel } from './plan.js';
+import { tomorrowLine } from './hac-adds.js';
 
 /** Rows shown per to-do group before "N more". */
 const GROUP_LIMIT = 3;
@@ -391,11 +392,11 @@ export function homeView() {
     lead = allClear.html;
     shownAbove = allClear.shown;
   }
-  if (!state.goals.length) return homeTitleBlock() + lead + classStrip() + todoSection(shownAbove) + gpaRow();
+  if (!state.goals.length) return homeTitleBlock() + lead + classStrip() + tomorrowLine() + todoSection(shownAbove) + gpaRow();
 
   // Goals picked: one Plan card first (it reopens the Plan page), then Home as usual. The GPA row
   // goes when the GPA is a goal, since the card already carries it.
-  return homeTitleBlock() + planCard() + lead + classStrip() + todoSection(shownAbove)
+  return homeTitleBlock() + planCard() + lead + classStrip() + tomorrowLine() + todoSection(shownAbove)
     + (state.goals.includes('gpa') ? '' : gpaRow());
 }
 

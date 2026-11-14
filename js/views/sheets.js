@@ -12,6 +12,7 @@ import { actionAttrs, segmented, toggle } from './components.js';
 import { whatIfSheetBody, WHAT_IF_TOOLS } from './what-if.js';
 import { graphSheetBody } from './grades.js';
 import { real } from '../real-data.js';
+import { hacCalendarItems } from './hac-adds.js';
 
 const doneButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Done</button>`;
 const cancelButton = () => `<button class="pill" ${actionAttrs('closeSheet')}>Cancel</button>`;
@@ -77,7 +78,8 @@ const SHEETS = {
 
   /** A to-do's details: done state, the student's own due date, and its reminders. */
   task(sheet) {
-    const item = todoItems().find(candidate => candidate.id === sheet.id);
+    const item = todoItems().find(candidate => candidate.id === sheet.id)
+      || hacCalendarItems().find(candidate => candidate.id === sheet.id); // posted in HAC's Calendar
     if (!item) return null;
     const done = state.doneIds[item.id];
     const row = item.rowId ? findRow(item.rowId).row : null;
@@ -89,7 +91,10 @@ const SHEETS = {
       + `<b class="${done ? 'on' : ''}"></b></div>`
       + `<div class="grow"><div class="t">${done ? 'Done' : 'Not done yet'}</div>`
       + `${item.detail ? `<div class="s">${escapeHtml(item.detail)}</div>` : ''}</div></div>`;
-    if (item.due != null) {
+    if (item.source === 'hacCal') {
+      // Posted in HAC, not a grade row yet: HAC's date, nothing to move.
+      body += `<div class="row"><div class="grow t" ${BIG_TITLE}>Due in HAC</div><div class="s">${shortDate(item.due)}</div></div>`;
+    } else if (item.due != null) {
       body += `<div class="row"><div class="grow"><div class="t" ${BIG_TITLE}>Your due date</div>`
         + (row ? `<div class="s">Teacher's date ${shortDate(row.due)}</div>` : '')
         + `</div><input class="f" type="date" aria-label="Your due date" value="${isoDate(item.due)}" `
