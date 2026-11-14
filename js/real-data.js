@@ -7,8 +7,9 @@
  * preview stays on sample data.
  *
  * What HAC's Assignments page gives: class names, HAC's own average, category weights, and every
- * row as the teacher entered it. What it does not give (teachers, rooms, bell times, test dates)
- * is left blank or hidden on real data, never filled from the sample. GPA shows on real data only
+ * row as the teacher entered it. What it does not give (bell times, test dates) is left blank or
+ * hidden on real data, never filled from the sample. Teachers and rooms come from HAC's Schedule
+ * page when the phone has it (js/bell-store.js), else they stay blank. GPA shows on real data only
  * when the pull carries the HAC transcript (local/hac_transcript.py) and its grades give back HAC's
  * own two GPA numbers (grade-math.js transcriptTotals); otherwise it stays hidden, since a wrong
  * GPA is worse than none.
@@ -18,6 +19,7 @@ import {
 } from './sample-data.js';
 import { SAMPLE_TODAY, offsetOf } from './format.js';
 import { fisdTier, transcriptTotals } from './grade-math.js';
+import { applyScheduleToClasses, courseCode } from './bell-store.js';
 
 /**
  * on: real data is showing. status: last Reload result from the server.
@@ -171,6 +173,7 @@ function applyRealData(data) {
     const name = className(raw.name);
     const course = {
       id: slug(name, taken), name, real: true,
+      code: courseCode(raw.name), // "ELA13300A - 2": joins HAC's Schedule page (teacher, room)
       teacher: '', room: '',
       level: /\b(AP|Honors|Pre-AP)\b/.test(name) ? 'H' : 'R',
       tier: fisdTier(name),
@@ -182,14 +185,16 @@ function applyRealData(data) {
     return course;
   });
   CLASSES.splice(0, CLASSES.length, ...courses);
+  // Teacher, email and room from HAC's Schedule page when the phone has it (js/bell-store.js), else blank.
+  applyScheduleToClasses(courses);
 
   // Sample-only story data would point at classes that no longer exist.
   SEEN_CHANGES.length = 0;
   QUEUED_SCORES.length = 0;
   for (const key of Object.keys(LAST_QUARTER_SAME_POINT)) delete LAST_QUARTER_SAME_POINT[key];
 
-  // Bell times are not in HAC, so the Bell tab and Classes today are hidden on real data. The sample
-  // schedule still points at real classes in HAC's order so nothing that reads it breaks.
+  // The sample schedule still points at real classes in HAC's order so nothing that reads it breaks.
+  // Real grades never show it: the Bell tab uses the student's own bell (js/bell-store.js).
   const ids = courses.map(course => course.id);
   let next = 0;
   for (const day of Object.keys(BELL_SCHEDULE)) {
