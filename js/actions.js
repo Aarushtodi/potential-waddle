@@ -283,7 +283,9 @@ export const actions = {
   },
   signOut() {
     forgetHacSchedule(); // the student's own schedule (Bell, Email teacher) goes with them
-    forgetHacAdds(); // attendance, HAC calendar, comments, credits
+    // In the iPhone app the native confirm does all wiping (Cancel must keep everything); there the app
+    // deletes the native/ pages and clears WKWebsiteDataStore, which takes tally-hacadds-v1 with it.
+    if (!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.tally)) forgetHacAdds(); // attendance, HAC calendar, comments, credits
     if (real.on && real.source === 'paste') {
       // Back to the sample preview: drop the saved grades and start fresh.
       forgetImport();

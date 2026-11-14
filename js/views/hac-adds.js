@@ -162,7 +162,7 @@ const shortSubject = name => SUBJECT_SHORT[name] || name;
 // ---- Due from HAC's calendar --------------------------------------------------------------
 
 const normCode = code => String(code || '').replace(/\s+/g, ' ').trim();
-const normTitle = title => String(title || '').replace(/\s+/g, ' ').trim().toLowerCase();
+const normTitle = title => String(title || '').replace(/\s*\*\s*$/, '').replace(/\s+/g, ' ').trim().toLowerCase(); // Classwork titles can end in HAC's hidden "*"
 
 /** "ELA13300A - 2" -> the class on Grades, or null. */
 const classFor = code => CLASSES.find(course => course.real && normCode(course.code) === normCode(code)) || null;
