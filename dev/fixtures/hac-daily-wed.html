@@ -1,0 +1,103 @@
+
+
+<!-- Scrubbed copy of a HAC Daily Schedule page (a Frisco ISD account, 11/13/2026): names, rooms, IDs, tokens made up; layout and times kept. -->
+<!DOCTYPE html>
+<html>
+<head><title>
+	HomeAccess
+</title>
+    
+    <link href="/HomeAccess/Stylesheets/Themes/Base/css?v=ErOiUuOsVp6tquD2fInmzTQl3A3SlFxTXp8j5mZ8LI01" rel="Stylesheet" type="text/css" /> 
+
+    
+    <link rel="Stylesheet" href="/HomeAccess/eSchoolPLUSResource/GetEmbeddedStyle?file=CrossSite" />
+    <link rel="Stylesheet" href="/HomeAccess/eSchoolPLUSResource/GetEmbeddedStyle?file=ComboBox" />
+    <link rel="Stylesheet" href="/HomeAccess/Stylesheets/Common/font-awesome.css" />
+    
+    
+    <link rel="Stylesheet" href="/HomeAccess/Stylesheets/Site.css" />
+    <link rel="stylesheet" href="/HomeAccess/Stylesheets/Frame/Frame.css" /> 
+    <link rel="SHORTCUT ICON" href="/HomeAccess/Media/Themes/Base/Common/favicon.ico"/>
+    <style>
+        .sg-asp-table-header-row,
+        .ui-jqgrid-view .ui-jqgrid-hdiv, 
+        .ui-jqgrid tr.ui-jqgrid-labels th  {
+	        background-color: #184366  ;
+            color: white   ;
+        }
+    </style>
+
+       
+       
+    
+    
+    
+    
+        
+    
+    <script type="text/javascript">
+        $(function () {
+            parseForComboBoxes();
+        });
+    </script>    
+    
+
+    <script type="text/javascript">
+        $(SunGard.Common.Init('/HomeAccess/'));
+    </script>
+    
+    
+    
+	<link href="/HomeAccess/StyleSheets/Common/PopUp.css" type="text/css" rel="stylesheet">
+</head>
+<body class="sg-hac-legacy">
+    
+    <div id='MainContent' class='sg-main-content'>
+        <div class='sg-hac-content'>
+            <form method="post" action="./DailySchedule.aspx?student_id=000000&amp;ScheduleDate=11%2f18%2f2026" id="fmMain">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="x" />
+
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="x" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="x" />
+                
+    <div class="sg-header">
+        <label id="plnMain_lblDailyScheduleHdr" class="sg-header-heading">Schedule forWednesday, November 18, 2026</label>
+        <button id="btnClose" onclick="window.close(); return false;" class="sg-button sg-right" title="Close the Window"> Close</button>
+        <input name="ctl00$plnMain$hdnClose" type="hidden" id="plnMain_hdnClose" value="Close" />
+        <input name="ctl00$plnMain$hdnCloseToolTip" type="hidden" id="plnMain_hdnCloseToolTip" value="Close the Window" />
+    </div>
+    <div>
+		<table class="sg-asp-table" cellspacing="0" rules="all" border="1" id="plnMain_dgSchedule">
+	<tr class="sg-asp-table-header-row">
+		<td>Period</td><td>Course</td><td>Description</td><td>Teacher</td><td>Room</td>
+	</tr><tr class="sg-asp-table-data-row">
+		<td>1     (09:00 AM - 10:33 AM)</td><td>MTH34300A - 3</td><td>AP Pre Calculus S1</td><td>RIVERA, DANA</td><td>A101 </td>
+	</tr><tr class="sg-asp-table-data-row">
+		<td>2     (10:39 AM - 12:13 PM)</td><td>SST45500A - 1</td><td>Social Studies Research S1</td><td>MCALLISTER, JO</td><td>B201 </td>
+	</tr><tr class="sg-asp-table-data-row">
+		<td>3     (01:18 PM - 02:51 PM)</td><td>MTH45310A - 1</td><td>AP Statistics S1</td><td>LEE-PARK, MORGAN</td><td>C301 </td>
+	</tr><tr class="sg-asp-table-data-row">
+		<td>4     (02:57 PM - 04:25 PM)</td><td>SUBA1903A - 1</td><td>Tennis EQ3 S1</td><td>HALE, CASEY</td><td>FH   </td>
+	</tr>
+</table>
+        
+    </div>
+
+            </form>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            // Build the jQuery UI buttons
+            $('.sg-buttonset').controlgroup();
+            $('.sg-button').button();
+            window.parent.$('.sg-legacy-iframe').height($('.sg-main-content').height()); // set the init size
+            // Increase length of smaller content windows to reduce cutoffs in dropdowns. 
+            var iframeHeight = window.parent.$('.sg-legacy-iframe').height(); 
+            if (iframeHeight < 450)
+            { window.parent.$('.sg-legacy-iframe').height($('.sg-main-content').height() + 200); }
+           
+        })
+    </script>
+</body>
+</html>

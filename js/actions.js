@@ -25,6 +25,7 @@ import { goalPicked } from './views/goals-motion.js';
 import { gpaGoal, gpaGoalRange, classTarget, TARGET_MIN, TARGET_MAX } from './views/plan-math.js';
 import { real, reloadRealData } from './real-data.js';
 import { forgetImport } from './hac-import.js';
+import { forgetHacSchedule } from './bell-store.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
 
@@ -280,6 +281,7 @@ export const actions = {
     return false;
   },
   signOut() {
+    forgetHacSchedule(); // the student's own schedule (Bell, Email teacher) goes with them
     if (real.on && real.source === 'paste') {
       // Back to the sample preview: drop the saved grades and start fresh.
       forgetImport();

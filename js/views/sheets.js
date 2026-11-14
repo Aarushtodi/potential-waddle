@@ -143,7 +143,9 @@ const SHEETS = {
       title: 'Email teacher',
       right: doneButton(),
       body: `<div class="card">`
-        + `<div class="row"><div class="s" style="width:50px">To</div><div class="t" ${BIG_TITLE}>${escapeHtml(course.teacher)}</div></div>`
+        // Real grades: the teacher and email from HAC's Classes > Schedule (js/bell-store.js), else blank.
+        + `<div class="row"><div class="s" style="width:50px">To</div><div class="grow"><div class="t" ${BIG_TITLE}>${escapeHtml(course.teacher)}</div>`
+        + `${course.teacherEmail ? `<div class="s">${escapeHtml(course.teacherEmail)}</div>` : ''}</div></div>`
         + `<div class="row"><div class="s" style="width:50px">Subject</div><div class="t" ${BIG_TITLE}>${escapeHtml(subject)}</div></div>`
         + `<div class="pad" style="border-top:1px solid var(--rule);font-size:15px;line-height:1.4">`
         // Real HAC grades carry no teacher name: blank, never a placeholder.
