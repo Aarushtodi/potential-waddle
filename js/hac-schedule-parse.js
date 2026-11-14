@@ -11,9 +11,9 @@
  *
  * Input: the page's HTML as text. Output: one entry per row of the schedule table
  * (#plnMain_dgSchedule), as HAC lists it:
- *   { code: 'ELA13300A - 2', course: 'AP English Language S1', period: 3, teacher: 'Ashley Gray',
- *     teacherRaw: 'GRAY, ASHLEY', email: 'grayas@friscoisd.org', room: 'C111', days: ['B'],
- *     quarters: ['Q1', 'Q2'], building: 'Wakeland High School', active: true }
+ *   { code: 'ELA13300A - 2', course: 'AP English Language S1', period: 3, teacher: 'Avery Brooks',
+ *     teacherRaw: 'BROOKS, AVERY', email: 'brooksa@example.org', room: 'Room 100', days: ['B'],
+ *     quarters: ['Q1', 'Q2'], building: 'Sample High School', active: true }
  * The course requests table under it (next year's picks) is skipped. String based, no DOM, so it
  * runs the same in the page, the app and Node (dev/bell-check.mjs).
  *
@@ -31,7 +31,7 @@ const decode = text => String(text)
 
 const cellText = html => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
 
-/** "MCKEE, MADIRA" -> "Madira McKee". Keeps Mc, O' and hyphen capitals; no Mr or Ms guessed. */
+/** "MCALLISTER, JO" -> "Jo McAllister". Keeps Mc, O' and hyphen capitals; no Mr or Ms guessed. */
 export function teacherName(raw) {
   const text = String(raw || '').replace(/\s+/g, ' ').trim();
   if (!text) return '';

@@ -42,8 +42,8 @@ check('no Classes page -> no letter', dayLetter(wed.periods, null) === null && d
 check('a mix of A and B classes -> no letter', dayLetter([wed.periods[0], special.periods[0]], year) === null);
 
 // 3) Classes > Schedule
-check('teacher names: MCKEE, MADIRA -> Madira McKee; O\'NEIL, SAM; LEE-PARK, MORGAN',
-  teacherName('MCKEE, MADIRA') === 'Madira McKee' && teacherName("O'NEIL, SAM") === "Sam O'Neil"
+check('teacher names: MCALLISTER, JO -> Jo McAllister; O\'NEIL, SAM; LEE-PARK, MORGAN',
+  teacherName('MCALLISTER, JO') === 'Jo McAllister' && teacherName("O'NEIL, SAM") === "Sam O'Neil"
   && teacherName('LEE-PARK, MORGAN') === 'Morgan Lee-Park' && teacherName('  ') === '');
 check('Classes page: 16 schedule rows, course requests skipped', year && year.length === 16);
 const lang = year.find(e => e.code === 'ELA13300A - 2');
