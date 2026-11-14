@@ -50,7 +50,10 @@ js/state.js             The one mutable `state` object, plus selectors (read-onl
 js/actions.js           Everything a tap or keystroke does. Also the simulated gradebook refresh
 js/render.js            render(): redraw from state. refreshLive(): patch only [data-live] parts
 js/grade-math.js        Pure grade math: averages, weights, what if, semester split, GPA (JSDoc'd)
-js/schedule.js          Bell schedule: current period, minutes left
+js/schedule.js          Sample bell schedule: current period, minutes left (sample mode only)
+js/bell-times.js        Bell clock helpers, pure: local date keys, what's on now / next
+js/bell-store.js        HAC's schedule on the phone: Daily Schedule per date (Bell), Classes > Schedule (A/B, teacher email); from the iPhone app only
+js/hac-schedule-parse.js Pure parsers for HAC's Daily Schedule and Classes > Schedule pages (dev/bell-check.mjs, dev/fixtures/)
 js/fresh.js             Stays on the newest build: checks version.json, reloads at a safe moment, keeps state
 js/theme.js             Appearance: Light, Dark or Match my phone, saved in localStorage, crossfade on change
 js/format.js            Escaping, sample calendar (day offsets), number and date text
@@ -62,7 +65,7 @@ js/views/grades.js      Grades tab: class list, one class (with grade graph), on
 js/views/what-if.js     What if sheet and its 8 tools (the only place the app predicts)
 js/views/gpa.js         GPA page, Target, GPA what if, GPA goal
 js/views/calendar.js    Calendar tab
-js/views/bell.js        Bell tab: the day as a tape, now line on the A day, A/B day toggle
+js/views/bell.js        Bell tab: the day as a tape. Sample: A/B toggle. Real: only HAC's times for today, else the 'isn't in HAC' card
 js/views/settings.js    Settings and the Widgets preview
 js/views/sheets.js      Other bottom sheets: district, add to-do, test dates, task, period, email, add class
 js/views/changes.js     What changed and Alerts pages

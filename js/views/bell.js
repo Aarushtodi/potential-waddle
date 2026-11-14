@@ -24,6 +24,7 @@ import { dayLetter } from '../hac-schedule-parse.js';
 const PX_PER_MINUTE = 1.7;
 const WALK_GAP_PX = 30; // a gap is at least this tall, so its label never touches a card
 const SEAM_PX = 4; // back to back periods (Chemistry, then Lunch) still get a thin seam
+const MIN_LEFT_PX = 80; // a card this tall fits name, room and "N min left"
 const TOP_PAD = 8;
 const BOTTOM_PAD = 12;
 
@@ -150,7 +151,8 @@ function tape(periods, minutes, key, gapText) {
           + `<div class="nowc" data-live-style style="top:${(clamp01((minutes - box.start) / (box.end - box.start)) * 100).toFixed(3)}%"></div>`
         : '')
       + `<div class="t">${escapeHtml(box.name)}</div><div class="s">${box.room ? escapeHtml(box.room) + ', to ' : 'To '}${clockTime(box.end)}</div>`
-      + (i === currentIndex ? `<div class="s left" data-live>${Math.ceil(box.end - minutes)} min left</div>` : '')
+      // A short card (a 30 min period on an odd day) has no room for it; the line over the tape says it.
+      + (i === currentIndex && box.height >= MIN_LEFT_PX ? `<div class="s left" data-live>${Math.ceil(box.end - minutes)} min left</div>` : '')
       + `</div>`;
   });
   if (inDay) {
