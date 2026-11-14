@@ -28,7 +28,7 @@ const fromIso = iso => {
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y, m - 1, d);
 };
-/** "2026-09-30" -> "Wed, Sep 30" */
+/** "2026-10-14" -> "Wed, Oct 14" */
 const dayText = iso => {
   const date = fromIso(iso);
   return `${DAYS[date.getDay()]}, ${MONTHS[date.getMonth()]} ${date.getDate()}`;
@@ -37,7 +37,7 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const tardyWord = n => (n === 1 ? '1 tardy' : `${n} tardies`);
 const absenceWord = n => (n === 1 ? '1 absence' : `${n} absences`);
 
-/** "1\nTardy\n9:03:00 AM" style marks -> "P1 Tardy 9:03 AM, P2 P3 Excused Absence Parent Note". */
+/** "1\nTardy\n8:58:00 AM" style marks -> "P1 Tardy 8:58 AM, P2 P3 Excused Absence Parent Note". */
 function marksText(marks) {
   const groups = [];
   for (const mark of marks) {

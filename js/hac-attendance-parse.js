@@ -4,7 +4,7 @@
  *
  * parseAttendanceMonth: Attendance > Month View (/HomeAccess/Content/Attendance/MonthlyView.aspx),
  * one month as a calendar grid. Each day cell with a code carries a title, newline separated:
- * period, code, sometimes a time ("1\nTardy\n9:03:00 AM"), then the next period. Whole day codes
+ * period, code, sometimes a time ("1\nTardy\n8:58:00 AM"), then the next period. Whole day codes
  * ("School Closed") have no period. The month comes from the page's own header ("September 2026").
  *   -> { month: '2026-10', days: [{ date: '2026-10-14', closed: false,
  *        marks: [{ period: '1', code: 'Unresolved Absence', kind: 'unresolved', time: '' }] }] }
@@ -61,7 +61,7 @@ function legendColors(page) {
 
 const TIME = /^\d{1,2}:\d{2}(:\d{2})?\s*[AP]M$/i;
 
-/** "1\nTardy\n9:03:00 AM\n2\nTardy" -> [{period:'1', code:'Tardy', time:'9:03:00 AM'}, {period:'2', ...}] */
+/** "1\nTardy\n8:58:00 AM\n2\nTardy" -> [{period:'1', code:'Tardy', time:'8:58:00 AM'}, {period:'2', ...}] */
 function marksFromTitle(title) {
   const tokens = decode(title).split(/\r?\n/).map(t => t.trim()).filter(Boolean);
   const marks = [];
@@ -83,7 +83,7 @@ function marksFromTitle(title) {
   return marks.filter(mark => mark.code);
 }
 
-/** "1, Tardy, 9:03:00 AM" after the day number: the same marks from the aria-label, for cells without a title. */
+/** "1, Tardy, 8:58:00 AM" after the day number: the same marks from the aria-label, for cells without a title. */
 function marksFromLabel(label) {
   return marksFromTitle(String(label).split(',').map(t => t.trim()).join('\n'));
 }

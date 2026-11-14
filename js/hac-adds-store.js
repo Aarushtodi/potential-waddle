@@ -199,8 +199,26 @@ export async function readNativeAdds(readAt = Date.now()) {
 export function startHacAddsBridge(onChange) {
   const inApp = !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.tally);
   if (!inApp) return;
+  // One read at a time: the app may call ready() after each page it saves (the calendar page is
+  // 1.8 MB), so calls during a read fold into one more read after it.
+  let running = null;
+  let again = false;
   const take = async readAt => {
-    if (await readNativeAdds(readAt || Date.now())) onChange();
+    if (running) {
+      again = true;
+      return running;
+    }
+    running = (async () => {
+      do {
+        again = false;
+        if (await readNativeAdds(readAt || Date.now())) onChange();
+      } while (again);
+    })();
+    try {
+      await running;
+    } finally {
+      running = null;
+    }
   };
   window.tallyHacAdds = { ready: take };
   take();

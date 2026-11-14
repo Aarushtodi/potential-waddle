@@ -24,7 +24,10 @@ export function makeUp(course, row) {
   if (!course || !course.real || !isOwed(row) || !rowCounts(row) || !(row.total > 0)) return null;
   const from = nowAverage(course);
   if (from == null) return null;
-  const shift = hacShift(course);
+  // HAC prints its average to 2 decimals, so a gap under 0.006 is that rounding, not a code we
+  // don't read; counting it could tip a score that lands exactly on the line (210/300 = 70.0).
+  const rawShift = hacShift(course);
+  const shift = Math.abs(rawShift) < 0.006 ? 0 : rawShift;
   const averageWith = score => {
     const rows = course.rows.map(other => (other === row
       ? { ...other, score, missing: 0, mark: undefined }
