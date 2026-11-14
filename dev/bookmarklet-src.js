@@ -105,7 +105,7 @@
       if (asgT) [].forEach.call(asgT.querySelectorAll('tr.sg-asp-table-data-row'), function (r) {
         var d = [].map.call(r.cells, T);
         if (d.length < 6 || !d[2]) return;
-        rows.push([d[0], d[2], d[3] in ci ? ci[d[3]] : d[3], d[4], d[5], d[6] || '']);
+        rows.push([d[0], d[2].replace(/\s*\*$/, ''), d[3] in ci ? ci[d[3]] : d[3], d[4], d[5], d[6] || '']);
       });
       return [name, avgM ? +avgM[0] : null, cats, rows];
     });
