@@ -10,6 +10,7 @@ import {
   findRow, effectiveDue, isMissing, isUnderRetestLine, nowAverage, rowCounts,
 } from '../state.js';
 import { actionAttrs, heading, navRow, statusStrip, CHEVRON } from './components.js';
+import { attendanceEntry, creditsSection } from './hac-adds.js';
 
 const STRONG = 'font-weight:700;color:var(--ink)';
 
@@ -48,6 +49,8 @@ export function gradesView() {
 
   html += `<div class="card">${list.map(classRow).join('')}</div>`;
   html += `</div>`;
+  // From HAC when the phone has it (js/views/hac-adds.js): attendance, graduation credits.
+  html += attendanceEntry() + creditsSection();
   return html;
 }
 

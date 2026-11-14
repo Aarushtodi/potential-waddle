@@ -18,6 +18,7 @@ import { real, loadRealData, applyImported } from './real-data.js';
 import { readPaste, saveImport, loadImport, clearClipboard, ImportError } from './hac-import.js';
 import { startFreshCheck, restoreHandoff } from './fresh.js';
 import { startBellBridge } from './bell-store.js';
+import { startHacAddsBridge } from './hac-adds-store.js';
 
 // Motion runs only when reduced motion is off (council motion.css rule).
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');
@@ -240,6 +241,7 @@ render();
 
 // Inside the iPhone app: HAC's schedule pages for the Bell tab and Email teacher (js/bell-store.js).
 startBellBridge(CLASSES, render);
+startHacAddsBridge(render);
 
 // Reload to a new build on its own after a deploy. The running build is the ?v= this file was loaded with.
 startFreshCheck(new URL(import.meta.url).searchParams.get('v'));

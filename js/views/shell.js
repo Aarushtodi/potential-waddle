@@ -23,6 +23,7 @@ import { bellView } from './bell.js';
 import { real } from '../real-data.js';
 import { sheetView } from './sheets.js';
 import { liveBanner } from './banner.js';
+import { attendanceView } from './hac-adds.js';
 
 const TABS = ['home', 'grades', 'calendar', 'bell'];
 const TAB_LABELS = { home: 'Home', grades: 'Grades', calendar: 'Calendar', bell: 'Bell' };
@@ -60,6 +61,7 @@ const PAGES = {
   widgets: () => ({ title: 'Widgets', body: widgetsView() }),
   pace: () => ({ title: 'Pacing', body: paceView() }),
   plan: () => ({ title: 'Plan', body: planBody() }),
+  attendance: () => ({ title: 'Attendance', body: attendanceView() }),
 };
 
 /** Top bar and body for a tab's root page. */

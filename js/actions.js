@@ -26,6 +26,7 @@ import { gpaGoal, gpaGoalRange, classTarget, TARGET_MIN, TARGET_MAX } from './vi
 import { real, reloadRealData } from './real-data.js';
 import { forgetImport } from './hac-import.js';
 import { forgetHacSchedule } from './bell-store.js';
+import { forgetHacAdds } from './hac-adds-store.js';
 
 // ---- Refresh from the gradebook (simulated) ----------------------------------------------
 
@@ -282,6 +283,7 @@ export const actions = {
   },
   signOut() {
     forgetHacSchedule(); // the student's own schedule (Bell, Email teacher) goes with them
+    forgetHacAdds(); // attendance, HAC calendar, comments, credits
     if (real.on && real.source === 'paste') {
       // Back to the sample preview: drop the saved grades and start fresh.
       forgetImport();
@@ -562,6 +564,13 @@ export const actions = {
 
   // Calendar
   selectDay(offset) {
+    state.calendarSelected = +offset;
+  },
+  /** Home's "Due tomorrow" line: the Calendar tab on that day. */
+  openCalendarDay(offset) {
+    state.tab = 'calendar';
+    state.pageStacks.calendar = [];
+    state.calendarMonth = 0;
     state.calendarSelected = +offset;
   },
   changeMonth(direction) {

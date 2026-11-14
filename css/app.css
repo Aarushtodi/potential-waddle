@@ -2630,3 +2630,18 @@ textarea.f::placeholder {
 .setup li, .setup p {
   text-wrap: pretty;
 }
+
+/* Graduation credits card (js/views/hac-adds.js): one thin bar per subject, earned of needed. */
+.cr-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--empty);
+  margin-top: 7px;
+  overflow: hidden;
+}
+.cr-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ink);
+}
