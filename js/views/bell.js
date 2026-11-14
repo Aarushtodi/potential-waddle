@@ -4,7 +4,8 @@
  * Sample mode: the sample A and B days, with the sample clock on the A day.
  * Real grades: only what HAC gives (js/bell-store.js): that date's periods and times from HAC's
  * Daily Schedule, the A/B letter from each class's day on Classes > Schedule, and the phone's own
- * clock. No saved page for today = the "isn't in HAC" card. No preset, no typed times, no guessed
+ * clock. Wednesdays: classes, rooms and teachers only, no times (Activity bell, not in HAC).
+ * No saved page for today = the "isn't in HAC" card. No preset, no typed times, no guessed
  * A/B day, ever.
  *
  * Layout is absolute: every card, time label, gap and the now line gets its top from
@@ -61,8 +62,18 @@ function realBell() {
     end: p.end,
   }));
   const letter = dayLetter(day.periods, bell.hac && bell.hac.entries);
+  const top = letter ? heading(dayLabel(now), '', `${letter} day`) : heading(dayLabel(now), 'Your ', 'classes');
+  // His call 11/13: Wednesdays run a different bell (Activity) that HAC doesn't carry, so HAC's
+  // times are wrong that day. Classes, rooms and teachers only: no times, no countdown.
+  if (now.getDay() === 3) {
+    return `<div class="sec">${top}<div class="card">`
+      + day.periods.map(p => `<div class="row per"><div class="per-t">${escapeHtml(p.label ? 'P' + p.label : '')}</div>`
+        + `<div class="grow"><div class="t">${escapeHtml(plainName(p.course) || `Period ${p.label}`)}</div>`
+        + `<div class="s">${escapeHtml([p.room, p.teacher].filter(Boolean).join(', '))}</div></div></div>`).join('')
+      + `</div><div class="foot">Wednesday schedule runs different, times hidden.</div></div>`;
+  }
   const minutes = minutesOf(now);
-  return `<div class="sec">${letter ? heading(dayLabel(now), '', `${letter} day`) : heading(dayLabel(now), 'Your ', 'classes')}`
+  return `<div class="sec">${top}`
     + `<div class="card"><div class="pad" data-live>${nowLine(periods, minutes)}</div></div></div>`
     + `<div class="sec">${tape(periods, minutes, dateKey(now), n => `${n} min`)}</div>`;
 }
