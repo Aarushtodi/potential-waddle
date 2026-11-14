@@ -2645,3 +2645,9 @@ textarea.f::placeholder {
   border-radius: 2px;
   background: var(--ink);
 }
+
+/* Make it up line on owed rows (js/makeup.js): the one number that kid needs, in ink not gray. */
+.s.mk {
+  color: var(--ink);
+  font-weight: 700;
+}

@@ -10,7 +10,8 @@ import {
   findRow, effectiveDue, isMissing, isUnderRetestLine, nowAverage, rowCounts,
 } from '../state.js';
 import { actionAttrs, heading, navRow, statusStrip, CHEVRON } from './components.js';
-import { attendanceEntry, creditsSection } from './hac-adds.js';
+import { attendanceEntry, creditsSection, extrasFor } from './hac-adds.js';
+import { makeUpText } from '../makeup.js';
 
 const STRONG = 'font-weight:700;color:var(--ink)';
 
@@ -228,6 +229,7 @@ export function assignmentView(rowId) {
     + detail('Points effect', !counts ? "Doesn't count toward your grade" : effect != null ? signed(effect) + ' on your average' : 'None yet, no number', ';text-align:right')
     + (isMissing(row) && counts ? detail('At stake', `${row.total} points, missing`) : '')
     + (isUnderRetestLine(row, course) ? detail(`Under your ${state.retestLine}`, 'You can retest or waterfall this.') : '')
+    + (state.hideScores ? '' : oweLines(course, row))
     + `</div></div>`;
   html += `<div class="toolrow"><button class="pill" ${actionAttrs('openWhatIf', course.id)}>What if</button>`
     + `<button class="pill" ${actionAttrs('openEmailDraft', course.id, row.id)}>Email teacher</button></div>`;
@@ -235,4 +237,12 @@ export function assignmentView(rowId) {
     html += `<button class="btn ghost" ${actionAttrs('openTask', row.id)}>Due date and reminders</button>`;
   }
   return html;
+}
+
+/** Real grades, owed row: the make up line and the teacher's comment from HAC (js/makeup.js, hac-adds.js). */
+function oweLines(course, row) {
+  const make = makeUpText(course, row);
+  const extra = extrasFor(course, row);
+  return (make ? `<div class="row"><div class="grow s mk">${escapeHtml(make)}</div></div>` : '')
+    + (extra && extra.comment ? `<div class="row"><div class="grow s">Teacher: ${escapeHtml(extra.comment)}</div></div>` : '');
 }

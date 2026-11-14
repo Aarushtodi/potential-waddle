@@ -23,7 +23,7 @@ import { state, todoItems, sortByDue, missingWork, visibleClasses, periodAverage
 import { actionAttrs, heading, todoRow, CHEVRON } from './components.js';
 import { alertBadge } from './alerts.js';
 import { goalSummary, goalLabel } from './plan.js';
-import { tomorrowLine } from './hac-adds.js';
+import { tomorrowLine, oweExtras } from './hac-adds.js';
 
 /** Rows shown per to-do group before "N more". */
 const GROUP_LIMIT = 3;
@@ -58,15 +58,30 @@ export function absentItems() {
   const result = [];
   for (const course of visibleClasses()) {
     for (const row of course.rows || []) {
-      if (!countsAsZero(row) || row.missing) continue;
-      const kind = row.mark === 'INC' ? 'incomplete' : 'absent';
+      // Real grades: a scored 0 in a category that counts is owed too (kind 'zero', gray like absent).
+      const zero = course.real && typeof row.score === 'number' && row.score === 0 && row.total > 0
+        && (row.catWeight == null || row.catWeight > 0);
+      if ((!countsAsZero(row) || row.missing) && !zero) continue;
+      const kind = zero ? 'zero' : row.mark === 'INC' ? 'incomplete' : 'absent';
       result.push({
-        id: row.id, title: row.title, detail: `${course.name}, ${kind}, counts as 0`, due: null, course,
+        id: row.id, title: row.title, detail: zero ? `${course.name}, scored 0` : `${course.name}, ${kind}, counts as 0`, due: null, course,
         dueSort: row.due, source: 'missing', kind, right: '', points: row.total,
       });
     }
   }
   return result;
+}
+
+/**
+ * Real grades: what HAC adds under an owed row (js/views/hac-adds.js oweExtras): the make up line,
+ * the teacher's comment, and HAC's drop flag when it tells something. Goes inside the row's text.
+ */
+function withOweExtras(html, item, className) {
+  const lines = oweExtras(item.course, item.id, className);
+  if (!lines) return html;
+  const at = html.indexOf('class="grow"');
+  const close = at < 0 ? -1 : html.indexOf('</div></div>', at);
+  return close < 0 ? html : html.slice(0, close) + '</div>' + lines + html.slice(close + 6);
 }
 
 /** Open missing and absent items: most points first, then the oldest. */
@@ -77,7 +92,7 @@ export function zeroItems() {
 
 /** A missing or absent row. Absent rows get class "abs" so the ring is gray like the text. */
 export function zeroRow(item) {
-  const html = todoRow(item, false);
+  const html = withOweExtras(todoRow(item, false), item);
   return item.kind ? html.replace('<div class="row', '<div class="row abs') : html;
 }
 
@@ -85,9 +100,9 @@ export function zeroRow(item) {
 export function zeroCountText(items) {
   const missing = items.filter(item => !item.kind).length;
   const parts = missing ? [`<span class="u">${missing} missing</span>`] : [];
-  for (const kind of ['absent', 'incomplete']) {
+  for (const kind of ['absent', 'incomplete', 'zero']) {
     const n = items.filter(item => item.kind === kind).length;
-    if (n) parts.push(`<span class="g">${n} ${kind}</span>`);
+    if (n) parts.push(`<span class="g">${n} ${kind === 'zero' ? (n === 1 ? 'zero' : 'zeros') : kind}</span>`);
   }
   return parts.join('<span class="g">, </span>');
 }
@@ -139,6 +154,7 @@ function homeTodos() {
  */
 function homeDetail(item) {
   if (item.next) return `${item.next.title} by ${shortDate(item.next.due)}`;
+  if (item.kind === 'zero') return `${shortName(item.course)}, scored 0`;
   if (item.kind) return `${shortName(item.course)}, ${item.kind}, counts as 0`;
   if (item.source === 'missing') return `${shortName(item.course)}, was due ${shortDate(item.due)}`;
   if (item.source === 'gradebook') return shortClassName(item.detail);
@@ -148,7 +164,8 @@ function homeDetail(item) {
 
 /** A Home row: short subtitle, red ring only when overdue or missing (never just for today). */
 function homeRow(item, showDate) {
-  const html = todoRow({ ...item, detail: homeDetail(item) }, showDate, { redToday: false });
+  let html = todoRow({ ...item, detail: homeDetail(item) }, showDate, { redToday: false });
+  if (item.source === 'missing') html = withOweExtras(html, item, shortName(item.course));
   return item.kind ? html.replace('<div class="row', '<div class="row abs') : html;
 }
 

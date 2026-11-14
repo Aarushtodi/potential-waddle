@@ -15,8 +15,10 @@ import { real } from '../real-data.js';
 import { CLASSES } from '../sample-data.js';
 import { state, todoItems } from '../state.js';
 import {
-  adds, attendanceDays, unresolvedDays, hasAttendance, creditsCard,
+  adds, attendanceDays, unresolvedDays, hasAttendance, creditsCard, rowExtras, dropFlagMeans,
 } from '../hac-adds-store.js';
+import { makeUpText } from '../makeup.js';
+import { dateAt } from '../format.js';
 import { actionAttrs, heading, CHEVRON } from './components.js';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -131,6 +133,40 @@ export function attendanceView() {
 /** "Algebra 1 S1" -> "Algebra 1" */
 const className = name => String(name || '').replace(/\s+S[12]$/, '').trim();
 
+// ---- What you still owe ------------------------------------------------------------------
+
+/** Row offset -> HAC's due text "10/27/2026", for joining Classwork extras. */
+const hacDue = offset => {
+  if (offset == null) return '';
+  const d = dateAt(offset);
+  return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
+};
+
+/** HAC's comment and drop flag for a real row, or null. */
+export function extrasFor(course, row) {
+  if (!course || !course.real || !course.code) return null;
+  return rowExtras(course.code, String(row.title).replace(/\s*\*\s*$/, ''), hacDue(row.due))
+    || rowExtras(course.code, row.title, hacDue(row.due));
+}
+
+/**
+ * Lines under an owed row on real grades: "Make it up: ...", the teacher's comment, and "Can't be
+ * dropped" / "Can be dropped" only when HAC's page has both answers (Frisco marks every row Y,
+ * which tells nothing). '' when there is nothing to add.
+ */
+export function oweExtras(course, rowId, className) {
+  if (!real.on || !course || !course.real || state.hideScores) return '';
+  const row = course.rows.find(entry => entry.id === rowId);
+  if (!row) return '';
+  const lines = [];
+  const make = makeUpText(course, row, className || course.name);
+  if (make) lines.push(`<div class="s mk">${escapeHtml(make)}</div>`);
+  const extra = extrasFor(course, row);
+  if (extra && extra.comment) lines.push(`<div class="s">Teacher: ${escapeHtml(extra.comment)}</div>`);
+  if (extra && dropFlagMeans() && extra.drop != null) lines.push(`<div class="s">${extra.drop ? 'Can be dropped' : "Can't be dropped"}</div>`);
+  return lines.join('');
+}
+
 // ---- Graduation credits -------------------------------------------------------------------
 
 const creditText = n => (Math.round(n * 10) / 10).toString();
@@ -141,19 +177,23 @@ export function creditsSection() {
   const card = creditsCard();
   if (!card) return '';
   const subjects = card.plan.subjects.filter(subject => subject.needed > 0);
-  const rows = subjects.map(subject => {
-    const done = subject.earned >= subject.needed;
+  const open = subjects.filter(subject => subject.earned < subject.needed);
+  const done = subjects.filter(subject => subject.earned >= subject.needed);
+  const rows = open.map(subject => {
     const pct = Math.min(100, subject.earned / subject.needed * 100);
     return `<div class="row" style="display:block"><div style="display:flex;gap:8px;align-items:baseline">`
       + `<div class="grow t" style="font-size:14.5px">${escapeHtml(shortSubject(subject.name))}</div>`
-      + `<div class="s" style="font-weight:700;white-space:nowrap;${done ? '' : 'color:var(--ink)'}">`
-      + `${done ? 'Done' : `${creditText(subject.earned)} of ${creditText(subject.needed)}`}</div></div>`
+      + `<div class="s" style="font-weight:700;color:var(--ink);white-space:nowrap">${creditText(subject.earned)} of ${creditText(subject.needed)}</div></div>`
       + `<div class="cr-bar"><span style="width:${pct}%"></span></div></div>`;
   }).join('');
-  return `<div class="sec" style="margin-top:16px">`
-    + heading(escapeHtml(card.plan.plan), creditText(card.earned) + ' credits ', 'earned')
-    + `<div class="card">${rows}</div>`
-    + `<div class="foot">From HAC's graduation plan. Classes you're in now count once they're done.</div></div>`;
+  const doneRow = done.length
+    ? `<div class="row"><div class="grow s">Done: ${escapeHtml(done.map(subject => shortSubject(subject.name)).join(', '))}</div></div>`
+    : '';
+  return `<div class="sec" style="margin-top:16px"><div class="card">`
+    + `<div class="row"><div class="grow t" style="font-size:15.5px">Graduation credits</div>`
+    + `<div class="s" style="font-weight:700;color:var(--ink);white-space:nowrap">${creditText(card.earned)} earned</div></div>`
+    + rows + doneRow + `</div>`
+    + `<div class="foot">${escapeHtml(card.plan.plan)}, from HAC. Classes you're in now count once they're done.</div></div>`;
 }
 
 const SUBJECT_SHORT = { 'Physical Education/Equivalent/Athletics': 'PE or athletics', 'Technology Applications': 'Tech apps' };
