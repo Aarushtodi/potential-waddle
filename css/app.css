@@ -160,6 +160,7 @@ body {
 }
 
 .pill.round {
+  position: relative;
   width: 36px;
   height: 36px;
   padding: 0;
@@ -502,7 +503,7 @@ body {
   border: 0;
   background: none;
   color: var(--sec);
-  font: 600 10.5px var(--sans);
+  font: 600 11px var(--sans);
   padding: 6px 0 5px;
   /* Concentric with the bar: 30 outer minus 5 padding. */
   border-radius: 25px;
@@ -1094,7 +1095,7 @@ input[type=date].f {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10.5px;
+  font-size: 11.5px;
   line-height: 1;
   color: var(--sec);
 }
@@ -1113,7 +1114,7 @@ input[type=date].f {
 .tick {
   position: absolute;
   left: -46px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   line-height: 1;
   color: var(--sec);
   font-variant-numeric: tabular-nums;
@@ -2251,7 +2252,7 @@ html.vt-leave-intro::view-transition-new(root) {
 /* Small "H" after an honors class name. */
 .gpa-h {
   display: inline-block;
-  font: 800 10.5px/1 var(--sans);
+  font: 800 11px/1 var(--sans);
   letter-spacing: .3px;
   padding: 2px 4px 1.5px;
   border-radius: 5px;
@@ -2617,3 +2618,15 @@ textarea.f::placeholder {
   list-style-position: inside;
 }
 
+
+/* Impeccable fix: 44px tap target around the 36px round buttons, same look. */
+.pill.round::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+
+/* Impeccable fix: no one word last lines on setup. */
+.setup li, .setup p {
+  text-wrap: pretty;
+}
